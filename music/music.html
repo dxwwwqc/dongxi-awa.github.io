@@ -1,184 +1,633 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <meta name="msapplication-TileColor" content="#da532c">
-    <meta name="msapplication-config" content="https://dxwwwqc.github.io/music-assets/images/favicon/browserconfig.xml">
-    <meta name="theme-color" content="#ffffff">
-    <meta name="description" content="东方Project 随机音乐">
-    <meta property="og:image" content="https://dxwwwqc.github.io/music-assets/images/favicon/android-chrome-256x256.png" />
-    <meta property="og:type" content="website" />
-    <meta property="og:description" content="东方Project 随机音乐">
-    <meta name="msvalidate.01" content="3BDCFECA73036E90C8F629F8CC7075D7" />
-    <title>东方随机音乐</title>
-    <link rel="apple-touch-icon" sizes="180x180" href="https://dxwwwqc.github.io/music-assets/images/favicon/apple-touch-icon.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="https://dxwwwqc.github.io/music-assets/images/favicon/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="https://dxwwwqc.github.io/music-assets/images/favicon/favicon-16x16.png">
-    <link rel="manifest" href="https://dxwwwqc.github.io/music-assets/images/favicon/site.webmanifest">
-    <link rel="mask-icon" href="https://dxwwwqc.github.io/music-assets/images/favicon/safari-pinned-tab.svg" color="#5bbad5">
-    <link rel="shortcut icon" href="https://dxwwwqc.github.io/music-assets/images/favicon/favicon.ico">
-    <link rel="stylesheet" href="https://unpkg.com/purecss@1.0.0/build/pure-min.css" integrity="sha384-nn4HPE8lTHyVtfCBi5yW9d20FjT8BJwUXyWZT9InLYax14RDjBj46LmSztkmNP9w"
-        crossorigin="anonymous">
-    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU"
-        crossorigin="anonymous">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/plyr/3.4.3/plyr.css" integrity="sha256-rufXFXaVZSvt3zXMGOG17EoglendvXvURMiR5lX9O8g="
-        crossorigin="anonymous" />
-    <link rel="stylesheet" href="https://dxwwwqc.github.io/music-assets/styles/styles.css">
+    <title>东方Project音乐播放器 - 优化版</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .container {
+            max-width: 900px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #fff;
+            font-size: 2.2rem;
+            text-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        }
+        .subtitle {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #b3b3ff;
+            font-size: 1.1rem;
+        }
+        .player-section {
+            margin: 25px 0;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            border-radius: 15px;
+        }
+        .audio-player {
+            width: 100%;
+            margin: 15px 0;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+        .music-list {
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 12px;
+            background: rgba(0,0,0,0.3);
+            margin-top: 20px;
+        }
+        .music-item {
+            padding: 18px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .music-item:hover {
+            background: rgba(255,255,255,0.1);
+        }
+        .music-item.playing {
+            background: rgba(76, 175, 80, 0.2);
+            color: #4CAF50;
+            border-left: 4px solid #4CAF50;
+        }
+        .music-item.unavailable {
+            opacity: 0.6;
+            color: #ff6b6b;
+        }
+        .music-info {
+            display: flex;
+            flex-direction: column;
+        }
+        .music-name {
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+        .music-status {
+            font-size: 0.85rem;
+            margin-top: 5px;
+            display: flex;
+            align-items: center;
+        }
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        .status-available {
+            background-color: #4CAF50;
+        }
+        .status-unavailable {
+            background-color: #ff6b6b;
+        }
+        .status-checking {
+            background-color: #ffc107;
+        }
+        .status {
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 10px;
+            background: rgba(255, 193, 7, 0.2);
+            border-left: 4px solid #ffc107;
+            display: flex;
+            align-items: center;
+        }
+        .status.error {
+            background: rgba(244, 67, 54, 0.2);
+            border-left-color: #f44336;
+        }
+        .status.success {
+            background: rgba(76, 175, 80, 0.2);
+            border-left-color: #4CAF50;
+        }
+        .status-icon {
+            margin-right: 10px;
+            font-size: 1.2rem;
+        }
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .btn {
+            padding: 12px 24px;
+            background: rgba(255,255,255,0.15);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn:hover {
+            background: rgba(255,255,255,0.25);
+            transform: translateY(-2px);
+        }
+        .btn:active {
+            transform: translateY(0);
+        }
+        .btn-primary {
+            background: rgba(123, 104, 238, 0.7);
+        }
+        .btn-primary:hover {
+            background: rgba(123, 104, 238, 0.9);
+        }
+        .btn-success {
+            background: rgba(76, 175, 80, 0.7);
+        }
+        .btn-success:hover {
+            background: rgba(76, 175, 80, 0.9);
+        }
+        .btn-danger {
+            background: rgba(244, 67, 54, 0.7);
+        }
+        .btn-danger:hover {
+            background: rgba(244, 67, 54, 0.9);
+        }
+        .progress-container {
+            margin: 20px 0;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            height: 10px;
+            overflow: hidden;
+        }
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #7b68ee, #4CAF50);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        .now-playing {
+            text-align: center;
+            font-size: 1.3rem;
+            margin: 15px 0;
+            color: #b3b3ff;
+            font-weight: bold;
+            min-height: 32px;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            color: rgba(255,255,255,0.6);
+            font-size: 0.9rem;
+        }
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .link-count {
+            font-size: 0.8rem;
+            color: rgba(255,255,255,0.7);
+            background: rgba(0,0,0,0.3);
+            padding: 2px 8px;
+            border-radius: 10px;
+        }
+    </style>
 </head>
+<body>
+    <div class="container">
+        <h1>🎵 东方Project音乐播放器</h1>
+        <div class="subtitle">体验东方Project的经典音乐</div>
+        
+        <div class="status" id="status">
+            <span class="status-icon">⏳</span>
+            <span id="statusText">正在初始化播放器...</span>
+        </div>
 
-<body id="body">
-    <div id="wrapper">
-        <!-- 顶部信息 -->
-        <div class="top">
-            <div id="title">
-                <span id="track"></span>
-                <div id="timer">0:00</div>
-                <div id="duration">0:00</div>
+        <div class="player-section">
+            <div class="now-playing" id="nowPlaying"></div>
+            
+            <div class="progress-container">
+                <div class="progress-bar" id="progressBar"></div>
             </div>
-            <div class="subtitle">
-                <span id="series"></span>
-                <p id="pid"></p>
+            
+            <audio id="audioPlayer" class="audio-player" controls>
+                您的浏览器不支持音频播放。
+            </audio>
+            
+            <div class="controls">
+                <button class="btn btn-primary" onclick="playCurrent()">
+                    <i class="fas fa-play"></i> 播放
+                </button>
+                <button class="btn btn-danger" onclick="pauseCurrent()">
+                    <i class="fas fa-pause"></i> 暂停
+                </button>
+                <button class="btn" onclick="playPrevious()">
+                    <i class="fas fa-step-backward"></i> 上一首
+                </button>
+                <button class="btn" onclick="playNext()">
+                    <i class="fas fa-step-forward"></i> 下一首
+                </button>
+                <button class="btn btn-success" onclick="testAllUrls()">
+                    <i class="fas fa-sync-alt"></i> 测试所有链接
+                </button>
+            </div>
+        </div>
+
+        <div class="music-list" id="musicList">
+            <div class="music-item">
+                <div class="loading"></div>
+                <span>加载音乐列表中...</span>
             </div>
         </div>
         
-        <!-- 背景区域 -->
-        <div id="background">
-            <!-- 视频 -->
-            <div class="plyr__video-embed fadein-2s" id="videoPlayer">
-                <iframe src=""></iframe>
-            </div>
-        </div>
-
-        
-        <!-- 进度条 -->
-        <div id="waveform">
-            <canvas id="canvas"></canvas>
-        </div>
-        <div id="progress"></div>
-
-<!-- 控制区 -->
-<div class="controlsOuter">
-    <div class="controlsInner">
-        <div id="loading"></div>
-        <i class="btn fas fa-play" id="playBtn"></i>
-        <i class="btn fas fa-pause" id="pauseBtn"></i>
-        <i class="btn fas fa-step-backward" id="prevBtn"></i>
-        <i class="btn fas fa-step-forward" id="nextBtn"></i>
-    </div>
-   
-    <div class="btn" id="playlistBtn"></div>
-    <i class="btn fas fa-cog" id="settingBtn"></i>
-    <div class="btn" id="volumeBtn"></div>
-</div>
-
-        <!-- 设置面板 -->
-        <div class="pure-menu" id="setting">
-            <ul class="pure-menu-list">
-                <li class="pure-menu-item">
-                    <div class="settingText settingTitle">MV生成设置</div>
-                </li>
-                <li class="pure-menu-item">
-                    <label class="settingText" for="numOfImages">图片数量</label>
-                    <select class="settingOption select" id="numOfImages">
-                        <option>2</option>
-                        <option>3</option>
-                        <option selected>4</option>
-                        <option>5</option>
-                        <option>6</option>
-                        <option>7</option>
-                        <option>8</option>
-                        <option>9</option>
-                        <option>10</option>
-                    </select>
-                </li>
-                <li class="pure-menu-item">
-                    <label class="settingText" for="imagesDuration">图片显示时长(秒)</label>
-                    <select class="settingOption select" id="imagesDuration">
-                        <option>3</option>
-                        <option>4</option>
-                        <option selected>5</option>
-                        <option>6</option>
-                        <option>7</option>
-                        <option>8</option>
-                        <option>9</option>
-                        <option>10</option>
-                    </select>
-                </li>
-                <li class="pure-menu-item">
-                    <div class="settingText settingTitle">音频设置</div>
-                </li>
-                <li class="pure-menu-item">
-                    <div class="settingText">随机播放</div>
-                    <label class="settingOption">
-                        <input type="checkbox" id="randomPlay">
-                        <span class="slider"></span>
-                    </label>
-                </li>
-                <li class="pure-menu-item">
-                    <div class="settingText" title="使波形图动起来，切换歌曲后生效。">动态波形图</div>
-                    <label class="settingOption">
-                        <input type="checkbox" id="animatedWaveform">
-                        <span class="slider"></span>
-                    </label>
-                </li>
-                <li class="pure-menu-item">
-                    <div class="settingText" title="仅播放歌曲的副歌部分，然后切换到下一首。注意：此功能仅对部分歌曲有效。">
-                        仅副歌模式</div>
-                    <label class="settingOption">
-                        <input type="checkbox" id="chorusMode">
-                        <span class="slider"></span>
-                    </label>
-                </li>
-            </ul>
-        </div>
-
-        <!-- 播放列表 -->
-        <div class="pure-menu pure-menu-scrollable" id="playlist">
-            <i class="far fa-times-circle fa-3x" id="closePlaylist"></i>
-        </div>
-
-        <!-- 音量控制 -->
-        <div id="volume" class="fadeout">
-            <div id="barFull" class="bar"></div>
-            <div id="barEmpty" class="bar"></div>
-            <div id="sliderBtn"></div>
+        <div class="footer">
+            东方Project音乐播放器 &copy; 2023 | 优化版本
         </div>
     </div>
-    <!-- 脚本 -->
-    <script src="https://www.gstatic.com/firebasejs/5.4.1/firebase.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.0.15/howler.core.min.js" defer></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/plyr/3.4.3/plyr.min.js" integrity="sha256-LAq55x/UUQNWhiFLlHHGGivmJx4sVm70ls05hcmhLQ8="
-        crossorigin="anonymous" defer></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/wavesurfer.js/2.0.6/wavesurfer.min.js" defer></script>
-    <script src="https://apis.google.com/js/client.js?onload=googleApiClientReady" defer></script>
-    <script src="https://dxwwwqc.github.io/music-assets/scripts/vudio.js" defer></script>
-    <script src="https://dxwwwqc.github.io/music-assets/scripts/utility.js" defer></script>
-    <script src="./scripts/player.js" defer></script>
-    <script src="https://dxwwwqc.github.io/music-assets/scripts/video.js" defer></script>
-    <script src="https://dxwwwqc.github.io/music-assets/scripts/i18n.js" defer></script>
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XZWCFGHDLB"></script>
-    <script defer>
-        // 初始化Firebase
-        var config = {
-            apiKey: "AIzaSyDmPHweR82MHPChLXyOqrwOaLe8L8FyYGA",
-            authDomain: "th-music-video-generator.firebaseapp.com",
-            databaseURL: "https://th-music-video-generator.firebaseio.com",
-            projectId: "th-music-video-generator",
-            storageBucket: "th-music-video-generator.appspot.com",
-            messagingSenderId: "766682158017"
-        };
-        firebase.initializeApp(config);
 
-        <!-- 全局站点标签(gtag.js) - Google Analytics -->
-        window.dataLayer = window.dataLayer || [];
-        function gtag() {dataLayer.push(arguments);}
-        gtag('js', new Date());
-        gtag('config', 'G-XZWCFGHDLB');
+    <script>
+        // 音乐列表 - 使用多种可能的URL格式
+        const musicList = [
+            {
+                name: '禁断の扉の向こうは、この世かあの世か',
+                urls: [
+                    'https://raw.githubusercontent.com/dxwwwqc/music-assets/main/audio/th16/10.%20禁断の扉の向こうは、この世かあの世か.mp3',
+                    'https://dxwwwqc.github.io/music-assets/audio/th16/10.%20禁断の扉の向こうは、この世かあの世か.mp3',
+                    'https://github.com/dxwwwqc/music-assets/raw/main/audio/th16/10.%20禁断の扉の向こうは、この世かあの世か.mp3'
+                ],
+                available: null // 初始状态为null，表示未检测
+            },
+            {
+                name: '少女幻葬 ~ Necro-Fantasy',
+                urls: [
+                    'https://raw.githubusercontent.com/dxwwwqc/music-assets/main/audio/th07/16.%20少女幻葬%20～%20Necro-Fantasy.mp3',
+                    'https://dxwwwqc.github.io/music-assets/audio/th07/16.%20少女幻葬%20～%20Necro-Fantasy.mp3'
+                ],
+                available: null
+            },
+            {
+                name: 'もうドアには入れない',
+                urls: [
+                    'https://raw.githubusercontent.com/dxwwwqc/music-assets/main/audio/th16/14.%20もうドアには入れない.mp3',
+                    'https://dxwwwqc.github.io/music-assets/audio/th16/14.%20もうドアには入れない.mp3'
+                ],
+                available: null
+            },
+            {
+                name: 'U.N.オーエンは彼女なのか？',
+                urls: [
+                    'https://raw.githubusercontent.com/dxwwwqc/music-assets/main/audio/th06/11.%20U.N.オーエンは彼女なのか？.mp3',
+                    'https://dxwwwqc.github.io/music-assets/audio/th06/11.%20U.N.オーエンは彼女なのか？.mp3'
+                ],
+                available: null
+            },
+            {
+                name: '亡き王女の為のセプテット',
+                urls: [
+                    'https://raw.githubusercontent.com/dxwwwqc/music-assets/main/audio/th06/10.%20亡き王女の為のセプテット.mp3',
+                    'https://dxwwwqc.github.io/music-assets/audio/th06/10.%20亡き王女の為のセプテット.mp3'
+                ],
+                available: null
+            }
+        ];
+
+        let currentTrackIndex = 0;
+        let currentUrlIndex = 0;
+        const audioPlayer = document.getElementById('audioPlayer');
+        const statusElement = document.getElementById('status');
+        const statusText = document.getElementById('statusText');
+        const nowPlaying = document.getElementById('nowPlaying');
+        const progressBar = document.getElementById('progressBar');
+
+        // 更新状态显示
+        function updateStatus(message, type = 'info') {
+            statusText.textContent = message;
+            
+            // 移除所有状态类
+            statusElement.classList.remove('success', 'error');
+            
+            // 根据类型添加相应类
+            if (type === 'success') {
+                statusElement.classList.add('success');
+                statusElement.querySelector('.status-icon').textContent = '✅';
+            } else if (type === 'error') {
+                statusElement.classList.add('error');
+                statusElement.querySelector('.status-icon').textContent = '❌';
+            } else {
+                statusElement.querySelector('.status-icon').textContent = '⏳';
+            }
+            
+            console.log(message);
+        }
+
+        // 测试URL是否可访问
+        async function testUrl(url) {
+            try {
+                const response = await fetch(url, { method: 'HEAD' });
+                return response.ok;
+            } catch (error) {
+                return false;
+            }
+        }
+
+        // 测试所有URL
+        async function testAllUrls() {
+            updateStatus('正在测试所有音乐链接...');
+            let workingCount = 0;
+            let totalCount = 0;
+            
+            for (let i = 0; i < musicList.length; i++) {
+                const track = musicList[i];
+                totalCount += track.urls.length;
+                
+                // 更新UI状态为检测中
+                updateTrackStatus(i, 'checking');
+                
+                let foundWorking = false;
+                for (let j = 0; j < track.urls.length; j++) {
+                    const isWorking = await testUrl(track.urls[j]);
+                    if (isWorking) {
+                        workingCount++;
+                        foundWorking = true;
+                        // 一旦找到可用链接，就停止检测该曲目的其他链接
+                        break;
+                    }
+                }
+                
+                // 更新曲目可用状态
+                musicList[i].available = foundWorking;
+                updateTrackStatus(i, foundWorking ? 'available' : 'unavailable');
+                
+                // 添加一点延迟，避免请求过于密集
+                await new Promise(resolve => setTimeout(resolve, 200));
+            }
+            
+            if (workingCount > 0) {
+                updateStatus(`找到 ${workingCount} 个可用的音乐链接`, 'success');
+            } else {
+                updateStatus('❌ 没有找到可用的音乐链接', 'error');
+            }
+            
+            // 自动选择第一个可用的曲目
+            const firstAvailable = musicList.findIndex(track => track.available === true);
+            if (firstAvailable !== -1) {
+                currentTrackIndex = firstAvailable;
+                updateStatus(`已选择第一个可用曲目: ${musicList[currentTrackIndex].name}`, 'success');
+                updateNowPlaying();
+            }
+        }
+
+        // 更新曲目状态显示
+        function updateTrackStatus(index, status) {
+            const items = document.querySelectorAll('.music-item');
+            if (items[index]) {
+                const statusElement = items[index].querySelector('.music-status');
+                const statusDot = items[index].querySelector('.status-dot');
+                
+                // 移除所有状态类
+                items[index].classList.remove('available', 'unavailable', 'checking');
+                
+                if (status === 'available') {
+                    items[index].classList.add('available');
+                    statusElement.textContent = '可用';
+                    statusDot.className = 'status-dot status-available';
+                } else if (status === 'unavailable') {
+                    items[index].classList.add('unavailable');
+                    statusElement.textContent = '不可用';
+                    statusDot.className = 'status-dot status-unavailable';
+                } else if (status === 'checking') {
+                    statusElement.innerHTML = '<div class="loading"></div> 检测中...';
+                    statusDot.className = 'status-dot status-checking';
+                }
+            }
+        }
+
+        // 播放音乐
+        async function playMusic(trackIndex, urlIndex = 0) {
+            const track = musicList[trackIndex];
+            if (!track) {
+                updateStatus('曲目不存在', 'error');
+                return;
+            }
+            
+            if (track.available === false) {
+                updateStatus(`❌ 曲目 "${track.name}" 没有可用的链接`, 'error');
+                return;
+            }
+
+            if (urlIndex >= track.urls.length) {
+                updateStatus('没有可用的音乐链接', 'error');
+                return;
+            }
+
+            const url = track.urls[urlIndex];
+            currentTrackIndex = trackIndex;
+            currentUrlIndex = urlIndex;
+
+            updateStatus(`尝试播放: ${track.name} (链接 ${urlIndex + 1}/${track.urls.length})`);
+            
+            try {
+                // 设置音频源
+                audioPlayer.src = url;
+                
+                // 尝试播放
+                await audioPlayer.play();
+                
+                updateStatus(`✅ 正在播放: ${track.name}`, 'success');
+                updateNowPlaying();
+                
+                // 更新播放状态
+                updatePlaybackState();
+                
+            } catch (error) {
+                console.error(`播放失败 (链接 ${urlIndex + 1}):`, error);
+                
+                // 尝试下一个URL
+                if (urlIndex + 1 < track.urls.length) {
+                    updateStatus(`尝试下一个链接...`);
+                    setTimeout(() => playMusic(trackIndex, urlIndex + 1), 1000);
+                } else {
+                    updateStatus(`❌ 所有链接都播放失败: ${track.name}`, 'error');
+                    musicList[trackIndex].available = false;
+                    updateTrackStatus(trackIndex, 'unavailable');
+                }
+            }
+        }
+
+        // 更新当前播放显示
+        function updateNowPlaying() {
+            const track = musicList[currentTrackIndex];
+            if (track) {
+                nowPlaying.textContent = `正在播放: ${track.name}`;
+            }
+        }
+
+        // 更新播放状态显示
+        function updatePlaybackState() {
+            // 清除所有播放状态
+            document.querySelectorAll('.music-item').forEach(item => {
+                item.classList.remove('playing');
+            });
+            
+            // 设置当前播放状态
+            const items = document.querySelectorAll('.music-item');
+            if (items[currentTrackIndex]) {
+                items[currentTrackIndex].classList.add('playing');
+            }
+        }
+
+        // 控制函数
+        function playCurrent() {
+            if (audioPlayer.src) {
+                audioPlayer.play().catch(error => {
+                    updateStatus('播放失败: ' + error.message, 'error');
+                });
+            } else {
+                // 如果没有当前播放，尝试播放当前选中的曲目
+                playMusic(currentTrackIndex, 0);
+            }
+        }
+
+        function pauseCurrent() {
+            audioPlayer.pause();
+            updateStatus('已暂停');
+        }
+
+        function playPrevious() {
+            // 寻找前一个可用的曲目
+            let newIndex = currentTrackIndex;
+            for (let i = 1; i < musicList.length; i++) {
+                newIndex = (currentTrackIndex - i + musicList.length) % musicList.length;
+                if (musicList[newIndex].available) {
+                    break;
+                }
+            }
+            
+            if (musicList[newIndex].available) {
+                playMusic(newIndex, 0);
+            } else {
+                updateStatus('没有可用的上一首曲目', 'error');
+            }
+        }
+
+        function playNext() {
+            // 寻找下一个可用的曲目
+            let newIndex = currentTrackIndex;
+            for (let i = 1; i < musicList.length; i++) {
+                newIndex = (currentTrackIndex + i) % musicList.length;
+                if (musicList[newIndex].available) {
+                    break;
+                }
+            }
+            
+            if (musicList[newIndex].available) {
+                playMusic(newIndex, 0);
+            } else {
+                updateStatus('没有可用的下一首曲目', 'error');
+            }
+        }
+
+        // 初始化音乐列表
+        function initMusicList() {
+            const musicListElement = document.getElementById('musicList');
+            musicListElement.innerHTML = '';
+            
+            musicList.forEach((track, index) => {
+                const item = document.createElement('div');
+                item.className = 'music-item';
+                item.innerHTML = `
+                    <div class="music-info">
+                        <div class="music-name">${track.name}</div>
+                        <div class="music-status">
+                            <span class="status-dot"></span>
+                            <span>未检测</span>
+                        </div>
+                    </div>
+                    <div class="link-count">${track.urls.length} 个链接</div>
+                `;
+                
+                item.addEventListener('click', () => {
+                    if (track.available !== false) {
+                        playMusic(index, 0);
+                    } else {
+                        updateStatus(`曲目 "${track.name}" 没有可用的链接`, 'error');
+                    }
+                });
+                
+                musicListElement.appendChild(item);
+            });
+        }
+
+        // 音频事件监听
+        audioPlayer.addEventListener('ended', () => {
+            updateStatus('播放结束');
+            playNext();
+        });
+
+        audioPlayer.addEventListener('error', (e) => {
+            updateStatus('音频播放错误', 'error');
+        });
+
+        audioPlayer.addEventListener('loadstart', () => {
+            updateStatus('开始加载音频...');
+        });
+
+        audioPlayer.addEventListener('canplay', () => {
+            updateStatus('音频可以播放');
+        });
+
+        audioPlayer.addEventListener('timeupdate', () => {
+            // 更新进度条
+            if (audioPlayer.duration) {
+                const progress = (audioPlayer.currentTime / audioPlayer.duration) * 100;
+                progressBar.style.width = `${progress}%`;
+            }
+        });
+
+        // 初始化
+        function initialize() {
+            updateStatus('播放器初始化完成', 'success');
+            initMusicList();
+            
+            // 自动测试所有链接
+            testAllUrls();
+        }
+
+        // 启动
+        initialize();
     </script>
 </body>
-
 </html>
