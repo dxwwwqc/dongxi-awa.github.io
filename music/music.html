@@ -1,0 +1,468 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title> | 冬栖の小窝</title>
+    <meta name="author" content="冬栖" />
+    <meta name="description" content="" />
+    <meta name="keywords" content="" />
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"
+    />
+    <link rel="icon" href="/dongxi-awa.github.io/images/avatar.jpg" />
+    <link rel="preconnect" href="https://s4.zstatic.net" />
+<script src="https://s4.zstatic.net/ajax/libs/vue/3.3.7/vue.global.prod.min.js"></script>
+<link rel="stylesheet" href="https://s4.zstatic.net/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
+<link rel="preconnect" href="https://fonts.googleapis.cn" />
+<link rel="preconnect" href="https://fonts.gstatic.cn" crossorigin />
+<link
+    rel="stylesheet"
+    href="https://fonts.googleapis.cn/css2?family=Fira+Code:wght@400;500;600;700&family=Lexend:wght@400;500;600;700;800;900&family=Noto+Sans+SC:wght@400;500;600;700;800;900&display=swap"
+/>
+<script> const mixins = {}; </script>
+
+<script src="https://polyfill.alicdn.com/v3/polyfill.min.js?features=default"></script>
+
+
+<script src="https://s4.zstatic.net/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://s4.zstatic.net/ajax/libs/highlightjs-line-numbers.js/2.8.0/highlightjs-line-numbers.min.js"></script>
+<link
+    rel="stylesheet"
+    href="https://s4.zstatic.net/ajax/libs/highlight.js/11.9.0/styles/github.min.css"
+/>
+<script src="/dongxi-awa.github.io/js/lib/highlight.js"></script>
+
+
+
+<script src="/dongxi-awa.github.io/js/lib/preview.js"></script>
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/dongxi-awa.github.io/css/main.css" />
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+<body>
+    <div id="layout">
+        <transition name="fade">
+            <div id="loading" v-show="loading">
+                <div id="loading-circle">
+                    <h2>LOADING</h2>
+                    <p>加载过慢请开启缓存 浏览器默认开启</p>
+                    <img src="/dongxi-awa.github.io/images/loading.gif" />
+                </div>
+            </div>
+        </transition>
+        <div id="menu" :class="{ hidden: hiddenMenu, 'menu-color': menuColor}">
+    <nav id="desktop-menu">
+        <a class="title" href="/dongxi-awa.github.io/">
+            <span>冬栖の小窝</span>
+        </a>
+        
+        <a href="/dongxi-awa.github.io/">
+            <i class="fa-solid fa-house fa-fw"></i>
+            <span>&ensp;Home</span>
+        </a>
+        
+        <a href="/dongxi-awa.github.io/about">
+            <i class="fa-solid fa-id-card fa-fw"></i>
+            <span>&ensp;About</span>
+        </a>
+        
+        <a href="/dongxi-awa.github.io/archives">
+            <i class="fa-solid fa-box-archive fa-fw"></i>
+            <span>&ensp;Archives</span>
+        </a>
+        
+        <a href="/dongxi-awa.github.io/categories">
+            <i class="fa-solid fa-bookmark fa-fw"></i>
+            <span>&ensp;Categories</span>
+        </a>
+        
+        <a href="/dongxi-awa.github.io/music/music.html">
+            <i class="fa-solid fa-music-note fa-fw"></i>
+            <span>&ensp;Music</span>
+        </a>
+        
+    </nav>
+    <nav id="mobile-menu">
+        <div class="title" @click="showMenuItems = !showMenuItems">
+            <i class="fa-solid fa-bars fa-fw"></i>
+            <span>&emsp;冬栖の小窝</span>
+        </div>
+        <transition name="slide">
+            <div class="items" v-show="showMenuItems">
+                
+                <a href="/dongxi-awa.github.io/">
+                    <div class="item">
+                        <div style="min-width: 20px; max-width: 50px; width: 10%">
+                            <i class="fa-solid fa-house fa-fw"></i>
+                        </div>
+                        <div style="min-width: 100px; max-width: 150%; width: 20%">Home</div>
+                    </div>
+                </a>
+                
+                <a href="/dongxi-awa.github.io/about">
+                    <div class="item">
+                        <div style="min-width: 20px; max-width: 50px; width: 10%">
+                            <i class="fa-solid fa-id-card fa-fw"></i>
+                        </div>
+                        <div style="min-width: 100px; max-width: 150%; width: 20%">About</div>
+                    </div>
+                </a>
+                
+                <a href="/dongxi-awa.github.io/archives">
+                    <div class="item">
+                        <div style="min-width: 20px; max-width: 50px; width: 10%">
+                            <i class="fa-solid fa-box-archive fa-fw"></i>
+                        </div>
+                        <div style="min-width: 100px; max-width: 150%; width: 20%">Archives</div>
+                    </div>
+                </a>
+                
+                <a href="/dongxi-awa.github.io/categories">
+                    <div class="item">
+                        <div style="min-width: 20px; max-width: 50px; width: 10%">
+                            <i class="fa-solid fa-bookmark fa-fw"></i>
+                        </div>
+                        <div style="min-width: 100px; max-width: 150%; width: 20%">Categories</div>
+                    </div>
+                </a>
+                
+                <a href="/dongxi-awa.github.io/music/music.html">
+                    <div class="item">
+                        <div style="min-width: 20px; max-width: 50px; width: 10%">
+                            <i class="fa-solid fa-music-note fa-fw"></i>
+                        </div>
+                        <div style="min-width: 100px; max-width: 150%; width: 20%">Music</div>
+                    </div>
+                </a>
+                
+            </div>
+        </transition>
+    </nav>
+</div>
+<transition name="fade">
+    <div id="menu-curtain" @click="showMenuItems = !showMenuItems" v-show="showMenuItems"></div>
+</transition>
+
+        <div id="main" :class="loading ? 'into-enter-from': 'into-enter-active'">
+            <div class="article">
+    <div>
+        <h1></h1>
+    </div>
+    <div class="info">
+        <span class="date">
+            <span class="icon">
+                <i class="fa-solid fa-calendar fa-fw"></i>
+            </span>
+            2025/10/16
+        </span>
+        
+        
+    </div>
+    
+    <div class="content" v-pre>
+        <!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta name="msapplication-TileColor" content="#da532c">
+    <meta name="theme-color" content="#ffffff">
+    <meta name="description" content="东方Project 随机音乐">
+    <meta property="og:image" content="https://dxwwwqc.github.io/music-assets/images/favicon/android-chrome-256x256.png" />
+    <meta property="og:type" content="website" />
+    <meta property="og:description" content="东方Project 随机音乐">
+    <title>东方随机音乐</title>
+    <link rel="apple-touch-icon" sizes="180x180" href="https://dxwwwqc.github.io/music-assets/images/favicon/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="https://dxwwwqc.github.io/music-assets/images/favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="https://dxwwwqc.github.io/music-assets/images/favicon/favicon-16x16.png">
+    <link rel="manifest" href="https://dxwwwqc.github.io/music-assets/images/favicon/site.webmanifest">
+    <link rel="mask-icon" href="https://dxwwwqc.github.io/music-assets/images/favicon/safari-pinned-tab.svg" color="#5bbad5">
+    <link rel="shortcut icon" href="https://dxwwwqc.github.io/music-assets/images/favicon/favicon.ico">
+    <link rel="stylesheet" href="https://unpkg.com/purecss@1.0.0/build/pure-min.css" integrity="sha384-nn4HPE8lTHyVtfCBi5yW9d20FjT8BJwUXyWZT9InLYax14RDjBj46LmSztkmNP9w"
+        crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU"
+        crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/plyr/3.4.3/plyr.css" integrity="sha256-rufXFXaVZSvt3zXMGOG17EoglendvXvURMiR5lX9O8g="
+        crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://dxwwwqc.github.io/music-assets/styles/styles.css">
+</head>
+
+<body id="body">
+    <div id="wrapper">
+        <!-- 顶部信息 -->
+        <div class="top">
+            <div id="title">
+                <span id="track"></span>
+                <div id="timer">0:00</div>
+                <div id="duration">0:00</div>
+            </div>
+            <div class="subtitle">
+                <span id="series"></span>
+                <p id="pid"></p>
+            </div>
+        </div>
+        
+        <!-- 背景区域 -->
+        <div id="background">
+            <!-- 视频 -->
+            <div class="plyr__video-embed fadein-2s" id="videoPlayer">
+                <iframe src=""></iframe>
+            </div>
+        </div>
+
+        
+        <!-- 进度条 -->
+        <div id="waveform">
+            <canvas id="canvas"></canvas>
+        </div>
+        <div id="progress"></div>
+
+<!-- 控制区 -->
+<div class="controlsOuter">
+    <div class="controlsInner">
+        <div id="loading"></div>
+        <i class="btn fas fa-play" id="playBtn"></i>
+        <i class="btn fas fa-pause" id="pauseBtn"></i>
+        <i class="btn fas fa-step-backward" id="prevBtn"></i>
+        <i class="btn fas fa-step-forward" id="nextBtn"></i>
+    </div>
+   
+    <div class="btn" id="playlistBtn"></div>
+    <i class="btn fas fa-cog" id="settingBtn"></i>
+    <div class="btn" id="volumeBtn"></div>
+</div>
+
+        <!-- 设置面板 -->
+        <div class="pure-menu" id="setting">
+            <ul class="pure-menu-list">
+                <li class="pure-menu-item">
+                    <div class="settingText settingTitle">MV生成设置</div>
+                </li>
+                <li class="pure-menu-item">
+                    <label class="settingText" for="numOfImages">图片数量</label>
+                    <select class="settingOption select" id="numOfImages">
+                        <option>2</option>
+                        <option>3</option>
+                        <option selected>4</option>
+                        <option>5</option>
+                        <option>6</option>
+                        <option>7</option>
+                        <option>8</option>
+                        <option>9</option>
+                        <option>10</option>
+                    </select>
+                </li>
+                <li class="pure-menu-item">
+                    <label class="settingText" for="imagesDuration">图片显示时长(秒)</label>
+                    <select class="settingOption select" id="imagesDuration">
+                        <option>3</option>
+                        <option>4</option>
+                        <option selected>5</option>
+                        <option>6</option>
+                        <option>7</option>
+                        <option>8</option>
+                        <option>9</option>
+                        <option>10</option>
+                    </select>
+                </li>
+                <li class="pure-menu-item">
+                    <div class="settingText settingTitle">音频设置</div>
+                </li>
+                <li class="pure-menu-item">
+                    <div class="settingText">随机播放</div>
+                    <label class="settingOption">
+                        <input type="checkbox" id="randomPlay">
+                        <span class="slider"></span>
+                    </label>
+                </li>
+                <li class="pure-menu-item">
+                    <div class="settingText" title="使波形图动起来，切换歌曲后生效。">动态波形图</div>
+                    <label class="settingOption">
+                        <input type="checkbox" id="animatedWaveform">
+                        <span class="slider"></span>
+                    </label>
+                </li>
+                <li class="pure-menu-item">
+                    <div class="settingText" title="仅播放歌曲的副歌部分，然后切换到下一首。注意：此功能仅对部分歌曲有效。">
+                        仅副歌模式</div>
+                    <label class="settingOption">
+                        <input type="checkbox" id="chorusMode">
+                        <span class="slider"></span>
+                    </label>
+                </li>
+            </ul>
+        </div>
+
+        <!-- 播放列表 -->
+        <div class="pure-menu pure-menu-scrollable" id="playlist">
+            <i class="far fa-times-circle fa-3x" id="closePlaylist"></i>
+        </div>
+
+        <!-- 音量控制 -->
+        <div id="volume" class="fadeout">
+            <div id="barFull" class="bar"></div>
+            <div id="barEmpty" class="bar"></div>
+            <div id="sliderBtn"></div>
+        </div>
+    </div>
+    <!-- 脚本 -->
+    <script src="https://www.gstatic.com/firebasejs/5.4.1/firebase.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.0.15/howler.core.min.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/plyr/3.4.3/plyr.min.js" integrity="sha256-LAq55x/UUQNWhiFLlHHGGivmJx4sVm70ls05hcmhLQ8="
+        crossorigin="anonymous" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/wavesurfer.js/2.0.6/wavesurfer.min.js" defer></script>
+    <script src="https://apis.google.com/js/client.js?onload=googleApiClientReady" defer></script>
+    <script src="https://dxwwwqc.github.io/music-assets/scripts/vudio.js" defer></script>
+    <script src="https://dxwwwqc.github.io/music-assets/scripts/utility.js" defer></script>
+    <script src="./scripts/player.js" defer></script>
+    <script src="https://dxwwwqc.github.io/music-assets/scripts/video.js" defer></script>
+    <script src="https://dxwwwqc.github.io/music-assets/scripts/i18n.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XZWCFGHDLB"></script>
+    <script defer>
+        // 初始化Firebase
+        var config = {
+            apiKey: "AIzaSyDmPHweR82MHPChLXyOqrwOaLe8L8FyYGA",
+            authDomain: "th-music-video-generator.firebaseapp.com",
+            databaseURL: "https://th-music-video-generator.firebaseio.com",
+            projectId: "th-music-video-generator",
+            storageBucket: "th-music-video-generator.appspot.com",
+            messagingSenderId: "766682158017"
+        };
+        firebase.initializeApp(config);
+
+        <!-- 全局站点标签(gtag.js) - Google Analytics -->
+        window.dataLayer = window.dataLayer || [];
+        function gtag() {dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-XZWCFGHDLB');
+    </script>
+</body>
+
+</html>
+    </div>
+    
+    
+    
+    
+    
+    
+    
+</div>
+
+            <footer id="footer">
+    <div id="footer-wrap">
+        <div>
+            &copy;
+            2022 - 2025 冬栖の小窝
+            <span id="footer-icon">
+                <i class="fa-solid fa-font-awesome fa-fw"></i>
+            </span>
+            &commat;冬栖
+        </div>
+        <div>
+            Based on the <a target="_blank" rel="noopener" href="https://hexo.io">Hexo Engine</a> &amp;
+            <a target="_blank" rel="noopener" href="https://github.com/theme-particlex/hexo-theme-particlex">ParticleX Theme</a>
+        </div>
+        
+    </div>
+</footer>
+
+<!-- Sakana Widget 石蒜模拟器（支持自由拖拽） -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sakana-widget@2.7.1/lib/sakana.min.css">
+<div id="sakana-widget" style="position: fixed; bottom: 20px; right: 20px; z-index: 999; width: 120px; height: 180px; cursor: move;"></div>
+<script src="https://cdn.jsdelivr.net/npm/sakana-widget@2.7.1/lib/sakana.min.js"></script>
+<script>
+  // 等待页面和脚本加载完成
+  window.addEventListener('load', function() {
+    if (window.SakanaWidget) {
+      // 初始化组件
+      const widget = new SakanaWidget().mount('#sakana-widget');
+      const container = document.getElementById('sakana-widget');
+      
+      // 拖拽变量
+      let isDragging = false;
+      let startX, startY;
+      let offsetX, offsetY;
+
+      // 鼠标按下：开始拖拽
+      container.addEventListener('mousedown', function(e) {
+        isDragging = true;
+        // 记录初始位置和鼠标偏移
+        const rect = container.getBoundingClientRect();
+        startX = rect.left;
+        startY = rect.top;
+        offsetX = e.clientX - startX;
+        offsetY = e.clientY - startY;
+        // 暂时关闭弹跳动画，避免拖拽时抖动
+        container.style.transition = 'none';
+      });
+
+      // 鼠标移动：更新位置
+      document.addEventListener('mousemove', function(e) {
+        if (!isDragging) return;
+        // 计算新位置（减去偏移量，确保鼠标对准拖拽点）
+        const newX = e.clientX - offsetX;
+        const newY = e.clientY - offsetY;
+        // 限制在浏览器可视范围内（避免拖出屏幕外）
+        const maxX = window.innerWidth - container.offsetWidth;
+        const maxY = window.innerHeight - container.offsetHeight;
+        const safeX = Math.max(0, Math.min(newX, maxX));
+        const safeY = Math.max(0, Math.min(newY, maxY));
+        // 应用新位置
+        container.style.left = `${safeX}px`;
+        container.style.top = `${safeY}px`;
+        // 清除初始的 bottom/right 定位，避免冲突
+        container.style.bottom = 'auto';
+        container.style.right = 'auto';
+      });
+
+      // 鼠标松开：结束拖拽并恢复动画
+      document.addEventListener('mouseup', function() {
+        if (isDragging) {
+          isDragging = false;
+          container.style.transition = ''; // 恢复动画
+          // 拖拽结束后触发一次轻微弹跳（可选）
+          widget.applyForce(0.3, 0.1);
+        }
+      });
+
+    } else {
+      // 兼容脚本加载延迟
+      document.querySelector('script[src*="sakana.min.js"]').onload = function() {
+        new SakanaWidget().mount('#sakana-widget');
+      };
+    }
+  });
+</script>
+        </div>
+        
+        <transition name="fade">
+            <div id="preview" ref="preview" v-show="previewShow">
+                <img id="preview-content" ref="previewContent" />
+            </div>
+        </transition>
+        
+    </div>
+    <script src="/dongxi-awa.github.io/js/main.js"></script>
+    
+    
+
+
+
+
+    
+</body>
+</html>
