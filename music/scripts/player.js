@@ -3,7 +3,10 @@ const MUSIC_BASE_URL = 'https://dxwwwqc.github.io/music-assets/';
 
 // Cache references to DOM elements.
 var elms = ['track', 'timer', 'duration', 'playBtn', 'pauseBtn', 'prevBtn', 'nextBtn', 'settingBtn', 'playlistBtn', 'volumeBtn', 'progress', 'waveform', 'canvas', 'loading', 'playlist', 'list', 'volume', 'barEmpty', 'barFull', 'sliderBtn'];
-// ... 其余代码保持不变
+elms.forEach(function (elm) {
+  window[elm] = document.getElementById(elm);
+});
+
 // For Japanese title cache
 let jpGameTitles = [];
 let jpSongTitles = [];
@@ -57,7 +60,9 @@ var Player = function (playlist) {
       ul = document.createElement('ul');
       ul.className = 'pure-menu-list';
       if (ulth > 5) {
-        ul.style.backgroundImage = 'url(\'' + MUSIC_BASE_URL + 'images/title/' + ('00' + ulth).slice(-2) + '.jpg\')';
+        var bgUrl = MUSIC_BASE_URL + 'images/title/' + ('00' + ulth).slice(-2) + '.jpg';
+        console.log('播放列表背景 URL:', bgUrl);
+        ul.style.backgroundImage = 'url(\'' + bgUrl + '\')';
       }
       ulth++;
     } else {
@@ -568,9 +573,23 @@ volume.addEventListener('touchend', function () {
   window.sliderDown = false;
 });
 
-// Image preloader
+// Image preloader - 添加详细调试
 for (var i = 6; i < 27; i++) {
-  imagePreload(MUSIC_BASE_URL + 'images/title/' + ('00' + i).slice(-2) + '.jpg');
+  var imageUrl = MUSIC_BASE_URL + 'images/title/' + ('00' + i).slice(-2) + '.jpg';
+  console.log('预加载图片 URL:', imageUrl);
+  
+  // 直接测试这个 URL
+  var testImg = new Image();
+  testImg.onload = function() { 
+    console.log('✓ 直接加载成功:', this.src); 
+  };
+  testImg.onerror = function() { 
+    console.log('✗ 直接加载失败:', this.src); 
+  };
+  testImg.src = imageUrl;
+  
+  // 原有的预加载
+  imagePreload(imageUrl);
 }
 
 // i18n loading
