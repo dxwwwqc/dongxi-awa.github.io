@@ -1,6 +1,3 @@
-// 音乐文件基础 URL - 修改为原始文件链接
-const MUSIC_BASE_URL = 'https://raw.githubusercontent.com/dxwwwqc/music-assets/main/';
-
 // Cache references to DOM elements.
 var elms = ['track', 'timer', 'duration', 'playBtn', 'pauseBtn', 'prevBtn', 'nextBtn', 'settingBtn', 'playlistBtn', 'volumeBtn', 'progress', 'waveform', 'canvas', 'loading', 'playlist', 'list', 'volume', 'barEmpty', 'barFull', 'sliderBtn'];
 elms.forEach(function (elm) {
@@ -60,7 +57,7 @@ var Player = function (playlist) {
       ul = document.createElement('ul');
       ul.className = 'pure-menu-list';
       if (ulth > 5) {
-        ul.style.backgroundImage = 'url(\'' + MUSIC_BASE_URL + 'images/title/' + ('00' + ulth).slice(-2) + '.jpg\')';
+        ul.style.backgroundImage = 'url(\'./images/title/' + ('00' + ulth).slice(-2) + '.jpg\')';
       }
       ulth++;
     } else {
@@ -105,8 +102,10 @@ Player.prototype = {
     }
     // Keep track of the index we are currently playing.
     self.index = index;
+    // console.log('Playing index ' + index);
 
     // Skip song not exist
+    // TODO: Fix prev not exist won't prev 2 song bug
     var data = self.playlist[index];
     if (data.file == null) {
       self.skip('next');
@@ -123,15 +122,13 @@ Player.prototype = {
     if (data.howl) {
       sound = data.howl;
     } else {
-      // 关键修改：使用原始文件链接
-      var musicUrl = data.file.startsWith('http') ? data.file : MUSIC_BASE_URL + data.file;
-      
       sound = data.howl = new Howl({
-        src: [musicUrl],
-        html5: true,
+        src: ['.' + data.file],
+        html5: true, // Force to HTML5 so that the audio can stream in (best for large files).
         onplay: function () {
           // For chorus mode
           if (chorusMode.checked && self.playlist[self.index].chorusStartTime) {
+            // console.log(self.index + " chorus start")
             data.howl.seek(self.playlist[self.index].chorusStartTime - 1);
             data.howl.fade(0.0, 1.0, 1000);
           }
@@ -153,7 +150,6 @@ Player.prototype = {
         onpause: function () {},
         onstop: function () {}
       });
-
       // Waveform display
       var width = waveform.clientWidth;
       var height = (window.innerHeight > 0) ? window.innerHeight * 0.2 : screen.height * 0.2;
@@ -179,8 +175,8 @@ Player.prototype = {
             shadowColor: '#939393',
             fadeSide: false,
             prettify: false,
-            horizontalAlign: 'center',
-            verticalAlign: 'bottom'
+            horizontalAlign: 'center', // left/center/right
+            verticalAlign: 'bottom' // top/middle/bottom
           }
         });
         vudio.dance();
@@ -217,6 +213,7 @@ Player.prototype = {
     sound.play();
 
     // Update the track display with new song title
+    //track.innerHTML = (index + 1) + '. ' + data.title;
     this.updateTitle(index)
 
     // Play video
@@ -359,6 +356,7 @@ Player.prototype = {
     if (!chorusFlag && chorusMode.checked &&
       self.playlist[self.index].chorusEndTime &&
       seek >= self.playlist[self.index].chorusEndTime) {
+      // console.log(self.index + " chorus end")
       chorusFlag = true;
       sound.fade(1.0, 0.0, 2000);
       setTimeout(function () {
@@ -454,17 +452,18 @@ var resize = function () {
     var vol = sound.volume();
     var barWidth = (vol * 0.9);
     sliderBtn.style.left = (window.innerWidth * barWidth + window.innerWidth * 0.05 - 25) + 'px';
-    if (vudio) {
-      vudio.width = width;
-      vudio.height = height;
-      var accuracy = (width < 550) ? 32 : (width < 1000) ? 64 : 128;
-      vudio.setOption({
-        accuracy: accuracy,
-        waveform: {
-          maxHeight: height / 10 * 9,
-        }
-      });
-    }
+    vudio.width = width;
+    vudio.height = height;
+    var space = Math.floor(Math.abs(width - 500) / 300) + 2;
+    var accuracy = (width < 550) ? 32 : (width < 1000) ? 64 : 128;
+    // mobile: 320~420
+    vudio.setOption({
+      accuracy: accuracy,
+      waveform: {
+        maxHeight: height / 10 * 9,
+        //spacing: space
+      }
+    });
   }
 };
 window.addEventListener('resize', resize);
@@ -497,8 +496,7 @@ firebase.database().ref('games').once('value').then(function (games) {
       if (songObj['title'] == ' U') {
         songObj['title'] = ' U.N.オーエンは彼女なのか？'
       }
-      // 关键修改：使用原始文件链接
-      songObj['file'] = MUSIC_BASE_URL + song.path;
+      songObj['file'] = song.path;
       songObj['howl'] = null;
       songObj['info'] = song;
       if (song.chorus_start_time) {
@@ -573,7 +571,7 @@ volume.addEventListener('touchend', function () {
 
 // Image preloader
 for (var i = 6; i < 27; i++) {
-  imagePreload(MUSIC_BASE_URL + 'images/title/' + ('00' + i).slice(-2) + '.jpg');
+  imagePreload('./images/title/' + ('00' + i).slice(-2) + '.jpg');
 }
 
 // i18n loading
