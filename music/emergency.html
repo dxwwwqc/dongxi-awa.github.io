@@ -1,87 +1,82 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta name="msapplication-TileColor" content="#da532c">
+    <meta name="msapplication-config" content="https://dxwwwqc.github.io/music-assets/images/favicon/browserconfig.xml">
+    <meta name="theme-color" content="#ffffff">
+    <meta name="description" content="东方Project 随机音乐">
+    <meta property="og:image" content="https://dxwwwqc.github.io/music-assets/images/favicon/android-chrome-256x256.png" />
+    <meta property="og:type" content="website" />
+    <meta property="og:description" content="东方Project 随机音乐">
+    <meta name="msvalidate.01" content="3BDCFECA73036E90C8F629F8CC7075D7" />
     <title>东方随机音乐</title>
-    <link rel="stylesheet" href="https://unpkg.com/purecss@1.0.0/build/pure-min.css">
-    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/plyr/3.4.3/plyr.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="https://dxwwwqc.github.io/music-assets/images/favicon/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="https://dxwwwqc.github.io/music-assets/images/favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="https://dxwwwqc.github.io/music-assets/images/favicon/favicon-16x16.png">
+    <link rel="manifest" href="https://dxwwwqc.github.io/music-assets/images/favicon/site.webmanifest">
+    <link rel="mask-icon" href="https://dxwwwqc.github.io/music-assets/images/favicon/safari-pinned-tab.svg" color="#5bbad5">
+    <link rel="shortcut icon" href="https://dxwwwqc.github.io/music-assets/images/favicon/favicon.ico">
+    <link rel="stylesheet" href="https://unpkg.com/purecss@1.0.0/build/pure-min.css" integrity="sha384-nn4HPE8lTHyVtfCBi5yW9d20FjT8BJwUXyWZT9InLYax14RDjBj46LmSztkmNP9w"
+        crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU"
+        crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/plyr/3.4.3/plyr.css" integrity="sha256-rufXFXaVZSvt3zXMGOG17EoglendvXvURMiR5lX9O8g="
+        crossorigin="anonymous" />
     <style>
-        :root {
-            --primary-color: #5a189a;
-            --secondary-color: #9d4edd;
-            --accent-color: #e0aaff;
-            --text-color: #f8f9fa;
-            --bg-color: #10002b;
-            --bg-secondary: #240046;
-            --border-radius: 8px;
-            --transition: all 0.3s ease;
-        }
-
-        * {
+        body {
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
+            font-family: Arial, sans-serif;
+            background-color: #000;
+            color: #fff;
             overflow: hidden;
             height: 100vh;
-            display: flex;
-            flex-direction: column;
         }
-
+        
         #wrapper {
-            display: flex;
-            flex-direction: column;
+            position: relative;
+            width: 100%;
             height: 100vh;
-            position: relative;
-            overflow: hidden;
         }
-
-        /* 顶部信息区域 */
+        
         .top {
-            padding: 15px 20px;
-            background: linear-gradient(to bottom, rgba(16, 0, 43, 0.9), transparent);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 10px;
             z-index: 10;
-            position: relative;
+            background: rgba(0, 0, 0, 0.5);
         }
-
+        
         #title {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 5px;
         }
-
+        
         #track {
-            font-size: 1.5rem;
-            font-weight: 600;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-            flex: 1;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
+            font-size: 18px;
+            font-weight: bold;
         }
-
+        
         #timer, #duration {
-            font-size: 1rem;
-            color: var(--accent-color);
-            margin-left: 10px;
+            font-size: 14px;
+            color: #ccc;
         }
-
+        
         .subtitle {
             display: flex;
             justify-content: space-between;
-            font-size: 0.9rem;
-            color: #ccc;
+            font-size: 14px;
+            color: #999;
+            margin-top: 5px;
         }
-
-        /* 背景区域 */
+        
         #background {
             position: absolute;
             top: 0;
@@ -89,334 +84,205 @@
             width: 100%;
             height: 100%;
             z-index: 1;
-            overflow: hidden;
-            background: linear-gradient(45deg, #1a0033, #330066);
         }
-
-        .background-image {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            opacity: 0.3;
-        }
-
+        
         .plyr__video-embed {
             width: 100%;
             height: 100%;
         }
-
+        
         .plyr__video-embed iframe {
             width: 100%;
             height: 100%;
-            object-fit: cover;
         }
-
-        /* 进度条和波形图 */
+        
         #waveform {
-            position: relative;
+            position: absolute;
+            bottom: 60px;
+            left: 0;
+            width: 100%;
             height: 80px;
-            background: rgba(36, 0, 70, 0.7);
+            background: rgba(0, 0, 0, 0.5);
             z-index: 5;
         }
-
+        
         #canvas {
             width: 100%;
             height: 100%;
         }
-
+        
         #progress {
             position: absolute;
             top: 0;
             left: 0;
             height: 100%;
             width: 0;
-            background: rgba(157, 78, 221, 0.3);
+            background: rgba(255, 255, 255, 0.2);
             z-index: 6;
-            pointer-events: none;
-            transition: width 0.1s linear;
         }
-
-        /* 控制区域 */
+        
         .controlsOuter {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 10;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 15px 20px;
-            background: rgba(16, 0, 43, 0.8);
-            z-index: 10;
-            position: relative;
         }
-
+        
         .controlsInner {
             display: flex;
             align-items: center;
-            gap: 15px;
         }
-
+        
         .btn {
-            font-size: 1.5rem;
-            color: var(--text-color);
+            font-size: 24px;
+            color: #fff;
             cursor: pointer;
-            transition: var(--transition);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
+            margin: 0 10px;
         }
-
-        .btn:hover {
-            color: var(--accent-color);
-            background: rgba(157, 78, 221, 0.2);
-        }
-
+        
         #loading {
-            width: 24px;
-            height: 24px;
-            border: 2px solid transparent;
-            border-top: 2px solid var(--accent-color);
+            width: 20px;
+            height: 20px;
+            border: 2px solid #fff;
+            border-top: 2px solid transparent;
             border-radius: 50%;
             animation: spin 1s linear infinite;
             display: none;
         }
-
+        
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-
-        /* 设置面板 */
+        
         #setting {
             position: absolute;
             top: 0;
             right: -300px;
             width: 300px;
             height: 100%;
-            background: var(--bg-secondary);
+            background: #222;
             z-index: 20;
-            transition: right 0.3s ease;
-            overflow-y: auto;
+            transition: right 0.3s;
             padding: 20px;
-            box-shadow: -5px 0 15px rgba(0, 0, 0, 0.5);
+            overflow-y: auto;
         }
-
+        
         #setting.active {
             right: 0;
         }
-
+        
         .settingTitle {
-            font-size: 1.2rem;
-            font-weight: 600;
+            font-size: 16px;
+            font-weight: bold;
             margin: 15px 0 10px;
-            color: var(--accent-color);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            padding-bottom: 5px;
+            color: #fff;
         }
-
+        
         .settingText {
-            font-size: 0.95rem;
+            font-size: 14px;
             margin-bottom: 10px;
             display: block;
         }
-
+        
         .settingOption {
             margin-bottom: 15px;
         }
-
+        
         .select {
             width: 100%;
-            padding: 8px 12px;
-            background: var(--bg-color);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: var(--border-radius);
-            color: var(--text-color);
-            font-size: 0.9rem;
+            padding: 5px;
+            background: #333;
+            border: 1px solid #555;
+            color: #fff;
         }
-
-        /* 播放列表 */
+        
         #playlist {
             position: absolute;
             top: 0;
             left: -300px;
             width: 300px;
             height: 100%;
-            background: var(--bg-secondary);
+            background: #222;
             z-index: 20;
-            transition: left 0.3s ease;
-            overflow-y: auto;
+            transition: left 0.3s;
             padding: 20px;
-            box-shadow: 5px 0 15px rgba(0, 0, 0, 0.5);
+            overflow-y: auto;
         }
-
+        
         #playlist.active {
             left: 0;
         }
-
+        
         #closePlaylist {
             position: absolute;
             top: 15px;
             right: 15px;
-            color: var(--text-color);
+            color: #fff;
             cursor: pointer;
-            transition: var(--transition);
         }
-
-        #closePlaylist:hover {
-            color: var(--accent-color);
-        }
-
-        .playlist-item {
-            padding: 10px;
-            margin: 5px 0;
-            border-radius: var(--border-radius);
-            cursor: pointer;
-            transition: var(--transition);
-        }
-
-        .playlist-item:hover {
-            background: rgba(157, 78, 221, 0.2);
-        }
-
-        .playlist-item.active {
-            background: var(--primary-color);
-            color: var(--accent-color);
-        }
-
-        /* 音量控制 */
+        
         #volume {
             position: absolute;
-            bottom: 80px;
+            bottom: 60px;
             right: 20px;
             width: 30px;
             height: 150px;
-            background: rgba(36, 0, 70, 0.8);
-            border-radius: 15px;
+            background: #333;
             z-index: 15;
             display: flex;
             flex-direction: column;
             align-items: center;
             padding: 10px 0;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-            pointer-events: none;
         }
-
-        #volume.active {
-            opacity: 1;
-            pointer-events: all;
-        }
-
+        
         .bar {
             width: 6px;
-            border-radius: 3px;
         }
-
+        
         #barFull {
-            background: var(--accent-color);
+            background: #fff;
             flex: 1;
             margin-bottom: 5px;
         }
-
+        
         #barEmpty {
-            background: rgba(255, 255, 255, 0.2);
+            background: #555;
             flex: 1;
             margin-top: 5px;
         }
-
+        
         #sliderBtn {
             width: 20px;
             height: 20px;
-            background: var(--text-color);
+            background: #fff;
             border-radius: 50%;
             position: absolute;
             cursor: pointer;
             left: 5px;
         }
-
-        /* 响应式设计 */
-        @media (max-width: 768px) {
-            #track {
-                font-size: 1.2rem;
-            }
-            
-            .btn {
-                font-size: 1.3rem;
-                width: 36px;
-                height: 36px;
-            }
-            
-            #setting, #playlist {
-                width: 250px;
-            }
+        
+        .fadein {
+            display: block;
+            opacity: 1;
+            transition: opacity 0.5s;
         }
-
-        @media (max-width: 480px) {
-            .top {
-                padding: 10px 15px;
-            }
-            
-            #track {
-                font-size: 1rem;
-            }
-            
-            .controlsOuter {
-                padding: 10px 15px;
-            }
-            
-            .controlsInner {
-                gap: 10px;
-            }
-            
-            .btn {
-                font-size: 1.2rem;
-                width: 32px;
-                height: 32px;
-            }
-            
-            #waveform {
-                height: 60px;
-            }
-        }
-
-        /* 自定义复选框样式 */
-        input[type="checkbox"] {
+        
+        .fadeout {
             display: none;
-        }
-
-        .slider {
-            position: relative;
-            display: inline-block;
-            width: 50px;
-            height: 24px;
-            background-color: #ccc;
-            border-radius: 24px;
-            transition: var(--transition);
-            cursor: pointer;
-        }
-
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 16px;
-            width: 16px;
-            left: 4px;
-            bottom: 4px;
-            background-color: white;
-            border-radius: 50%;
-            transition: var(--transition);
-        }
-
-        input[type="checkbox"]:checked + .slider {
-            background-color: var(--accent-color);
-        }
-
-        input[type="checkbox"]:checked + .slider:before {
-            transform: translateX(26px);
+            opacity: 0;
+            transition: opacity 0.5s;
         }
     </style>
 </head>
-<body>
+
+<body id="body">
     <div id="wrapper">
         <!-- 顶部信息 -->
         <div class="top">
@@ -433,9 +299,13 @@
         
         <!-- 背景区域 -->
         <div id="background">
-            <img class="background-image" id="backgroundImage" src="" alt="背景图片">
+            <!-- 视频 -->
+            <div class="plyr__video-embed fadein-2s" id="videoPlayer">
+                <iframe src=""></iframe>
+            </div>
         </div>
 
+        
         <!-- 进度条 -->
         <div id="waveform">
             <canvas id="canvas"></canvas>
@@ -447,7 +317,7 @@
             <div class="controlsInner">
                 <div id="loading"></div>
                 <i class="btn fas fa-play" id="playBtn"></i>
-                <i class="btn fas fa-pause" id="pauseBtn" style="display: none;"></i>
+                <i class="btn fas fa-pause" id="pauseBtn"></i>
                 <i class="btn fas fa-step-backward" id="prevBtn"></i>
                 <i class="btn fas fa-step-forward" id="nextBtn"></i>
             </div>
@@ -465,6 +335,36 @@
         <div class="pure-menu" id="setting">
             <ul class="pure-menu-list">
                 <li class="pure-menu-item">
+                    <div class="settingText settingTitle">MV生成设置</div>
+                </li>
+                <li class="pure-menu-item">
+                    <label class="settingText" for="numOfImages">图片数量</label>
+                    <select class="settingOption select" id="numOfImages">
+                        <option>2</option>
+                        <option>3</option>
+                        <option selected>4</option>
+                        <option>5</option>
+                        <option>6</option>
+                        <option>7</option>
+                        <option>8</option>
+                        <option>9</option>
+                        <option>10</option>
+                    </select>
+                </li>
+                <li class="pure-menu-item">
+                    <label class="settingText" for="imagesDuration">图片显示时长(秒)</label>
+                    <select class="settingOption select" id="imagesDuration">
+                        <option>3</option>
+                        <option>4</option>
+                        <option selected>5</option>
+                        <option>6</option>
+                        <option>7</option>
+                        <option>8</option>
+                        <option>9</option>
+                        <option>10</option>
+                    </select>
+                </li>
+                <li class="pure-menu-item">
                     <div class="settingText settingTitle">音频设置</div>
                 </li>
                 <li class="pure-menu-item">
@@ -475,16 +375,17 @@
                     </label>
                 </li>
                 <li class="pure-menu-item">
-                    <div class="settingText">循环播放</div>
+                    <div class="settingText" title="使波形图动起来，切换歌曲后生效。">动态波形图</div>
                     <label class="settingOption">
-                        <input type="checkbox" id="loopPlay" checked>
+                        <input type="checkbox" id="animatedWaveform">
                         <span class="slider"></span>
                     </label>
                 </li>
                 <li class="pure-menu-item">
-                    <div class="settingText">自动播放下一首</div>
+                    <div class="settingText" title="仅播放歌曲的副歌部分，然后切换到下一首。注意：此功能仅对部分歌曲有效。">
+                        仅副歌模式</div>
                     <label class="settingOption">
-                        <input type="checkbox" id="autoPlay" checked>
+                        <input type="checkbox" id="chorusMode">
                         <span class="slider"></span>
                     </label>
                 </li>
@@ -493,70 +394,41 @@
 
         <!-- 播放列表 -->
         <div class="pure-menu pure-menu-scrollable" id="playlist">
-            <i class="far fa-times-circle" id="closePlaylist"></i>
-            <h3 style="margin: 20px 0 10px; color: var(--accent-color);">播放列表</h3>
-            <div id="playlistItems"></div>
+            <i class="far fa-times-circle fa-3x" id="closePlaylist"></i>
         </div>
 
         <!-- 音量控制 -->
-        <div id="volume">
+        <div id="volume" class="fadeout">
             <div id="barFull" class="bar"></div>
             <div id="barEmpty" class="bar"></div>
             <div id="sliderBtn"></div>
         </div>
     </div>
 
+    <!-- 脚本 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.0.15/howler.core.min.js"></script>
     <script>
-        // 模拟音乐数据 - 使用公开可访问的音乐文件
+        // 模拟音乐数据
         const mockMusicData = [
             {
                 title: "U.N.オーエンは彼女なのか？",
                 file: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
-                series: "东方红魔乡",
-                image: "https://picsum.photos/800/600?random=1"
+                series: "东方红魔乡"
             },
             {
                 title: "亡き王女の為のセプテット",
                 file: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3",
-                series: "东方红魔乡",
-                image: "https://picsum.photos/800/600?random=2"
+                series: "东方红魔乡"
             },
             {
                 title: "少女綺想曲 ～ Dream Battle",
                 file: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3",
-                series: "东方永夜抄",
-                image: "https://picsum.photos/800/600?random=3"
+                series: "东方永夜抄"
             },
             {
                 title: "信仰は儚き人間の為に",
                 file: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3",
-                series: "东方风神录",
-                image: "https://picsum.photos/800/600?random=4"
-            },
-            {
-                title: "幽雅に咲かせ、墨染の桜",
-                file: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3",
-                series: "东方妖妖梦",
-                image: "https://picsum.photos/800/600?random=5"
-            },
-            {
-                title: "Bad Apple!!",
-                file: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-6.mp3",
-                series: "东方幻想乡",
-                image: "https://picsum.photos/800/600?random=6"
-            },
-            {
-                title: "千年幻想郷",
-                file: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-7.mp3",
-                series: "东方永夜抄",
-                image: "https://picsum.photos/800/600?random=7"
-            },
-            {
-                title: "ネクロファンタジア",
-                file: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3",
-                series: "东方妖妖梦",
-                image: "https://picsum.photos/800/600?random=8"
+                series: "东方风神录"
             }
         ];
 
@@ -569,22 +441,18 @@
             pauseBtn: document.getElementById('pauseBtn'),
             prevBtn: document.getElementById('prevBtn'),
             nextBtn: document.getElementById('nextBtn'),
-            settingBtn: document.getElementById('settingBtn'),
             playlistBtn: document.getElementById('playlistBtn'),
             volumeBtn: document.getElementById('volumeBtn'),
             progress: document.getElementById('progress'),
             waveform: document.getElementById('waveform'),
-            canvas: document.getElementById('canvas'),
             loading: document.getElementById('loading'),
             playlist: document.getElementById('playlist'),
-            playlistItems: document.getElementById('playlistItems'),
             volume: document.getElementById('volume'),
             barEmpty: document.getElementById('barEmpty'),
             barFull: document.getElementById('barFull'),
             sliderBtn: document.getElementById('sliderBtn'),
             setting: document.getElementById('setting'),
             closePlaylist: document.getElementById('closePlaylist'),
-            backgroundImage: document.getElementById('backgroundImage'),
             series: document.getElementById('series')
         };
 
@@ -595,7 +463,6 @@
                 this.isPlaying = false;
                 this.volume = 0.7;
                 this.howl = null;
-                this.randomPlay = false;
                 
                 this.init();
             }
@@ -608,23 +475,31 @@
             }
 
             createPlaylist() {
-                elements.playlistItems.innerHTML = '';
+                elements.playlist.innerHTML = '';
+                const ul = document.createElement('ul');
+                ul.className = 'pure-menu-list';
+                
                 this.playlist.forEach((song, index) => {
-                    const item = document.createElement('div');
-                    item.className = 'playlist-item';
-                    if (index === this.currentIndex) {
-                        item.classList.add('active');
-                    }
-                    item.innerHTML = `
-                        <div style="font-weight: bold;">${song.title}</div>
-                        <div style="font-size: 0.8em; color: #ccc;">${song.series}</div>
-                    `;
-                    item.addEventListener('click', () => {
+                    const li = document.createElement('li');
+                    li.className = 'pure-menu-item';
+                    
+                    const a = document.createElement('div');
+                    a.className = 'pure-menu-link';
+                    a.innerHTML = song.title;
+                    a.style.cursor = 'pointer';
+                    a.style.padding = '10px';
+                    a.style.color = '#fff';
+                    
+                    a.addEventListener('click', () => {
                         this.loadSong(index);
                         this.play();
                     });
-                    elements.playlistItems.appendChild(item);
+                    
+                    li.appendChild(a);
+                    ul.appendChild(li);
                 });
+                
+                elements.playlist.appendChild(ul);
             }
 
             bindEvents() {
@@ -640,14 +515,6 @@
                 elements.volumeBtn.addEventListener('click', () => this.toggleVolume());
                 elements.closePlaylist.addEventListener('click', () => this.togglePlaylist());
 
-                // 设置项
-                document.getElementById('randomPlay').addEventListener('change', (e) => {
-                    this.randomPlay = e.target.checked;
-                });
-
-                // 音量控制
-                this.setupVolumeControl();
-
                 // 进度条点击
                 elements.waveform.addEventListener('click', (e) => {
                     if (this.howl) {
@@ -658,48 +525,6 @@
                 });
             }
 
-            setupVolumeControl() {
-                let isDragging = false;
-
-                elements.volume.addEventListener('mousedown', (e) => {
-                    isDragging = true;
-                    this.updateVolumeFromEvent(e);
-                });
-
-                document.addEventListener('mousemove', (e) => {
-                    if (isDragging) {
-                        this.updateVolumeFromEvent(e);
-                    }
-                });
-
-                document.addEventListener('mouseup', () => {
-                    isDragging = false;
-                });
-
-                elements.volumeBtn.addEventListener('click', () => {
-                    this.toggleVolume();
-                });
-            }
-
-            updateVolumeFromEvent(e) {
-                const rect = elements.volume.getBoundingClientRect();
-                let volume = 1 - (e.clientY - rect.top) / rect.height;
-                volume = Math.max(0, Math.min(1, volume));
-                this.updateVolume(volume);
-            }
-
-            updateVolume(volume) {
-                this.volume = volume;
-                if (this.howl) {
-                    this.howl.volume(volume);
-                }
-                
-                // 更新UI
-                const volumePercent = volume * 100;
-                elements.barFull.style.height = `${volumePercent}%`;
-                elements.sliderBtn.style.bottom = `${volumePercent}%`;
-            }
-
             loadSong(index) {
                 this.currentIndex = index;
                 const song = this.playlist[index];
@@ -707,12 +532,6 @@
                 // 更新UI
                 elements.track.textContent = song.title;
                 elements.series.textContent = song.series;
-                elements.backgroundImage.src = song.image;
-
-                // 高亮当前播放的歌曲
-                document.querySelectorAll('.playlist-item').forEach((item, i) => {
-                    item.classList.toggle('active', i === index);
-                });
 
                 // 停止当前播放
                 if (this.howl) {
@@ -736,13 +555,7 @@
                         elements.pauseBtn.style.display = 'none';
                     },
                     onend: () => {
-                        if (document.getElementById('autoPlay').checked) {
-                            this.next();
-                        } else {
-                            this.isPlaying = false;
-                            elements.playBtn.style.display = 'block';
-                            elements.pauseBtn.style.display = 'none';
-                        }
+                        this.next();
                     },
                     onload: () => {
                         elements.loading.style.display = 'none';
@@ -775,14 +588,7 @@
             }
 
             next() {
-                let newIndex;
-                if (this.randomPlay) {
-                    do {
-                        newIndex = Math.floor(Math.random() * this.playlist.length);
-                    } while (newIndex === this.currentIndex);
-                } else {
-                    newIndex = (this.currentIndex + 1) % this.playlist.length;
-                }
+                const newIndex = (this.currentIndex + 1) % this.playlist.length;
                 this.loadSong(newIndex);
                 if (this.isPlaying) {
                     this.play();
@@ -790,14 +596,7 @@
             }
 
             previous() {
-                let newIndex;
-                if (this.randomPlay) {
-                    do {
-                        newIndex = Math.floor(Math.random() * this.playlist.length);
-                    } while (newIndex === this.currentIndex);
-                } else {
-                    newIndex = (this.currentIndex - 1 + this.playlist.length) % this.playlist.length;
-                }
+                const newIndex = (this.currentIndex - 1 + this.playlist.length) % this.playlist.length;
                 this.loadSong(newIndex);
                 if (this.isPlaying) {
                     this.play();
@@ -822,16 +621,42 @@
                 return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
             }
 
+            updateVolume(volume) {
+                this.volume = volume;
+                if (this.howl) {
+                    this.howl.volume(volume);
+                }
+                
+                // 更新UI
+                const volumePercent = volume * 100;
+                elements.barFull.style.height = `${volumePercent}%`;
+                elements.sliderBtn.style.bottom = `${volumePercent}%`;
+            }
+
             togglePlaylist() {
-                elements.playlist.classList.toggle('active');
+                if (elements.playlist.classList.contains('active')) {
+                    elements.playlist.classList.remove('active');
+                } else {
+                    elements.playlist.classList.add('active');
+                }
             }
 
             toggleSetting() {
-                elements.setting.classList.toggle('active');
+                if (elements.setting.classList.contains('active')) {
+                    elements.setting.classList.remove('active');
+                } else {
+                    elements.setting.classList.add('active');
+                }
             }
 
             toggleVolume() {
-                elements.volume.classList.toggle('active');
+                if (elements.volume.classList.contains('fadeout')) {
+                    elements.volume.classList.remove('fadeout');
+                    elements.volume.classList.add('fadein');
+                } else {
+                    elements.volume.classList.remove('fadein');
+                    elements.volume.classList.add('fadeout');
+                }
             }
         }
 
