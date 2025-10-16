@@ -1,6 +1,8 @@
 // 音乐文件基础 URL - 关键修改
 const MUSIC_BASE_URL = 'https://dxwwwqc.github.io/music-assets/';
 
+console.log('MUSIC_BASE_URL:', MUSIC_BASE_URL);
+
 // Cache references to DOM elements.
 var elms = ['track', 'timer', 'duration', 'playBtn', 'pauseBtn', 'prevBtn', 'nextBtn', 'settingBtn', 'playlistBtn', 'volumeBtn', 'progress', 'waveform', 'canvas', 'loading', 'playlist', 'list', 'volume', 'barEmpty', 'barFull', 'sliderBtn'];
 elms.forEach(function (elm) {
@@ -39,7 +41,9 @@ var Player = function (playlist) {
     --indexTemp;
   }
   document.getElementById('series').innerHTML = this.playlist[indexTemp].title;
-  changeImage(playlist[this.index].info);
+  
+  // 暂时注释掉图片加载 - 由于网络问题
+  // changeImage(playlist[this.index].info);
 
   var ul = null;
   var ulth = 1;
@@ -60,9 +64,10 @@ var Player = function (playlist) {
       ul = document.createElement('ul');
       ul.className = 'pure-menu-list';
       if (ulth > 5) {
-        var bgUrl = MUSIC_BASE_URL + 'images/title/' + ('00' + ulth).slice(-2) + '.jpg';
-        console.log('播放列表背景 URL:', bgUrl);
-        ul.style.backgroundImage = 'url(\'' + bgUrl + '\')';
+        // 暂时注释掉背景图片 - 由于网络问题
+        // var bgUrl = MUSIC_BASE_URL + 'images/title/' + ('00' + ulth).slice(-2) + '.jpg';
+        // console.log('播放列表背景 URL:', bgUrl);
+        // ul.style.backgroundImage = 'url(\'' + bgUrl + '\')';
       }
       ulth++;
     } else {
@@ -89,12 +94,8 @@ var Player = function (playlist) {
 };
 
 Player.prototype = {
-
   lang: 'jp',
-  /**
-   * Play a song in the playlist.
-   * @param  {Number} index Index of the song in the playlist (leave empty to play the first or current).
-   */
+  
   play: function (index, isNewSong) {
     var self = this;
     var sound;
@@ -240,35 +241,21 @@ Player.prototype = {
     }
   },
 
-  /**
-   * Pause the currently playing track.
-   */
   pause: function () {
     var self = this;
-
-    // Get the Howl we want to manipulate.
     var sound = self.playlist[self.index].howl;
-
-    // Puase the sound.
     sound.pause();
 
     if (videoPlayer.playing) {
       videoPlayer.pause();
     }
 
-    // Show the play button.
     playBtn.style.display = 'block';
     pauseBtn.style.display = 'none';
   },
 
-  /**
-   * Skip to the next or previous track.
-   * @param  {String} direction 'next' or 'prev'.
-   */
   skip: function (direction) {
     var self = this;
-
-    // Get the next track based on the direction of the track.
     var index = 0;
     if (direction === 'prev' && self.playlist[self.index].howl && self.playlist[self.index].howl.seek() <= 3) {
       self.playlist[self.index].howl.seek(0);
@@ -292,66 +279,33 @@ Player.prototype = {
     }
   },
 
-  /**
-   * Skip to a specific track based on its playlist index.
-   * @param  {Number} index Index in the playlist.
-   */
   skipTo: function (index) {
     var self = this;
-
-    // Stop the current track.
     if (self.playlist[self.index].howl) {
       self.playlist[self.index].howl.stop();
     }
-
-    // Reset progress.
     progress.style.width = '0%';
     progressNow = 0;
-
-    // Play the new track.
     self.play(index, true);
   },
 
-  /**
-   * Set the volume and update the volume slider display.
-   * @param  {Number} val Volume between 0 and 1.
-   */
   volume: function (val) {
     var self = this;
-
-    // Update the global volume (affecting all Howls).
     Howler.volume(val);
-
-    // Update the display on the slider.
     var barWidth = (val * 90) / 100;
     barFull.style.width = (barWidth * 100) + '%';
     sliderBtn.style.left = (window.innerWidth * barWidth + window.innerWidth * 0.05 - 25) + 'px';
   },
 
-  /**
-   * Seek to a new position in the currently playing track.
-   * @param  {Number} per Percentage through the song to skip.
-   */
   seek: function (per) {
     var self = this;
-
-    // Get the Howl we want to manipulate.
     var sound = self.playlist[self.index].howl;
-
-    // Convert the percent into a seek position.
     sound.seek(sound.duration() * per);
   },
 
-  /**
-   * The step called within requestAnimationFrame to update the playback position.
-   */
   step: function () {
     var self = this;
-
-    // Get the Howl we want to manipulate.
     var sound = self.playlist[self.index].howl;
-
-    // Determine our current seek position.
     var seek = sound.seek() || 0;
     timer.innerHTML = self.formatTime(Math.round(seek));
     progressNow = (seek / sound.duration());
@@ -368,59 +322,40 @@ Player.prototype = {
         chorusFlag = false;
       }, 2000);
     } else {
-      // If the sound is still playing, continue stepping.
       requestAnimationFrame(self.step.bind(self));
     }
   },
 
-  /**
-   * Toggle the playlist display on/off.
-   */
   togglePlaylist: function () {
     var self = this;
     var display = (playlist.style.display === 'block') ? 'none' : 'block';
-
     setTimeout(function () {
       playlist.style.display = display;
     }, (display === 'block') ? 0 : 500);
     playlist.className = (display === 'block') ? 'pure-menu pure-menu-scrollable fadein' : 'pure-menu pure-menu-scrollable fadeout';
   },
 
-  /**
-   * Toggle the volume display on/off.
-   */
   toggleVolume: function () {
     var self = this;
     var display = (volume.style.display === 'block') ? 'none' : 'block';
-
     setTimeout(function () {
       volume.style.display = display;
     }, (display === 'block') ? 0 : 500);
     volume.className = (display === 'block') ? 'fadein' : 'fadeout';
   },
 
-  /**
-   * Toggle the setting display on/off.
-   */
   toggleSetting: function () {
     var self = this;
     var display = (setting.style.display === 'block') ? 'none' : 'block';
-
     setTimeout(function () {
       setting.style.display = display;
     }, (display === 'block') ? 0 : 500);
     setting.className = (display === 'block') ? 'pure-menu fadein' : 'pure-menu fadeout';
   },
 
-  /**
-   * Format the time from seconds to M:SS.
-   * @param  {Number} secs Seconds to format.
-   * @return {String}      Formatted time.
-   */
   formatTime: function (secs) {
     var minutes = Math.floor(secs / 60) || 0;
     var seconds = (secs - minutes * 60) || 0;
-
     return minutes + ':' + (seconds < 10 ? '0' : '') + seconds;
   },
 
@@ -450,7 +385,6 @@ var resize = function () {
   waveform.style.bottom = (height * 0.1 + 90) + 'px';
   canvas.width = width;
   canvas.height = height;
-  // Update the position of the slider.
   var sound = player.playlist[player.index].howl;
   if (sound) {
     var vol = sound.volume();
@@ -573,24 +507,12 @@ volume.addEventListener('touchend', function () {
   window.sliderDown = false;
 });
 
-// Image preloader - 添加详细调试
-for (var i = 6; i < 27; i++) {
-  var imageUrl = MUSIC_BASE_URL + 'images/title/' + ('00' + i).slice(-2) + '.jpg';
-  console.log('预加载图片 URL:', imageUrl);
-  
-  // 直接测试这个 URL
-  var testImg = new Image();
-  testImg.onload = function() { 
-    console.log('✓ 直接加载成功:', this.src); 
-  };
-  testImg.onerror = function() { 
-    console.log('✗ 直接加载失败:', this.src); 
-  };
-  testImg.src = imageUrl;
-  
-  // 原有的预加载
-  imagePreload(imageUrl);
-}
+// 暂时注释掉图片预加载 - 由于网络问题
+// for (var i = 6; i < 27; i++) {
+//   var imageUrl = MUSIC_BASE_URL + 'images/title/' + ('00' + i).slice(-2) + '.jpg';
+//   console.log('预加载图片 URL:', imageUrl);
+//   imagePreload(imageUrl);
+// }
 
 // i18n loading
 function langChanged() {
