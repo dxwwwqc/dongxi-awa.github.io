@@ -134,8 +134,19 @@
         </div>
     </div>
 
-    <!-- 脚本 -->
-    <script src="https://www.gstatic.com/firebasejs/5.4.1/firebase-database.js"></script> <!-- 仅加载数据库模块 -->
+    <!-- 全局变量声明（避免重复声明） -->
+    <script>
+        // 全局API密钥（仅声明一次）
+        const googleAPI = "YOUR_GOOGLE_API_KEY"; // 替换为实际API密钥
+        // 音乐基础路径
+        const MUSIC_BASE_URL = 'https://dxwwwqc.github.io/music-assets/';
+    </script>
+
+    <!-- Firebase 模块（严格按顺序加载） -->
+    <script src="https://www.gstatic.com/firebasejs/5.4.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/5.4.1/firebase-database.js"></script>
+
+    <!-- 外部脚本 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.0.15/howler.core.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/plyr/3.4.3/plyr.min.js" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/wavesurfer.js/2.0.6/wavesurfer.min.js"></script>
@@ -145,10 +156,19 @@
     <script src="https://dxwwwqc.github.io/music-assets/scripts/video.js"></script>
     <script src="https://dxwwwqc.github.io/music-assets/scripts/i18n.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+    <!-- Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-XZWCFGHDLB"></script>
     <script>
-        // Firebase初始化
-        var config = {
+        window.dataLayer = window.dataLayer || [];
+        function gtag() {dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-XZWCFGHDLB');
+    </script>
+
+    <!-- Firebase 初始化 -->
+    <script>
+        const firebaseConfig = {
             apiKey: "AIzaSyDmPHweR82MHPChLXyOqrwOaLe8L8FyYGA",
             authDomain: "th-music-video-generator.firebaseapp.com",
             databaseURL: "https://th-music-video-generator.firebaseio.com",
@@ -156,14 +176,11 @@
             storageBucket: "th-music-video-generator.appspot.com",
             messagingSenderId: "766682158017"
         };
-        firebase.initializeApp(config);
-
-        // Google Analytics
-        window.dataLayer = window.dataLayer || [];
-        function gtag() {dataLayer.push(arguments);}
-        gtag('js', new Date());
-        gtag('config', 'G-XZWCFGHDLB');
+        // 初始化Firebase（确保在核心模块加载后）
+        firebase.initializeApp(firebaseConfig);
     </script>
+
+    <!-- 播放器核心脚本 -->
     <script src="./scripts/player.js"></script>
 </body>
 </html>

@@ -1,6 +1,3 @@
-// 音乐基础路径（确保结尾带斜杠）
-const MUSIC_BASE_URL = 'https://dxwwwqc.github.io/music-assets/';
-
 // 缓存DOM元素
 const elms = [
     'track', 'timer', 'duration', 'playBtn', 'pauseBtn', 'prevBtn', 'nextBtn',
@@ -12,7 +9,7 @@ elms.forEach(elm => {
     window[elm] = document.getElementById(elm);
 });
 
-// 全局变量
+// 全局变量（依赖HTML中声明的googleAPI和MUSIC_BASE_URL）
 let jpGameTitles = [];
 let jpSongTitles = [];
 let songList = [];
@@ -20,7 +17,6 @@ let player = null;
 let vudio = null;
 let wavesurfer = null;
 let chorusFlag = false;
-const googleAPI = "YOUR_GOOGLE_API_KEY"; // 替换为实际API密钥
 
 
 /**
@@ -466,57 +462,89 @@ function changeImage(info) {
 }
 
 
-// 从Firebase加载数据并初始化播放器
-firebase.database().ref('games').once('value')
-    .then(gamesSnapshot => {
-        const gameObj = gamesSnapshot.val();
-        if (!gameObj) {
-            throw new Error('未加载到音乐数据');
-        }
+// 从Firebase加载数据并初始化播放器（带超时和错误处理）
+Promise.race([
+    // 尝试加载Firebase数据
+    firebase.database().ref('games').once('value'),
+    // 8秒超时处理
+    new Promise((_, reject) => setTimeout(() => reject(new Error('网络超时，请检查网络连接')), 8000))
+])
+.then(gamesSnapshot => {
+    console.log('✅ Firebase数据加载成功');
+    const gameObj = gamesSnapshot.val();
 
-        // 构建播放列表
-        gameObj.forEach(game => {
-            // 添加游戏标题（非播放项）
+    // 验证数据是否存在
+    if (!gameObj || !Array.isArray(gameObj)) {
+        throw new Error('未找到有效音乐数据，请检查数据库结构');
+    }
+
+    // 构建播放列表
+    console.log(`✅ 开始解析数据，共 ${gameObj.length} 个游戏`);
+    gameObj.forEach(game => {
+        // 跳过无效游戏数据
+        if (!game || !game.name || !game.songs) return;
+
+        // 添加游戏标题（非播放项）
+        songList.push({
+            title: game.name,
+            file: null,
+            code: game.path?.replace('/audio/', '').replace('.', '') || `game-${Date.now()}`
+        });
+
+        // 添加歌曲（播放项）
+        game.songs.forEach(song => {
+            if (!song || !song.path) return; // 跳过无效歌曲
+
+            let songTitle = song.name?.split(".")[1] || song.name || '未知歌曲';
+            if (songTitle === ' U') songTitle = ' U.N.オーエンは彼女なのか？';
+            
             songList.push({
-                title: game.name,
-                file: null,
-                code: game.path.replace('/audio/', '').replace('.', '')
-            });
-
-            // 添加歌曲（播放项）
-            game.songs.forEach(song => {
-                let songTitle = song.name.split(".")[1] || song.name;
-                if (songTitle === ' U') songTitle = ' U.N.オーエンは彼女なのか？';
-                
-                songList.push({
-                    title: songTitle,
-                    file: song.path, // 确保为MP3格式路径
-                    howl: null,
-                    info: song,
-                    chorusStartTime: song.chorus_start_time,
-                    chorusEndTime: song.chorus_end_time
-                });
+                title: songTitle,
+                file: song.path,
+                howl: null,
+                info: song,
+                chorusStartTime: song.chorus_start_time,
+                chorusEndTime: song.chorus_end_time
             });
         });
-
-        // 初始化播放器
-        player = new Player(songList);
-        handleResize();
-        // 隐藏加载提示，显示控制按钮
-        loadingText.style.display = 'none';
-        ['playBtn', 'pauseBtn', 'prevBtn', 'nextBtn', 'playlistBtn', 'settingBtn', 'volumeBtn'].forEach(btn => {
-            window[btn].style.display = 'block';
-        });
-        // 自动播放第一首（需用户交互后才能播放，浏览器限制）
-        player.play();
-
-        // 绑定事件（确保player已初始化）
-        bindEvents();
-    })
-    .catch(err => {
-        console.error('初始化失败:', err);
-        loadingText.innerHTML = '加载失败，请刷新页面重试';
     });
+
+    // 验证播放列表是否有效
+    if (songList.length === 0) {
+        throw new Error('未解析到任何歌曲数据，请检查数据库内容');
+    }
+    console.log(`✅ 数据解析完成，共 ${songList.length} 项`);
+
+    // 初始化播放器
+    player = new Player(songList);
+    handleResize();
+
+    // 隐藏加载提示，显示控制按钮
+    loadingText.style.display = 'none';
+    ['playBtn', 'pauseBtn', 'prevBtn', 'nextBtn', 'playlistBtn', 'settingBtn', 'volumeBtn'].forEach(btn => {
+        window[btn].style.display = 'block';
+    });
+
+    // 自动播放第一首（需用户交互后才能播放，浏览器限制）
+    player.play();
+
+    // 绑定事件（确保player已初始化）
+    bindEvents();
+})
+.catch(err => {
+    console.error('❌ 初始化失败:', err.stack);
+    // 显示用户友好的错误提示
+    loadingText.innerHTML = `加载失败: ${err.message}<br>`;
+    loadingText.style.color = '#ff4444';
+    // 添加刷新按钮
+    const refreshBtn = document.createElement('button');
+    refreshBtn.innerText = '点击刷新';
+    refreshBtn.style.marginTop = '10px';
+    refreshBtn.style.padding = '5px 10px';
+    refreshBtn.style.cursor = 'pointer';
+    refreshBtn.onclick = () => window.location.reload();
+    loadingText.appendChild(refreshBtn);
+});
 
 
 // 绑定所有事件（在player初始化后执行）
