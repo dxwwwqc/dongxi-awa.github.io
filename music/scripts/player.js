@@ -1,5 +1,5 @@
 // 音乐文件基础 URL - 关键修改
-const MUSIC_BASE_URL = 'https://raw.githubusercontent.com/dxwwwqc/music-assets/main/';
+const MUSIC_BASE_URL = 'https://dxwwwqc.github.io/music-assets/';
 
 // Cache references to DOM elements.
 var elms = ['track', 'timer', 'duration', 'playBtn', 'pauseBtn', 'prevBtn', 'nextBtn', 'settingBtn', 'playlistBtn', 'volumeBtn', 'progress', 'waveform', 'canvas', 'loading', 'playlist', 'list', 'volume', 'barEmpty', 'barFull', 'sliderBtn'];
