@@ -1,12 +1,9 @@
 // 音乐文件基础 URL - 关键修改
-const MUSIC_BASE_URL = 'https://dxwwwqc.github.io/music-assets/';
+const MUSIC_BASE_URL = 'https://raw.githubusercontent.com/dxwwwqc/music-assets/main/';
 
 // Cache references to DOM elements.
 var elms = ['track', 'timer', 'duration', 'playBtn', 'pauseBtn', 'prevBtn', 'nextBtn', 'settingBtn', 'playlistBtn', 'volumeBtn', 'progress', 'waveform', 'canvas', 'loading', 'playlist', 'list', 'volume', 'barEmpty', 'barFull', 'sliderBtn'];
-elms.forEach(function (elm) {
-  window[elm] = document.getElementById(elm);
-});
-
+// ... 其余代码保持不变
 // For Japanese title cache
 let jpGameTitles = [];
 let jpSongTitles = [];
