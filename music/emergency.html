@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,26 +12,29 @@
     <meta property="og:image" content="https://dxwwwqc.github.io/music-assets/images/favicon/android-chrome-256x256.png" />
     <meta property="og:type" content="website" />
     <meta property="og:description" content="东方Project 随机音乐">
+    <meta name="msvalidate.01" content="3BDCFECA73036E90C8F629F8CC7075D7" />
     <title>东方随机音乐</title>
-    <!-- 图标资源 -->
     <link rel="apple-touch-icon" sizes="180x180" href="https://dxwwwqc.github.io/music-assets/images/favicon/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="https://dxwwwqc.github.io/music-assets/images/favicon/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="https://dxwwwqc.github.io/music-assets/images/favicon/favicon-16x16.png">
     <link rel="manifest" href="https://dxwwwqc.github.io/music-assets/images/favicon/site.webmanifest">
     <link rel="mask-icon" href="https://dxwwwqc.github.io/music-assets/images/favicon/safari-pinned-tab.svg" color="#5bbad5">
     <link rel="shortcut icon" href="https://dxwwwqc.github.io/music-assets/images/favicon/favicon.ico">
-    <!-- 外部样式 -->
-    <link rel="stylesheet" href="https://unpkg.com/purecss@1.0.0/build/pure-min.css" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/plyr/3.4.3/plyr.css" crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://unpkg.com/purecss@1.0.0/build/pure-min.css" integrity="sha384-nn4HPE8lTHyVtfCBi5yW9d20FjT8BJwUXyWZT9InLYax14RDjBj46LmSztkmNP9w"
+        crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU"
+        crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/plyr/3.4.3/plyr.css" integrity="sha256-rufXFXaVZSvt3zXMGOG17EoglendvXvURMiR5lX9O8g="
+        crossorigin="anonymous" />
     <link rel="stylesheet" href="https://dxwwwqc.github.io/music-assets/styles/styles.css">
 </head>
+
 <body id="body">
     <div id="wrapper">
         <!-- 顶部信息 -->
         <div class="top">
             <div id="title">
-                <span id="track">加载中...</span>
+                <span id="track"></span>
                 <div id="timer">0:00</div>
                 <div id="duration">0:00</div>
             </div>
@@ -41,36 +45,37 @@
         </div>
         
         <!-- 背景区域 -->
-        <div id="background"></div>
-
-        <!-- 视频播放器 -->
-        <div class="plyr__video-embed fadein-2s" id="videoPlayer">
-            <iframe src=""></iframe>
+        <div id="background">
+            <!-- 视频 -->
+            <div class="plyr__video-embed fadein-2s" id="videoPlayer">
+                <iframe src=""></iframe>
+            </div>
         </div>
 
-        <!-- 进度条与波形图 -->
+        
+        <!-- 进度条 -->
         <div id="waveform">
             <canvas id="canvas"></canvas>
         </div>
         <div id="progress"></div>
 
-        <!-- 控制区 -->
-        <div class="controlsOuter">
-            <div id="loadingText" style="display: block; color: white; text-align: center;">加载中...</div>
-            <div class="controlsInner">
-                <div id="loading"></div>
-                <i class="btn fas fa-play" id="playBtn" style="display: none;"></i>
-                <i class="btn fas fa-pause" id="pauseBtn" style="display: none;"></i>
-                <i class="btn fas fa-step-backward" id="prevBtn" style="display: none;"></i>
-                <i class="btn fas fa-step-forward" id="nextBtn" style="display: none;"></i>
-            </div>
-            <div class="btn" id="playlistBtn" style="display: none;"></div>
-            <i class="btn fas fa-cog" id="settingBtn" style="display: none;"></i>
-            <div class="btn" id="volumeBtn" style="display: none;"></div>
-        </div>
+<!-- 控制区 -->
+<div class="controlsOuter">
+    <div class="controlsInner">
+        <div id="loading"></div>
+        <i class="btn fas fa-play" id="playBtn"></i>
+        <i class="btn fas fa-pause" id="pauseBtn"></i>
+        <i class="btn fas fa-step-backward" id="prevBtn"></i>
+        <i class="btn fas fa-step-forward" id="nextBtn"></i>
+    </div>
+   
+    <div class="btn" id="playlistBtn"></div>
+    <i class="btn fas fa-cog" id="settingBtn"></i>
+    <div class="btn" id="volumeBtn"></div>
+</div>
 
         <!-- 设置面板 -->
-        <div class="pure-menu" id="setting" style="display: none;">
+        <div class="pure-menu" id="setting">
             <ul class="pure-menu-list">
                 <li class="pure-menu-item">
                     <div class="settingText settingTitle">MV生成设置</div>
@@ -83,6 +88,10 @@
                         <option selected>4</option>
                         <option>5</option>
                         <option>6</option>
+                        <option>7</option>
+                        <option>8</option>
+                        <option>9</option>
+                        <option>10</option>
                     </select>
                 </li>
                 <li class="pure-menu-item">
@@ -92,6 +101,10 @@
                         <option>4</option>
                         <option selected>5</option>
                         <option>6</option>
+                        <option>7</option>
+                        <option>8</option>
+                        <option>9</option>
+                        <option>10</option>
                     </select>
                 </li>
                 <li class="pure-menu-item">
@@ -105,14 +118,15 @@
                     </label>
                 </li>
                 <li class="pure-menu-item">
-                    <div class="settingText">动态波形图</div>
+                    <div class="settingText" title="使波形图动起来，切换歌曲后生效。">动态波形图</div>
                     <label class="settingOption">
                         <input type="checkbox" id="animatedWaveform">
                         <span class="slider"></span>
                     </label>
                 </li>
                 <li class="pure-menu-item">
-                    <div class="settingText">仅副歌模式</div>
+                    <div class="settingText" title="仅播放歌曲的副歌部分，然后切换到下一首。注意：此功能仅对部分歌曲有效。">
+                        仅副歌模式</div>
                     <label class="settingOption">
                         <input type="checkbox" id="chorusMode">
                         <span class="slider"></span>
@@ -122,53 +136,32 @@
         </div>
 
         <!-- 播放列表 -->
-        <div class="pure-menu pure-menu-scrollable" id="playlist" style="display: none;">
+        <div class="pure-menu pure-menu-scrollable" id="playlist">
             <i class="far fa-times-circle fa-3x" id="closePlaylist"></i>
         </div>
 
         <!-- 音量控制 -->
-        <div id="volume" class="fadeout" style="display: none;">
+        <div id="volume" class="fadeout">
             <div id="barFull" class="bar"></div>
             <div id="barEmpty" class="bar"></div>
             <div id="sliderBtn"></div>
         </div>
     </div>
 
-    <!-- 全局变量声明（避免重复声明） -->
-    <script>
-        // 全局API密钥（仅声明一次）
-        const googleAPI = "YOUR_GOOGLE_API_KEY"; // 替换为实际API密钥
-        // 音乐基础路径
-        const MUSIC_BASE_URL = 'https://dxwwwqc.github.io/music-assets/';
-    </script>
-
-    <!-- Firebase 模块（严格按顺序加载） -->
-    <script src="https://www.gstatic.com/firebasejs/5.4.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/5.4.1/firebase-database.js"></script>
-
-    <!-- 外部脚本 -->
+    <!-- 脚本 -->
+    <script src="https://www.gstatic.com/firebasejs/5.4.1/firebase.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.0.15/howler.core.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/plyr/3.4.3/plyr.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/plyr/3.4.3/plyr.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/wavesurfer.js/2.0.6/wavesurfer.min.js"></script>
     <script src="https://apis.google.com/js/client.js?onload=googleApiClientReady"></script>
     <script src="https://dxwwwqc.github.io/music-assets/scripts/vudio.js"></script>
     <script src="https://dxwwwqc.github.io/music-assets/scripts/utility.js"></script>
     <script src="https://dxwwwqc.github.io/music-assets/scripts/video.js"></script>
     <script src="https://dxwwwqc.github.io/music-assets/scripts/i18n.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-
-    <!-- Google Analytics -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XZWCFGHDLB"></script>
+    
     <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag() {dataLayer.push(arguments);}
-        gtag('js', new Date());
-        gtag('config', 'G-XZWCFGHDLB');
-    </script>
-
-    <!-- Firebase 初始化 -->
-    <script>
-        const firebaseConfig = {
+        // 初始化Firebase
+        var config = {
             apiKey: "AIzaSyDmPHweR82MHPChLXyOqrwOaLe8L8FyYGA",
             authDomain: "th-music-video-generator.firebaseapp.com",
             databaseURL: "https://th-music-video-generator.firebaseio.com",
@@ -176,11 +169,256 @@
             storageBucket: "th-music-video-generator.appspot.com",
             messagingSenderId: "766682158017"
         };
-        // 初始化Firebase（确保在核心模块加载后）
-        firebase.initializeApp(firebaseConfig);
-    </script>
+        firebase.initializeApp(config);
 
-    <!-- 播放器核心脚本 -->
-    <script src="./scripts/player.js"></script>
+        // 模拟音乐数据 - 使用原GitHub仓库中的音乐文件
+        const mockMusicData = [
+            {
+                title: "U.N.オーエンは彼女なのか？",
+                file: "https://dxwwwqc.github.io/music-assets/audio/th06/06_09.mp3",
+                series: "东方红魔乡",
+                code: "th06"
+            },
+            {
+                title: "亡き王女の為のセプテット",
+                file: "https://dxwwwqc.github.io/music-assets/audio/th06/06_08.mp3",
+                series: "东方红魔乡", 
+                code: "th06"
+            },
+            {
+                title: "少女綺想曲 ～ Dream Battle",
+                file: "https://dxwwwqc.github.io/music-assets/audio/th08/08_12.mp3",
+                series: "东方永夜抄",
+                code: "th08"
+            },
+            {
+                title: "信仰は儚き人間の為に",
+                file: "https://dxwwwqc.github.io/music-assets/audio/th10/10_15.mp3",
+                series: "东方风神录",
+                code: "th10"
+            }
+        ];
+
+        // Cache references to DOM elements
+        var elms = ['track', 'timer', 'duration', 'playBtn', 'pauseBtn', 'prevBtn', 'nextBtn', 'settingBtn', 'playlistBtn', 'volumeBtn', 'progress', 'waveform', 'canvas', 'loading', 'playlist', 'volume', 'barEmpty', 'barFull', 'sliderBtn'];
+        elms.forEach(function (elm) {
+            window[elm] = document.getElementById(elm);
+        });
+
+        // Player类
+        var Player = function (playlist) {
+            this.playlist = playlist;
+            this.index = 0;
+            
+            // 显示第一首歌曲
+            track.innerHTML = playlist[this.index].title;
+            document.getElementById('series').innerHTML = playlist[this.index].series;
+            
+            // 创建播放列表
+            this.createPlaylist();
+            
+            // 绑定事件
+            this.bindEvents();
+        };
+
+        Player.prototype = {
+            createPlaylist: function() {
+                var ul = document.createElement('ul');
+                ul.className = 'pure-menu-list';
+                
+                this.playlist.forEach((song, index) => {
+                    var li = document.createElement('li');
+                    li.className = 'pure-menu-item';
+                    
+                    var a = document.createElement('div');
+                    a.className = 'pure-menu-link';
+                    a.innerHTML = song.title;
+                    a.style.cursor = 'pointer';
+                    
+                    a.addEventListener('click', () => {
+                        this.skipTo(index);
+                    });
+                    
+                    li.appendChild(a);
+                    ul.appendChild(li);
+                });
+                
+                playlist.appendChild(ul);
+            },
+            
+            bindEvents: function() {
+                playBtn.addEventListener('click', () => this.play());
+                pauseBtn.addEventListener('click', () => this.pause());
+                prevBtn.addEventListener('click', () => this.skip('prev'));
+                nextBtn.addEventListener('click', () => this.skip('next'));
+                playlistBtn.addEventListener('click', () => this.togglePlaylist());
+                settingBtn.addEventListener('click', () => this.toggleSetting());
+                volumeBtn.addEventListener('click', () => this.toggleVolume());
+                closePlaylist.addEventListener('click', () => this.togglePlaylist());
+                
+                // 波形图点击事件
+                waveform.addEventListener('click', (event) => {
+                    this.seek(event.clientX / window.innerWidth);
+                });
+            },
+            
+            play: function(index) {
+                index = typeof index === 'number' ? index : this.index;
+                var data = this.playlist[index];
+                
+                if (!data || !data.file) {
+                    this.skip('next');
+                    return;
+                }
+                
+                this.index = index;
+                
+                // 更新显示
+                track.innerHTML = data.title;
+                document.getElementById('series').innerHTML = data.series;
+                
+                // 如果有现有的howl实例，先停止
+                if (data.howl) {
+                    data.howl.stop();
+                }
+                
+                // 创建新的howl实例
+                var sound = data.howl = new Howl({
+                    src: [data.file],
+                    html5: true,
+                    onplay: () => {
+                        pauseBtn.style.display = 'block';
+                        playBtn.style.display = 'none';
+                        this.step();
+                    },
+                    onpause: () => {
+                        pauseBtn.style.display = 'none';
+                        playBtn.style.display = 'block';
+                    },
+                    onend: () => {
+                        this.skip('next');
+                    },
+                    onload: () => {
+                        loading.style.display = 'none';
+                        duration.innerHTML = this.formatTime(Math.round(sound.duration()));
+                    }
+                });
+                
+                sound.play();
+                loading.style.display = 'block';
+            },
+            
+            pause: function() {
+                var sound = this.playlist[this.index].howl;
+                if (sound) {
+                    sound.pause();
+                }
+            },
+            
+            skip: function(direction) {
+                var newIndex;
+                if (randomPlay.checked) {
+                    do {
+                        newIndex = Math.floor(Math.random() * this.playlist.length);
+                    } while (newIndex === this.index);
+                } else {
+                    if (direction === 'prev') {
+                        newIndex = this.index - 1;
+                        if (newIndex < 0) newIndex = this.playlist.length - 1;
+                    } else {
+                        newIndex = this.index + 1;
+                        if (newIndex >= this.playlist.length) newIndex = 0;
+                    }
+                }
+                
+                this.skipTo(newIndex);
+            },
+            
+            skipTo: function(index) {
+                if (this.playlist[this.index].howl) {
+                    this.playlist[this.index].howl.stop();
+                }
+                
+                progress.style.width = '0%';
+                this.play(index);
+            },
+            
+            seek: function(per) {
+                var sound = this.playlist[this.index].howl;
+                if (sound) {
+                    sound.seek(sound.duration() * per);
+                }
+            },
+            
+            step: function() {
+                var sound = this.playlist[this.index].howl;
+                if (sound && sound.playing()) {
+                    var seek = sound.seek() || 0;
+                    timer.innerHTML = this.formatTime(Math.round(seek));
+                    progress.style.width = ((seek / sound.duration()) * 100) + '%';
+                    
+                    requestAnimationFrame(() => this.step());
+                }
+            },
+            
+            formatTime: function(secs) {
+                var minutes = Math.floor(secs / 60) || 0;
+                var seconds = (secs - minutes * 60) || 0;
+                return minutes + ':' + (seconds < 10 ? '0' : '') + seconds;
+            },
+            
+            togglePlaylist: function() {
+                var display = (playlist.style.display === 'block') ? 'none' : 'block';
+                setTimeout(function() {
+                    playlist.style.display = display;
+                }, (display === 'block') ? 0 : 500);
+                playlist.className = (display === 'block') ? 'pure-menu pure-menu-scrollable fadein' : 'pure-menu pure-menu-scrollable fadeout';
+            },
+            
+            toggleSetting: function() {
+                var display = (setting.style.display === 'block') ? 'none' : 'block';
+                setTimeout(function() {
+                    setting.style.display = display;
+                }, (display === 'block') ? 0 : 500);
+                setting.className = (display === 'block') ? 'pure-menu fadein' : 'pure-menu fadeout';
+            },
+            
+            toggleVolume: function() {
+                var display = (volume.style.display === 'block') ? 'none' : 'block';
+                setTimeout(function() {
+                    volume.style.display = display;
+                }, (display === 'block') ? 0 : 500);
+                volume.className = (display === 'block') ? 'fadein' : 'fadeout';
+            }
+        };
+
+        // 初始化播放器
+        var player = new Player(mockMusicData);
+
+        // 音量控制
+        var sliderDown = false;
+        
+        volume.addEventListener('mousedown', function() {
+            sliderDown = true;
+        });
+        
+        document.addEventListener('mousemove', function(event) {
+            if (sliderDown) {
+                var x = event.clientX;
+                var startX = window.innerWidth * 0.05;
+                var layerX = x - startX;
+                var per = Math.min(1, Math.max(0, layerX / parseFloat(barEmpty.scrollWidth)));
+                Howler.volume(per);
+                
+                var barWidth = (per * 90) / 100;
+                barFull.style.width = (barWidth * 100) + '%';
+                sliderBtn.style.left = (window.innerWidth * barWidth + window.innerWidth * 0.05 - 25) + 'px';
+            }
+        });
+        
+        document.addEventListener('mouseup', function() {
+            sliderDown = false;
+        });
+    </script>
 </body>
 </html>
