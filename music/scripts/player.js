@@ -42,8 +42,8 @@ var Player = function (playlist) {
   }
   document.getElementById('series').innerHTML = this.playlist[indexTemp].title;
   
-  // 暂时注释掉图片加载 - 由于网络问题
-  // changeImage(playlist[this.index].info);
+  // 彻底禁用图片和视频功能
+  console.log('图片和视频功能已禁用');
 
   var ul = null;
   var ulth = 1;
@@ -63,12 +63,7 @@ var Player = function (playlist) {
       li.className += ' pure-menu-disabled playlist-title';
       ul = document.createElement('ul');
       ul.className = 'pure-menu-list';
-      if (ulth > 5) {
-        // 暂时注释掉背景图片 - 由于网络问题
-        // var bgUrl = MUSIC_BASE_URL + 'images/title/' + ('00' + ulth).slice(-2) + '.jpg';
-        // console.log('播放列表背景 URL:', bgUrl);
-        // ul.style.backgroundImage = 'url(\'' + bgUrl + '\')';
-      }
+      // 禁用播放列表背景图片
       ulth++;
     } else {
       // Song
@@ -85,8 +80,10 @@ var Player = function (playlist) {
     ul.appendChild(li);
   });
   pl.appendChild(ul);
-  gapi.client.setApiKey(googleAPI);
-  gapi.client.load('youtube', 'v3');
+  
+  // 禁用 YouTube 相关功能
+  console.log('YouTube 功能已禁用');
+  
   // For mobile user, display non-animated waveform as default
   if (mobilecheck()) {
     animatedWaveform.checked = '';
@@ -128,6 +125,7 @@ Player.prototype = {
     } else {
       // 关键修改：使用新的音乐文件路径
       var musicUrl = data.file.startsWith('http') ? data.file : MUSIC_BASE_URL + data.file;
+      console.log('尝试加载音乐:', musicUrl);
       
       sound = data.howl = new Howl({
         src: [musicUrl],
@@ -149,6 +147,11 @@ Player.prototype = {
         },
         onload: function () {
           loading.style.display = 'none';
+          console.log('音乐加载成功');
+        },
+        onloaderror: function(id, error) {
+          console.log('音乐加载失败:', error);
+          loading.style.display = 'none';
         },
         onend: function () {
           self.skip('next');
@@ -157,57 +160,32 @@ Player.prototype = {
         onstop: function () {}
       });
 
-      // Waveform display
+      // Waveform display - 简化版本，避免 vudio 错误
       var width = waveform.clientWidth;
       var height = (window.innerHeight > 0) ? window.innerHeight * 0.2 : screen.height * 0.2;
       waveform.style.bottom = (height * 0.1 + 90) + 'px';
-      if (animatedWaveform.checked) {
-        var accuracy = (width < 400) ? 16 : (width < 550) ? 32 : (width < 950) ? 64 : 128;
-        canvas.style.display = 'block';
-        waveform.style.opacity = 0.5;
-        if (wavesurfer) {
-          wavesurfer.destroy();
-        }
-        vudio = new Vudio(sound._sounds[0]._node, canvas, {
-          effect: 'waveform',
-          accuracy: accuracy,
-          width: width,
-          height: height,
-          waveform: {
-            maxHeight: height / 10 * 9,
-            minHeight: 1,
-            spacing: 4,
-            color: ['#ffffff', '#e0e0e0', ' #c9c9c9'],
-            shadowBlur: 1,
-            shadowColor: '#939393',
-            fadeSide: false,
-            prettify: false,
-            horizontalAlign: 'center',
-            verticalAlign: 'bottom'
-          }
-        });
-        vudio.dance();
-      } else {
-        canvas.style.display = 'none';
-        waveform.style.opacity = 1;
-        if (wavesurfer) {
-          wavesurfer.destroy();
-        }
-        wavesurfer = WaveSurfer.create({
-          container: '#waveform',
-          backend: 'MediaElement',
-          barWidth: 3,
-          cursorColor: '#b556ff',
-          cursorWidth: 1,
-          progressColor: '#bf6dff',
-          waveColor: '#e0e0e0',
-          responsive: true
-        });
-        wavesurfer.load(sound._sounds[0]._node)
-        wavesurfer.on('ready', function () {
-          wavesurfer.play();
-        });
+      
+      // 禁用 vudio 功能，只使用 wavesurfer
+      canvas.style.display = 'none';
+      waveform.style.opacity = 1;
+      if (wavesurfer) {
+        wavesurfer.destroy();
       }
+      wavesurfer = WaveSurfer.create({
+        container: '#waveform',
+        backend: 'MediaElement',
+        barWidth: 3,
+        cursorColor: '#b556ff',
+        cursorWidth: 1,
+        progressColor: '#bf6dff',
+        waveColor: '#e0e0e0',
+        responsive: true
+      });
+      wavesurfer.load(sound._sounds[0]._node)
+      wavesurfer.on('ready', function () {
+        wavesurfer.play();
+      });
+      
       waveform.style.cursor = 'pointer';
       var indexTemp = index - 1;
       while (self.playlist[indexTemp].file != null) {
@@ -222,13 +200,8 @@ Player.prototype = {
     // Update the track display with new song title
     this.updateTitle(index)
 
-    // Play video
-    if (videoPlayer.stopped || isNewSong) {
-      mvInfo = data.info;
-      mvStage = 0;
-    } else if (videoPlayer.paused) {
-      videoPlayer.play();
-    }
+    // 禁用视频播放
+    console.log('视频播放已禁用');
 
     // Show the pause button.
     if (sound.state() === 'loaded') {
@@ -245,10 +218,6 @@ Player.prototype = {
     var self = this;
     var sound = self.playlist[self.index].howl;
     sound.pause();
-
-    if (videoPlayer.playing) {
-      videoPlayer.pause();
-    }
 
     playBtn.style.display = 'block';
     pauseBtn.style.display = 'none';
@@ -300,29 +269,33 @@ Player.prototype = {
   seek: function (per) {
     var self = this;
     var sound = self.playlist[self.index].howl;
-    sound.seek(sound.duration() * per);
+    if (sound) {
+      sound.seek(sound.duration() * per);
+    }
   },
 
   step: function () {
     var self = this;
     var sound = self.playlist[self.index].howl;
-    var seek = sound.seek() || 0;
-    timer.innerHTML = self.formatTime(Math.round(seek));
-    progressNow = (seek / sound.duration());
-    progress.style.width = ((progressNow * 100) || 0) + '%';
+    if (sound) {
+      var seek = sound.seek() || 0;
+      timer.innerHTML = self.formatTime(Math.round(seek));
+      progressNow = (seek / sound.duration());
+      progress.style.width = ((progressNow * 100) || 0) + '%';
 
-    // For chorus mode
-    if (!chorusFlag && chorusMode.checked &&
-      self.playlist[self.index].chorusEndTime &&
-      seek >= self.playlist[self.index].chorusEndTime) {
-      chorusFlag = true;
-      sound.fade(1.0, 0.0, 2000);
-      setTimeout(function () {
-        self.skip('next');
-        chorusFlag = false;
-      }, 2000);
-    } else {
-      requestAnimationFrame(self.step.bind(self));
+      // For chorus mode
+      if (!chorusFlag && chorusMode.checked &&
+        self.playlist[self.index].chorusEndTime &&
+        seek >= self.playlist[self.index].chorusEndTime) {
+        chorusFlag = true;
+        sound.fade(1.0, 0.0, 2000);
+        setTimeout(function () {
+          self.skip('next');
+          chorusFlag = false;
+        }, 2000);
+      } else {
+        requestAnimationFrame(self.step.bind(self));
+      }
     }
   },
 
@@ -374,7 +347,6 @@ Player.prototype = {
 
 var songList = [];
 var player;
-var vudio;
 var wavesurfer;
 var chorusFlag = false;
 
@@ -385,22 +357,11 @@ var resize = function () {
   waveform.style.bottom = (height * 0.1 + 90) + 'px';
   canvas.width = width;
   canvas.height = height;
-  var sound = player.playlist[player.index].howl;
+  var sound = player && player.playlist[player.index] && player.playlist[player.index].howl;
   if (sound) {
     var vol = sound.volume();
     var barWidth = (vol * 0.9);
     sliderBtn.style.left = (window.innerWidth * barWidth + window.innerWidth * 0.05 - 25) + 'px';
-    if (vudio) {
-      vudio.width = width;
-      vudio.height = height;
-      var accuracy = (width < 550) ? 32 : (width < 1000) ? 64 : 128;
-      vudio.setOption({
-        accuracy: accuracy,
-        waveform: {
-          maxHeight: height / 10 * 9,
-        }
-      });
-    }
   }
 };
 window.addEventListener('resize', resize);
@@ -506,13 +467,6 @@ volume.addEventListener('mouseup', function () {
 volume.addEventListener('touchend', function () {
   window.sliderDown = false;
 });
-
-// 暂时注释掉图片预加载 - 由于网络问题
-// for (var i = 6; i < 27; i++) {
-//   var imageUrl = MUSIC_BASE_URL + 'images/title/' + ('00' + i).slice(-2) + '.jpg';
-//   console.log('预加载图片 URL:', imageUrl);
-//   imagePreload(imageUrl);
-// }
 
 // i18n loading
 function langChanged() {
