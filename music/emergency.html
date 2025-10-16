@@ -1,21 +1,40 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta name="msapplication-TileColor" content="#da532c">
+    <meta name="msapplication-config" content="https://dxwwwqc.github.io/music-assets/images/favicon/browserconfig.xml">
+    <meta name="theme-color" content="#ffffff">
+    <meta name="description" content="东方Project 随机音乐">
+    <meta property="og:image" content="https://dxwwwqc.github.io/music-assets/images/favicon/android-chrome-256x256.png" />
+    <meta property="og:type" content="website" />
+    <meta property="og:description" content="东方Project 随机音乐">
+    <meta name="msvalidate.01" content="3BDCFECA73036E90C8F629F8CC7075D7" />
     <title>东方随机音乐</title>
-    <!-- 外部资源 -->
-    <link rel="stylesheet" href="https://unpkg.com/purecss@1.0.0/build/pure-min.css">
-    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/plyr/3.4.3/plyr.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="https://dxwwwqc.github.io/music-assets/images/favicon/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="https://dxwwwqc.github.io/music-assets/images/favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="https://dxwwwqc.github.io/music-assets/images/favicon/favicon-16x16.png">
+    <link rel="manifest" href="https://dxwwwqc.github.io/music-assets/images/favicon/site.webmanifest">
+    <link rel="mask-icon" href="https://dxwwwqc.github.io/music-assets/images/favicon/safari-pinned-tab.svg" color="#5bbad5">
+    <link rel="shortcut icon" href="https://dxwwwqc.github.io/music-assets/images/favicon/favicon.ico">
+    <link rel="stylesheet" href="https://unpkg.com/purecss@1.0.0/build/pure-min.css" integrity="sha384-nn4HPE8lTHyVtfCBi5yW9d20FjT8BJwUXyWZT9InLYax14RDjBj46LmSztkmNP9w"
+        crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU"
+        crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/plyr/3.4.3/plyr.css" integrity="sha256-rufXFXaVZSvt3zXMGOG17EoglendvXvURMiR5lX9O8g="
+        crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://dxwwwqc.github.io/music-assets/styles/styles.css">
 </head>
+
 <body id="body">
     <div id="wrapper">
         <!-- 顶部信息 -->
         <div class="top">
             <div id="title">
-                <span id="track">加载中...</span>
+                <span id="track"></span>
                 <div id="timer">0:00</div>
                 <div id="duration">0:00</div>
             </div>
@@ -26,53 +45,125 @@
         </div>
         
         <!-- 背景区域 -->
-        <div id="background"></div>
-
-        <!-- 视频播放器 -->
-        <div class="plyr__video-embed fadein-2s" id="videoPlayer">
-            <iframe src=""></iframe>
+        <div id="background">
+            <!-- 视频 -->
+            <div class="plyr__video-embed fadein-2s" id="videoPlayer">
+                <iframe src=""></iframe>
+            </div>
         </div>
 
-        <!-- 进度条与波形图 -->
+        
+        <!-- 进度条 -->
         <div id="waveform">
             <canvas id="canvas"></canvas>
         </div>
         <div id="progress"></div>
 
-        <!-- 控制区 -->
-        <div class="controlsOuter">
-            <div id="loadingText" style="display: block; color: white; text-align: center;">加载中...</div>
-            <div class="controlsInner">
-                <div id="loading"></div>
-                <i class="btn fas fa-play" id="playBtn" style="display: none;"></i>
-                <i class="btn fas fa-pause" id="pauseBtn" style="display: none;"></i>
-                <i class="btn fas fa-step-backward" id="prevBtn" style="display: none;"></i>
-                <i class="btn fas fa-step-forward" id="nextBtn" style="display: none;"></i>
-            </div>
-            <div class="btn" id="playlistBtn" style="display: none;"></div>
-            <i class="btn fas fa-cog" id="settingBtn" style="display: none;"></i>
-            <div class="btn" id="volumeBtn" style="display: none;"></div>
+<!-- 控制区 -->
+<div class="controlsOuter">
+    <div class="controlsInner">
+        <div id="loading"></div>
+        <i class="btn fas fa-play" id="playBtn"></i>
+        <i class="btn fas fa-pause" id="pauseBtn"></i>
+        <i class="btn fas fa-step-backward" id="prevBtn"></i>
+        <i class="btn fas fa-step-forward" id="nextBtn"></i>
+    </div>
+   
+    <div class="btn" id="playlistBtn"></div>
+    <i class="btn fas fa-cog" id="settingBtn"></i>
+    <div class="btn" id="volumeBtn"></div>
+</div>
+
+        <!-- 设置面板 -->
+        <div class="pure-menu" id="setting">
+            <ul class="pure-menu-list">
+                <li class="pure-menu-item">
+                    <div class="settingText settingTitle">MV生成设置</div>
+                </li>
+                <li class="pure-menu-item">
+                    <label class="settingText" for="numOfImages">图片数量</label>
+                    <select class="settingOption select" id="numOfImages">
+                        <option>2</option>
+                        <option>3</option>
+                        <option selected>4</option>
+                        <option>5</option>
+                        <option>6</option>
+                        <option>7</option>
+                        <option>8</option>
+                        <option>9</option>
+                        <option>10</option>
+                    </select>
+                </li>
+                <li class="pure-menu-item">
+                    <label class="settingText" for="imagesDuration">图片显示时长(秒)</label>
+                    <select class="settingOption select" id="imagesDuration">
+                        <option>3</option>
+                        <option>4</option>
+                        <option selected>5</option>
+                        <option>6</option>
+                        <option>7</option>
+                        <option>8</option>
+                        <option>9</option>
+                        <option>10</option>
+                    </select>
+                </li>
+                <li class="pure-menu-item">
+                    <div class="settingText settingTitle">音频设置</div>
+                </li>
+                <li class="pure-menu-item">
+                    <div class="settingText">随机播放</div>
+                    <label class="settingOption">
+                        <input type="checkbox" id="randomPlay">
+                        <span class="slider"></span>
+                    </label>
+                </li>
+                <li class="pure-menu-item">
+                    <div class="settingText" title="使波形图动起来，切换歌曲后生效。">动态波形图</div>
+                    <label class="settingOption">
+                        <input type="checkbox" id="animatedWaveform">
+                        <span class="slider"></span>
+                    </label>
+                </li>
+                <li class="pure-menu-item">
+                    <div class="settingText" title="仅播放歌曲的副歌部分，然后切换到下一首。注意：此功能仅对部分歌曲有效。">
+                        仅副歌模式</div>
+                    <label class="settingOption">
+                        <input type="checkbox" id="chorusMode">
+                        <span class="slider"></span>
+                    </label>
+                </li>
+            </ul>
         </div>
 
-        <!-- 设置面板、播放列表、音量控制（结构省略，同前） -->
+        <!-- 播放列表 -->
+        <div class="pure-menu pure-menu-scrollable" id="playlist">
+            <i class="far fa-times-circle fa-3x" id="closePlaylist"></i>
+        </div>
+
+        <!-- 音量控制 -->
+        <div id="volume" class="fadeout">
+            <div id="barFull" class="bar"></div>
+            <div id="barEmpty" class="bar"></div>
+            <div id="sliderBtn"></div>
+        </div>
     </div>
-
-    <!-- 全局变量（唯一声明） -->
-    <script>
-        const googleAPI = "YOUR_GOOGLE_API_KEY"; // 替换为实际密钥
-        const MUSIC_BASE_URL = 'https://dxwwwqc.github.io/music-assets/';
-    </script>
-
-    <!-- 外部脚本 -->
-    <script src="https://www.gstatic.com/firebasejs/5.4.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/5.4.1/firebase-database.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.0.15/howler.core.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/wavesurfer.js/2.0.6/wavesurfer.min.js"></script>
-    <script src="https://apis.google.com/js/client.js?onload=googleApiClientReady"></script>
-
-    <!-- Firebase 初始化 -->
-    <script>
-        const firebaseConfig = {
+    <!-- 脚本 -->
+    <script src="https://www.gstatic.com/firebasejs/5.4.1/firebase.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.0.15/howler.core.min.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/plyr/3.4.3/plyr.min.js" integrity="sha256-LAq55x/UUQNWhiFLlHHGGivmJx4sVm70ls05hcmhLQ8="
+        crossorigin="anonymous" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/wavesurfer.js/2.0.6/wavesurfer.min.js" defer></script>
+    <script src="https://apis.google.com/js/client.js?onload=googleApiClientReady" defer></script>
+    <script src="https://dxwwwqc.github.io/music-assets/scripts/vudio.js" defer></script>
+    <script src="https://dxwwwqc.github.io/music-assets/scripts/utility.js" defer></script>
+    <script src="./scripts/player.js" defer></script>
+    <script src="https://dxwwwqc.github.io/music-assets/scripts/video.js" defer></script>
+    <script src="https://dxwwwqc.github.io/music-assets/scripts/i18n.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XZWCFGHDLB"></script>
+    <script defer>
+        // 初始化Firebase
+        var config = {
             apiKey: "AIzaSyDmPHweR82MHPChLXyOqrwOaLe8L8FyYGA",
             authDomain: "th-music-video-generator.firebaseapp.com",
             databaseURL: "https://th-music-video-generator.firebaseio.com",
@@ -80,10 +171,14 @@
             storageBucket: "th-music-video-generator.appspot.com",
             messagingSenderId: "766682158017"
         };
-        firebase.initializeApp(firebaseConfig);
-    </script>
+        firebase.initializeApp(config);
 
-    <!-- 播放器核心脚本 -->
-    <script src="./scripts/player.js"></script>
+        <!-- 全局站点标签(gtag.js) - Google Analytics -->
+        window.dataLayer = window.dataLayer || [];
+        function gtag() {dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-XZWCFGHDLB');
+    </script>
 </body>
+
 </html>
