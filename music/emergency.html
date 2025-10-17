@@ -115,10 +115,63 @@
     <script src="https://www.gstatic.com/firebasejs/5.4.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/5.4.1/firebase-database.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.0.15/howler.core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/plyr/3.4.3/plyr.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/wavesurfer.js/2.0.6/wavesurfer.min.js"></script>
+    <script src="https://apis.google.com/js/client.js?onload=googleApiClientReady"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     
-    <!-- 初始化脚本 -->
+    <!-- 临时定义缺失的函数 - 必须在 player.js 之前加载 -->
+    <script>
+        // 临时定义缺失的函数
+        if (typeof imagePreload === 'undefined') {
+            function imagePreload(url) {
+                console.log('预加载图片:', url);
+                // 简单的图片预加载
+                var img = new Image();
+                img.src = url;
+            }
+        }
+        
+        if (typeof changeImage === 'undefined') {
+            function changeImage(info) {
+                console.log('切换图片:', info);
+                // 简单的图片切换逻辑
+                var background = document.getElementById('background');
+                if (background && info && info.image_url) {
+                    background.style.backgroundImage = 'url(' + info.image_url + ')';
+                }
+            }
+        }
+        
+        if (typeof mobilecheck === 'undefined') {
+            function mobilecheck() {
+                return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            }
+        }
+        
+        if (typeof googleAPI === 'undefined') {
+            var googleAPI = ''; // 可能需要设置实际的API密钥
+        }
+        
+        // 临时定义 getTranslatedSong 函数
+        if (typeof getTranslatedSong === 'undefined') {
+            async function getTranslatedSong(file, lang) {
+                console.log('翻译歌曲:', file, lang);
+                return null; // 返回 null 表示使用原名称
+            }
+        }
+    </script>
+    
+    <!-- 加载自定义脚本，确保顺序正确 -->
+    <script src="https://dxwwwqc.github.io/music-assets/scripts/vudio.js"></script>
+    <script src="https://dxwwwqc.github.io/music-assets/scripts/utility.js"></script>
+    <script src="https://dxwwwqc.github.io/music-assets/scripts/video.js"></script>
+    <script src="https://dxwwwqc.github.io/music-assets/scripts/i18n.js"></script>
+    
+    <!-- 最后加载主播放器脚本 - 只加载一次 -->
+    <script src="https://dxwwwqc.github.io/music-assets/scripts/player.js"></script>
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XZWCFGHDLB"></script>
     <script>
         // 初始化Firebase
         var config = {
@@ -131,15 +184,18 @@
         };
         firebase.initializeApp(config);
 
-        // 全局错误处理
+        // 全局站点标签(gtag.js) - Google Analytics
+        window.dataLayer = window.dataLayer || [];
+        function gtag() {dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-XZWCFGHDLB');
+        
+        // 添加错误处理
         window.addEventListener('error', function(e) {
             console.error('全局错误:', e.error);
         });
         
-        console.log('页面加载完成');
+        console.log('页面初始化完成');
     </script>
-    
-    <!-- 加载播放器脚本 - 使用GitHub上的原始文件 -->
-    <script src="https://dxwwwqc.github.io/music-assets/scripts/player.js"></script>
 </body>
 </html>
