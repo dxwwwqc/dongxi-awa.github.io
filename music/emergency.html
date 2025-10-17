@@ -69,9 +69,9 @@
         <i class="btn fas fa-step-forward" id="nextBtn"></i>
     </div>
    
-    <div class="btn" id="playlistBtn"></div>
+    <i class="btn fas fa-list" id="playlistBtn"></i>
     <i class="btn fas fa-cog" id="settingBtn"></i>
-    <div class="btn" id="volumeBtn"></div>
+    <i class="btn fas fa-volume-up" id="volumeBtn"></i>
 </div>
 
         <!-- 设置面板 -->
@@ -132,12 +132,21 @@
                         <span class="slider"></span>
                     </label>
                 </li>
+                <li class="pure-menu-item">
+                    <div class="settingText">语言选择</div>
+                    <select class="settingOption select" id="langSelect" onchange="langChanged()">
+                        <option value="jp">日本語</option>
+                        <option value="zh-cn">中文</option>
+                        <option value="en">English</option>
+                    </select>
+                </li>
             </ul>
         </div>
 
         <!-- 播放列表 -->
         <div class="pure-menu pure-menu-scrollable" id="playlist">
             <i class="far fa-times-circle fa-3x" id="closePlaylist"></i>
+            <div id="list"></div>
         </div>
 
         <!-- 音量控制 -->
@@ -173,11 +182,14 @@
         };
         firebase.initializeApp(config);
 
-        <!-- 全局站点标签(gtag.js) - Google Analytics -->
+        // 全局站点标签(gtag.js) - Google Analytics
         window.dataLayer = window.dataLayer || [];
         function gtag() {dataLayer.push(arguments);}
         gtag('js', new Date());
         gtag('config', 'G-XZWCFGHDLB');
+
+        // 定义googleAPI变量
+        const googleAPI = 'YOUR_GOOGLE_API_KEY'; // 请替换为实际的API密钥
     </script>
 </body>
 
