@@ -27,6 +27,78 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/plyr/3.4.3/plyr.css" integrity="sha256-rufXFXaVZSvt3zXMGOG17EoglendvXvURMiR5lX9O8g="
         crossorigin="anonymous" />
     <link rel="stylesheet" href="./styles/styles.css">
+    <style>
+        /* 基础样式确保内容可见 */
+        body {
+            margin: 0;
+            padding: 0;
+            background: #000;
+            color: #fff;
+            font-family: Arial, sans-serif;
+        }
+        
+        #wrapper {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+        }
+        
+        .top {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 10;
+        }
+        
+        #title {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        
+        .controlsOuter {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px;
+            z-index: 10;
+        }
+        
+        .btn {
+            font-size: 24px;
+            cursor: pointer;
+            color: #fff;
+        }
+        
+        #waveform {
+            position: absolute;
+            bottom: 80px;
+            left: 0;
+            width: 100%;
+            height: 100px;
+            background: rgba(255,255,255,0.1);
+        }
+        
+        #progress {
+            position: absolute;
+            bottom: 80px;
+            left: 0;
+            height: 4px;
+            background: #bf6dff;
+            width: 0%;
+        }
+        
+        .fadein {
+            opacity: 1;
+            transition: opacity 0.5s;
+        }
+        
+        .fadeout {
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+    </style>
 </head>
 
 <body id="body">
@@ -34,12 +106,12 @@
         <!-- 顶部信息 -->
         <div class="top">
             <div id="title">
-                <span id="track"></span>
+                <span id="track">加载中...</span>
                 <div id="timer">0:00</div>
                 <div id="duration">0:00</div>
             </div>
             <div class="subtitle">
-                <span id="series"></span>
+                <span id="series">东方Project</span>
                 <p id="pid"></p>
             </div>
         </div>
@@ -47,7 +119,7 @@
         <!-- 背景区域 -->
         <div id="background">
             <!-- 视频 -->
-            <div class="plyr__video-embed fadein-2s" id="videoPlayer">
+            <div class="plyr__video-embed fadein" id="videoPlayer">
                 <iframe src=""></iframe>
             </div>
         </div>
@@ -59,23 +131,23 @@
         </div>
         <div id="progress"></div>
 
-<!-- 控制区 -->
-<div class="controlsOuter">
-    <div class="controlsInner">
-        <div id="loading"></div>
-        <i class="btn fas fa-play" id="playBtn"></i>
-        <i class="btn fas fa-pause" id="pauseBtn"></i>
-        <i class="btn fas fa-step-backward" id="prevBtn"></i>
-        <i class="btn fas fa-step-forward" id="nextBtn"></i>
-    </div>
-   
-    <i class="btn fas fa-list" id="playlistBtn"></i>
-    <i class="btn fas fa-cog" id="settingBtn"></i>
-    <i class="btn fas fa-volume-up" id="volumeBtn"></i>
-</div>
+        <!-- 控制区 -->
+        <div class="controlsOuter">
+            <div class="controlsInner">
+                <div id="loading">加载中...</div>
+                <i class="btn fas fa-play" id="playBtn"></i>
+                <i class="btn fas fa-pause" id="pauseBtn" style="display:none;"></i>
+                <i class="btn fas fa-step-backward" id="prevBtn"></i>
+                <i class="btn fas fa-step-forward" id="nextBtn"></i>
+            </div>
+           
+            <div class="btn" id="playlistBtn">📋</div>
+            <i class="btn fas fa-cog" id="settingBtn"></i>
+            <div class="btn" id="volumeBtn">🔊</div>
+        </div>
 
         <!-- 设置面板 -->
-        <div class="pure-menu" id="setting">
+        <div class="pure-menu" id="setting" style="display:none;">
             <ul class="pure-menu-list">
                 <li class="pure-menu-item">
                     <div class="settingText settingTitle">MV生成设置</div>
@@ -133,10 +205,10 @@
                     </label>
                 </li>
                 <li class="pure-menu-item">
-                    <div class="settingText">语言选择</div>
+                    <label class="settingText" for="langSelect">语言</label>
                     <select class="settingOption select" id="langSelect" onchange="langChanged()">
                         <option value="jp">日本語</option>
-                        <option value="zh-cn">中文</option>
+                        <option value="zh">中文</option>
                         <option value="en">English</option>
                     </select>
                 </li>
@@ -144,13 +216,12 @@
         </div>
 
         <!-- 播放列表 -->
-        <div class="pure-menu pure-menu-scrollable" id="playlist">
+        <div class="pure-menu pure-menu-scrollable" id="playlist" style="display:none;">
             <i class="far fa-times-circle fa-3x" id="closePlaylist"></i>
-            <div id="list"></div>
         </div>
 
         <!-- 音量控制 -->
-        <div id="volume" class="fadeout">
+        <div id="volume" class="fadeout" style="display:none;">
             <div id="barFull" class="bar"></div>
             <div id="barEmpty" class="bar"></div>
             <div id="sliderBtn"></div>
@@ -158,19 +229,19 @@
     </div>
     <!-- 脚本 -->
     <script src="https://www.gstatic.com/firebasejs/5.4.1/firebase.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.0.15/howler.core.min.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.0.15/howler.core.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/plyr/3.4.3/plyr.min.js" integrity="sha256-LAq55x/UUQNWhiFLlHHGGivmJx4sVm70ls05hcmhLQ8="
-        crossorigin="anonymous" defer></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/wavesurfer.js/2.0.6/wavesurfer.min.js" defer></script>
-    <script src="https://apis.google.com/js/client.js?onload=googleApiClientReady" defer></script>
-    <script src="./scripts/vudio.js" defer></script>
-    <script src="./scripts/utility.js" defer></script>
-    <script src="./scripts/player.js" defer></script>
-    <script src="./scripts/video.js" defer></script>
-    <script src="./scripts/i18n.js" defer></script>
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/wavesurfer.js/2.0.6/wavesurfer.min.js"></script>
+    <script src="https://apis.google.com/js/client.js?onload=googleApiClientReady"></script>
+    <script src="./scripts/vudio.js"></script>
+    <script src="./scripts/utility.js"></script>
+    <script src="./scripts/player.js"></script>
+    <script src="./scripts/video.js"></script>
+    <script src="./scripts/i18n.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-XZWCFGHDLB"></script>
-    <script defer>
+    <script>
         // 初始化Firebase
         var config = {
             apiKey: "AIzaSyDmPHweR82MHPChLXyOqrwOaLe8L8FyYGA",
@@ -184,12 +255,30 @@
 
         // 全局站点标签(gtag.js) - Google Analytics
         window.dataLayer = window.dataLayer || [];
-        function gtag() {dataLayer.push(arguments);}
+        function gtag(){dataLayer.push(arguments);}
         gtag('js', new Date());
         gtag('config', 'G-XZWCFGHDLB');
-
-        // 定义googleAPI变量
-        const googleAPI = 'YOUR_GOOGLE_API_KEY'; // 请替换为实际的API密钥
+        
+        // 备用音乐数据，防止Firebase加载失败
+        const fallbackMusicData = [
+            {
+                "name": "东方红魔乡",
+                "path": "/audio/th06",
+                "songs": [
+                    {
+                        "name": "01. ほおずきみたいに紅い魂",
+                        "path": "th06/01.mp3"
+                    },
+                    {
+                        "name": "02. 妖魔夜行",
+                        "path": "th06/02.mp3"
+                    }
+                ]
+            }
+        ];
+        
+        // 全局变量
+        window.googleAPI = 'YOUR_GOOGLE_API_KEY'; // 需要替换为实际的Google API Key
     </script>
 </body>
 
