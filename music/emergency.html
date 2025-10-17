@@ -19,6 +19,35 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/plyr/3.4.3/plyr.css" integrity="sha256-rufXFXaVZSvt3zXMGOG17EoglendvXvURMiR5lX9O8g="
         crossorigin="anonymous" />
     <link rel="stylesheet" href="https://dxwwwqc.github.io/music-assets/styles/styles.css">
+    <style>
+        .import-section {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+        }
+        .import-input {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+        .import-btn {
+            background: #5a67d8;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .import-btn:hover {
+            background: #4c51bf;
+        }
+    </style>
 </head>
 
 <body id="body">
@@ -64,6 +93,7 @@
     <div class="btn" id="playlistBtn"></div>
     <i class="btn fas fa-cog" id="settingBtn"></i>
     <div class="btn" id="volumeBtn"></div>
+    <i class="btn fas fa-file-import" id="importBtn" title="导入外部资源"></i>
 </div>
 
         <!-- 设置面板 -->
@@ -127,6 +157,36 @@
             </ul>
         </div>
 
+        <!-- 导入面板 -->
+        <div class="pure-menu" id="importPanel" style="display: none;">
+            <ul class="pure-menu-list">
+                <li class="pure-menu-item">
+                    <div class="settingText settingTitle">导入外部资源</div>
+                </li>
+                <li class="pure-menu-item import-section">
+                    <div class="settingText">导入音乐</div>
+                    <input type="text" class="import-input" id="musicUrl" placeholder="输入音乐文件URL (MP3, WAV, OGG)">
+                    <input type="text" class="import-input" id="musicTitle" placeholder="音乐标题">
+                    <button class="import-btn" onclick="importMusic()">导入音乐</button>
+                </li>
+                <li class="pure-menu-item import-section">
+                    <div class="settingText">导入图片</div>
+                    <input type="text" class="import-input" id="imageUrl" placeholder="输入图片URL (JPG, PNG, GIF)">
+                    <button class="import-btn" onclick="importImage()">导入图片</button>
+                </li>
+                <li class="pure-menu-item import-section">
+                    <div class="settingText">导入视频</div>
+                    <input type="text" class="import-input" id="videoUrl" placeholder="输入视频URL (MP4, WebM) 或 YouTube链接">
+                    <button class="import-btn" onclick="importVideo()">导入视频</button>
+                </li>
+                <li class="pure-menu-item import-section">
+                    <div class="settingText">批量导入</div>
+                    <input type="file" class="import-input" id="batchImport" accept=".json" multiple>
+                    <button class="import-btn" onclick="batchImport()">批量导入JSON</button>
+                </li>
+            </ul>
+        </div>
+
         <!-- 播放列表 -->
         <div class="pure-menu pure-menu-scrollable" id="playlist">
             <i class="far fa-times-circle fa-3x" id="closePlaylist"></i>
@@ -165,11 +225,185 @@
         };
         firebase.initializeApp(config);
 
-        <!-- 全局站点标签(gtag.js) - Google Analytics -->
+        // 全局站点标签(gtag.js) - Google Analytics
         window.dataLayer = window.dataLayer || [];
         function gtag() {dataLayer.push(arguments);}
         gtag('js', new Date());
         gtag('config', 'G-XZWCFGHDLB');
+
+        // 导入功能
+        function importMusic() {
+            const url = document.getElementById('musicUrl').value;
+            const title = document.getElementById('musicTitle').value || '导入的音乐';
+            
+            if (!url) {
+                alert('请输入音乐文件URL');
+                return;
+            }
+
+            const newSong = {
+                title: title,
+                file: url,
+                howl: null,
+                info: { type: 'external' }
+            };
+
+            // 添加到播放列表
+            if (window.player && window.player.playlist) {
+                window.player.playlist.push(newSong);
+                updatePlaylistDisplay();
+                alert('音乐导入成功！');
+            }
+        }
+
+        function importImage() {
+            const url = document.getElementById('imageUrl').value;
+            
+            if (!url) {
+                alert('请输入图片URL');
+                return;
+            }
+
+            // 设置背景图片
+            document.getElementById('background').style.backgroundImage = `url('${url}')`;
+            alert('图片导入成功！');
+        }
+
+        function importVideo() {
+            const url = document.getElementById('videoUrl').value;
+            
+            if (!url) {
+                alert('请输入视频URL');
+                return;
+            }
+
+            // 设置视频源
+            const videoIframe = document.querySelector('#videoPlayer iframe');
+            if (url.includes('youtube.com') || url.includes('youtu.be')) {
+                // YouTube视频
+                const videoId = getYouTubeId(url);
+                if (videoId) {
+                    videoIframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&controls=0&showinfo=0`;
+                }
+            } else {
+                // 直接视频文件
+                document.getElementById('background').innerHTML = `
+                    <video autoplay muted loop id="externalVideo" style="width:100%;height:100%;object-fit:cover;">
+                        <source src="${url}" type="video/mp4">
+                    </video>
+                `;
+            }
+            alert('视频导入成功！');
+        }
+
+        function batchImport() {
+            const fileInput = document.getElementById('batchImport');
+            const files = fileInput.files;
+            
+            if (files.length === 0) {
+                alert('请选择JSON文件');
+                return;
+            }
+
+            for (let file of files) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const data = JSON.parse(e.target.result);
+                        processBatchData(data);
+                    } catch (error) {
+                        console.error('JSON解析错误:', error);
+                        alert(`文件 ${file.name} 解析失败`);
+                    }
+                };
+                reader.readAsText(file);
+            }
+        }
+
+        function processBatchData(data) {
+            if (data.music && Array.isArray(data.music)) {
+                data.music.forEach(song => {
+                    if (song.url && song.title) {
+                        const newSong = {
+                            title: song.title,
+                            file: song.url,
+                            howl: null,
+                            info: { type: 'external' }
+                        };
+                        if (window.player && window.player.playlist) {
+                            window.player.playlist.push(newSong);
+                        }
+                    }
+                });
+            }
+            
+            if (data.images && Array.isArray(data.images)) {
+                // 处理图片数据
+                console.log('导入图片数据:', data.images);
+            }
+            
+            if (data.videos && Array.isArray(data.videos)) {
+                // 处理视频数据
+                console.log('导入视频数据:', data.videos);
+            }
+
+            updatePlaylistDisplay();
+            alert('批量导入完成！');
+        }
+
+        function getYouTubeId(url) {
+            const regExp = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#&?]*).*/;
+            const match = url.match(regExp);
+            return (match && match[7].length === 11) ? match[7] : false;
+        }
+
+        function updatePlaylistDisplay() {
+            // 更新播放列表显示
+            if (window.player && window.player.playlist) {
+                const pl = document.getElementById('playlist');
+                pl.innerHTML = '<i class="far fa-times-circle fa-3x" id="closePlaylist"></i>';
+                
+                let ul = null;
+                let ulth = 1;
+                
+                window.player.playlist.forEach(function (song) {
+                    var li = document.createElement('li');
+                    li.className = 'pure-menu-item';
+                    
+                    if (song.file == null) {
+                        if (ul != null) {
+                            pl.appendChild(ul);
+                        }
+                        li.innerHTML = song.title;
+                        li.className += ' pure-menu-disabled playlist-title';
+                        ul = document.createElement('ul');
+                        ul.className = 'pure-menu-list';
+                        ulth++;
+                    } else {
+                        var a = document.createElement('div');
+                        a.innerHTML = song.title;
+                        a.className = 'pure-menu-link playlist-item';
+                        a.onclick = function () {
+                            window.player.skipTo(window.player.playlist.indexOf(song));
+                        };
+                        li.appendChild(a);
+                    }
+                    if (ul) ul.appendChild(li);
+                });
+                if (ul) pl.appendChild(ul);
+            }
+        }
+
+        // 切换导入面板
+        document.getElementById('importBtn').addEventListener('click', function() {
+            const importPanel = document.getElementById('importPanel');
+            const display = importPanel.style.display === 'block' ? 'none' : 'block';
+            
+            setTimeout(function () {
+                importPanel.style.display = display;
+            }, display === 'block' ? 0 : 500);
+            importPanel.className = display === 'block' ? 'pure-menu fadein' : 'pure-menu fadeout';
+        });
     </script>
 </body>
 
