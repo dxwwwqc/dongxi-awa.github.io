@@ -18,7 +18,7 @@
         crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/plyr/3.4.3/plyr.css" integrity="sha256-rufXFXaVZSvt3zXMGOG17EoglendvXvURMiR5lX9O8g="
         crossorigin="anonymous" />
-    <link rel="stylesheet" href="https://dxwwwqc.github.io/music-assets/styles/styles.css">
+    <link rel="stylesheet" href="styles.css">
 </head>
 
 <body id="body">
@@ -51,20 +51,20 @@
         </div>
         <div id="progress"></div>
 
-<!-- 控制区 -->
-<div class="controlsOuter">
-    <div class="controlsInner">
-        <div id="loading"></div>
-        <i class="btn fas fa-play" id="playBtn"></i>
-        <i class="btn fas fa-pause" id="pauseBtn"></i>
-        <i class="btn fas fa-step-backward" id="prevBtn"></i>
-        <i class="btn fas fa-step-forward" id="nextBtn"></i>
-    </div>
-   
-    <div class="btn" id="playlistBtn"></div>
-    <i class="btn fas fa-cog" id="settingBtn"></i>
-    <div class="btn" id="volumeBtn"></div>
-</div>
+        <!-- 控制区 -->
+        <div class="controlsOuter">
+            <div class="controlsInner">
+                <div id="loading"></div>
+                <i class="btn fas fa-play" id="playBtn"></i>
+                <i class="btn fas fa-pause" id="pauseBtn"></i>
+                <i class="btn fas fa-step-backward" id="prevBtn"></i>
+                <i class="btn fas fa-step-forward" id="nextBtn"></i>
+            </div>
+           
+            <div class="btn" id="playlistBtn"></div>
+            <i class="btn fas fa-cog" id="settingBtn"></i>
+            <div class="btn" id="volumeBtn"></div>
+        </div>
 
         <!-- 设置面板 -->
         <div class="pure-menu" id="setting">
@@ -124,6 +124,14 @@
                         <span class="slider"></span>
                     </label>
                 </li>
+                <li class="pure-menu-item">
+                    <div class="settingText">语言</div>
+                    <select class="settingOption select" id="langSelect">
+                        <option value="jp">日本語</option>
+                        <option value="en">English</option>
+                        <option value="zh-cn">简体中文</option>
+                    </select>
+                </li>
             </ul>
         </div>
 
@@ -146,11 +154,11 @@
         crossorigin="anonymous" defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/wavesurfer.js/2.0.6/wavesurfer.min.js" defer></script>
     <script src="https://apis.google.com/js/client.js?onload=googleApiClientReady" defer></script>
-    <script src="https://dxwwwqc.github.io/music-assets/scripts/vudio.js" defer></script>
-    <script src="https://dxwwwqc.github.io/music-assets/scripts/utility.js" defer></script>
-    <script src="https://dxwwwqc.github.io/music-assets/scripts/player.js" defer></script>
-    <script src="https://dxwwwqc.github.io/music-assets/scripts/video.js" defer></script>
-    <script src="https://dxwwwqc.github.io/music-assets/scripts/i18n.js" defer></script>
+    <script src="vudio.js" defer></script>
+    <script src="utility.js" defer></script>
+    <script src="player.js" defer></script>
+    <script src="video.js" defer></script>
+    <script src="i18n.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-XZWCFGHDLB"></script>
     <script defer>
