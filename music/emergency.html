@@ -1,10 +1,12 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <meta name="msapplication-TileColor" content="#da532c">
+    <meta name="msapplication-config" content="https://dxwwwqc.github.io/music-assets/images/favicon/browserconfig.xml">
     <meta name="theme-color" content="#ffffff">
     <meta name="description" content="东方Project 随机音乐">
     <meta property="og:image" content="https://dxwwwqc.github.io/music-assets/images/favicon/android-chrome-256x256.png" />
@@ -18,299 +20,13 @@
     <link rel="manifest" href="https://dxwwwqc.github.io/music-assets/images/favicon/site.webmanifest">
     <link rel="mask-icon" href="https://dxwwwqc.github.io/music-assets/images/favicon/safari-pinned-tab.svg" color="#5bbad5">
     <link rel="shortcut icon" href="https://dxwwwqc.github.io/music-assets/images/favicon/favicon.ico">
-    <link rel="stylesheet" href="https://unpkg.com/purecss@1.0.0/build/pure-min.css" integrity="sha384-nn4HPE8lTHyVtfCBi5yW9d20FjT8BJwUXyWZT9InLYax14RDjBj46LmSztkmNP9w" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/plyr/3.4.3/plyr.css" integrity="sha256-rufXFXaVZSvt3zXMGOG17EoglendvXvURMiR5lX9O8g=" crossorigin="anonymous" />
-    <style>
-        /* 基础样式 */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #1a1a2e;
-            color: #fff;
-            overflow: hidden;
-            height: 100vh;
-        }
-        
-        #wrapper {
-            width: 100%;
-            height: 100%;
-            position: relative;
-        }
-        
-        /* 顶部信息区域 */
-        .top {
-            position: absolute;
-            top: 20px;
-            left: 0;
-            width: 100%;
-            text-align: center;
-            z-index: 10;
-        }
-        
-        #title {
-            font-size: 24px;
-            font-weight: bold;
-            margin-bottom: 10px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 15px;
-        }
-        
-        #timer, #duration {
-            font-size: 16px;
-            color: #aaa;
-        }
-        
-        .subtitle {
-            font-size: 16px;
-            color: #aaa;
-        }
-        
-        /* 背景区域 */
-        #background {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 1;
-            background: #16213e;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        
-        .plyr__video-embed {
-            width: 100%;
-            height: 100%;
-        }
-        
-        .plyr__video-embed iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-        }
-        
-        /* 进度条 */
-        #waveform {
-            position: absolute;
-            bottom: 120px;
-            left: 0;
-            width: 100%;
-            height: 100px;
-            z-index: 5;
-        }
-        
-        #canvas {
-            width: 100%;
-            height: 100%;
-        }
-        
-        #progress {
-            position: absolute;
-            bottom: 120px;
-            left: 0;
-            height: 4px;
-            width: 0%;
-            background-color: #bf6dff;
-            z-index: 6;
-        }
-        
-        /* 控制区 */
-        .controlsOuter {
-            position: absolute;
-            bottom: 20px;
-            left: 0;
-            width: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 10;
-        }
-        
-        .controlsInner {
-            display: flex;
-            gap: 20px;
-            align-items: center;
-        }
-        
-        .btn {
-            font-size: 24px;
-            cursor: pointer;
-            color: #fff;
-            transition: color 0.3s;
-        }
-        
-        .btn:hover {
-            color: #bf6dff;
-        }
-        
-        #playBtn, #pauseBtn {
-            font-size: 36px;
-        }
-        
-        #loading {
-            display: none;
-            width: 30px;
-            height: 30px;
-            border: 3px solid rgba(255,255,255,0.3);
-            border-radius: 50%;
-            border-top-color: #fff;
-            animation: spin 1s ease-in-out infinite;
-        }
-        
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-        
-        /* 设置面板 */
-        #setting {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(0, 0, 0, 0.8);
-            padding: 20px;
-            border-radius: 10px;
-            z-index: 20;
-            display: none;
-            min-width: 300px;
-        }
-        
-        .settingText {
-            color: #fff;
-            margin-bottom: 10px;
-        }
-        
-        .settingTitle {
-            font-weight: bold;
-            font-size: 18px;
-            margin-bottom: 15px;
-        }
-        
-        .settingOption {
-            float: right;
-        }
-        
-        .select {
-            background: #333;
-            color: #fff;
-            border: none;
-            padding: 5px;
-            border-radius: 5px;
-        }
-        
-        /* 播放列表 */
-        #playlist {
-            position: absolute;
-            top: 0;
-            right: 0;
-            width: 300px;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            overflow-y: auto;
-            z-index: 15;
-            display: none;
-            padding: 20px;
-        }
-        
-        #closePlaylist {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            cursor: pointer;
-            color: #fff;
-        }
-        
-        .playlist-title {
-            font-weight: bold;
-            font-size: 18px;
-            margin: 15px 0 10px;
-            color: #bf6dff;
-        }
-        
-        .playlist-item {
-            padding: 8px 0;
-            cursor: pointer;
-            color: #fff;
-        }
-        
-        .playlist-item:hover {
-            color: #bf6dff;
-        }
-        
-        /* 音量控制 */
-        #volume {
-            position: absolute;
-            bottom: 80px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 90%;
-            height: 30px;
-            background: rgba(0, 0, 0, 0.5);
-            border-radius: 15px;
-            z-index: 10;
-            display: none;
-        }
-        
-        .bar {
-            position: absolute;
-            height: 100%;
-            border-radius: 15px;
-        }
-        
-        #barEmpty {
-            width: 100%;
-            background: rgba(255, 255, 255, 0.2);
-        }
-        
-        #barFull {
-            width: 50%;
-            background: #bf6dff;
-        }
-        
-        #sliderBtn {
-            position: absolute;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 40px;
-            height: 40px;
-            background: #fff;
-            border-radius: 50%;
-            cursor: pointer;
-            left: 50%;
-        }
-        
-        /* 动画效果 */
-        .fadein {
-            animation: fadeIn 0.5s;
-        }
-        
-        .fadeout {
-            animation: fadeOut 0.5s;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        
-        @keyframes fadeOut {
-            from { opacity: 1; }
-            to { opacity: 0; }
-        }
-        
-        .fadein-2s {
-            animation: fadeIn 2s;
-        }
-    </style>
+    <link rel="stylesheet" href="https://unpkg.com/purecss@1.0.0/build/pure-min.css" integrity="sha384-nn4HPE8lTHyVtfCBi5yW9d20FjT8BJwUXyWZT9InLYax14RDjBj46LmSztkmNP9w"
+        crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU"
+        crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/plyr/3.4.3/plyr.css" integrity="sha256-rufXFXaVZSvt3zXMGOG17EoglendvXvURMiR5lX9O8g="
+        crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://dxwwwqc.github.io/music-assets/styles/styles.css">
 </head>
 
 <body id="body">
@@ -318,12 +34,12 @@
         <!-- 顶部信息 -->
         <div class="top">
             <div id="title">
-                <span id="track">东方随机音乐</span>
+                <span id="track"></span>
                 <div id="timer">0:00</div>
                 <div id="duration">0:00</div>
             </div>
             <div class="subtitle">
-                <span id="series">东方Project</span>
+                <span id="series"></span>
                 <p id="pid"></p>
             </div>
         </div>
@@ -343,24 +59,20 @@
         </div>
         <div id="progress"></div>
 
-        <!-- 控制区 -->
-        <div class="controlsOuter">
-            <div class="controlsInner">
-                <div id="loading"></div>
-                <i class="btn fas fa-play" id="playBtn"></i>
-                <i class="btn fas fa-pause" id="pauseBtn"></i>
-                <i class="btn fas fa-step-backward" id="prevBtn"></i>
-                <i class="btn fas fa-step-forward" id="nextBtn"></i>
-            </div>
-           
-            <div class="btn" id="playlistBtn">
-                <i class="fas fa-list"></i>
-            </div>
-            <i class="btn fas fa-cog" id="settingBtn"></i>
-            <div class="btn" id="volumeBtn">
-                <i class="fas fa-volume-up"></i>
-            </div>
-        </div>
+<!-- 控制区 -->
+<div class="controlsOuter">
+    <div class="controlsInner">
+        <div id="loading"></div>
+        <i class="btn fas fa-play" id="playBtn"></i>
+        <i class="btn fas fa-pause" id="pauseBtn"></i>
+        <i class="btn fas fa-step-backward" id="prevBtn"></i>
+        <i class="btn fas fa-step-forward" id="nextBtn"></i>
+    </div>
+   
+    <div class="btn" id="playlistBtn"></div>
+    <i class="btn fas fa-cog" id="settingBtn"></i>
+    <div class="btn" id="volumeBtn"></div>
+</div>
 
         <!-- 设置面板 -->
         <div class="pure-menu" id="setting">
@@ -426,9 +138,6 @@
         <!-- 播放列表 -->
         <div class="pure-menu pure-menu-scrollable" id="playlist">
             <i class="far fa-times-circle fa-3x" id="closePlaylist"></i>
-            <div id="list">
-                <!-- 播放列表内容将通过JavaScript动态生成 -->
-            </div>
         </div>
 
         <!-- 音量控制 -->
@@ -438,18 +147,13 @@
             <div id="sliderBtn"></div>
         </div>
     </div>
-    
+
     <!-- 脚本 -->
-    <script src="https://www.gstatic.com/firebasejs/5.4.1/firebase.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.0.15/howler.core.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/plyr/3.4.3/plyr.min.js" integrity="sha256-LAq55x/UUQNWhiFLlHHGGivmJx4sVm70ls05hcmhLQ8=" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/wavesurfer.js/2.0.6/wavesurfer.min.js"></script>
-    <script src="https://apis.google.com/js/client.js?onload=googleApiClientReady"></script>
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XZWCFGHDLB"></script>
-    
+    <!-- 先加载 Firebase 并立即初始化 -->
+    <script src="https://www.gstatic.com/firebasejs/5.4.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/5.4.1/firebase-database.js"></script>
     <script>
-        // 初始化Firebase
+        // 立即初始化 Firebase
         var config = {
             apiKey: "AIzaSyDmPHweR82MHPChLXyOqrwOaLe8L8FyYGA",
             authDomain: "th-music-video-generator.firebaseapp.com",
@@ -459,17 +163,27 @@
             messagingSenderId: "766682158017"
         };
         firebase.initializeApp(config);
+    </script>
 
-        // 全局站点标签(gtag.js) - Google Analytics
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.0.15/howler.core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/plyr/3.4.3/plyr.min.js" integrity="sha256-LAq55x/UUQNWhiFLlHHGGivmJx4sVm70ls05hcmhLQ8="
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/wavesurfer.js/2.0.6/wavesurfer.min.js"></script>
+    <script src="https://apis.google.com/js/client.js?onload=googleApiClientReady"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XZWCFGHDLB"></script>
+    <script>
+        // Google Analytics
         window.dataLayer = window.dataLayer || [];
         function gtag() {dataLayer.push(arguments);}
         gtag('js', new Date());
         gtag('config', 'G-XZWCFGHDLB');
-        
+    </script>
+
+    <!-- 内联缺失的 JavaScript 功能 -->
+    <script>
         // 音乐文件基础 URL
         const MUSIC_BASE_URL = 'https://dxwwwqc.github.io/music-assets/';
-        
-        // 模拟缺失的JavaScript文件
         var googleAPI = "YOUR_GOOGLE_API_KEY"; // 需要替换为实际的Google API密钥
         
         // 模拟缺失的功能
@@ -492,10 +206,120 @@
             var img = new Image();
             img.src = url;
         }
+        
+        // 模拟 vudio.js 功能
+        var Vudio = function(audio, canvas, options) {
+            this.audio = audio;
+            this.canvas = canvas;
+            this.options = options;
+            this.dance = function() {
+                console.log("Vudio visualization enabled");
+            };
+            this.setOption = function(options) {
+                console.log("Vudio options updated");
+            };
+        };
+
+        // 模拟 utility.js 功能
+        const delay = (ms) => {
+            return new Promise((resolve) => {
+                setTimeout(resolve, ms);
+            });
+        };
+
+        function setOpacity(object, opacityPct) {
+            object.style.opacity = opacityPct / 100;
+        }
+
+        function changeOpacity(id, msDuration, msStart, fromO, toO) {
+            var object = document.getElementById(id);
+            var opacity = object.style.opacity * 100;
+            var msNow = new Date().getTime();
+            opacity = fromO + ((toO - fromO) * (msNow - msStart)) / msDuration;
+            if (opacity < 0) setOpacity(object, 0);
+            else if (opacity > 100) setOpacity(object, 100);
+            else {
+                setOpacity(object, opacity);
+                object.timer = window.setTimeout(
+                    "changeOpacity('" + id + "'," + msDuration + ',' + msStart + ',' + fromO + ',' + toO + ')',
+                    1
+                );
+            }
+        }
+
+        function fadeInImage(foregroundId, imageURL, backgroundId, callback = undefined) {
+            if (imageURL) imagePreload(imageURL);
+            var foreground = document.getElementById(foregroundId);
+            var background = document.getElementById(backgroundId);
+            if (background) {
+                background.style.backgroundImage = foreground.style.backgroundImage;
+                background.style.backgroundRepeat = 'no-repeat';
+            }
+            setTimeout(() => {
+                setOpacity(foreground, 0);
+                foreground.style.backgroundImage = "url('" + imageURL + "')";
+                if (foreground.timer) window.clearTimeout(foreground.timer);
+                var startMS = new Date().getTime();
+                foreground.timer = window.setTimeout("changeOpacity('" + foregroundId + "',1000," + startMS + ',0,100)', 10);
+                if (callback) callback();
+            }, 1000);
+        }
+
+        // 模拟 i18n.js 功能
+        let cached = {};
+        let langSelect = document.getElementById('langSelect');
+
+        function getLangfile(lang) {
+            return new Promise(function (resolve, reject) {
+                if (cached[lang]) resolve(cached[lang]);
+                firebase
+                    .database()
+                    .ref('i18n')
+                    .once('value')
+                    .then(function (i18n) {
+                        let json = i18n.val()[lang];
+                        if (typeof json === 'string') {
+                            let newjson = '';
+                            json.split(/\t/).forEach((str) => (newjson += str));
+                            json = newjson;
+                            json = JSON.parse(json);
+                        }
+                        let res = {};
+                        for (let property in json) {
+                            let item = json[property];
+                            if (item.startsWith('#REDIRECT [[tdb:')) {
+                                item = item.slice(16);
+                                item = item.slice(0, item.length - 2);
+                                item.replaceAll(/\s/g, '_');
+                                item = json[item];
+                            }
+                            res[property] = item;
+                        }
+                        if (!cached) cached = {};
+                        cached[lang] = res;
+                        resolve(res);
+                    })
+                    .catch(function (error) {
+                        reject(error);
+                    });
+            });
+        }
+
+        function getTranslatedSong(songFile, lang) {
+            return new Promise((resolve, reject) => {
+                let tokens = songFile.split('/');
+                let songF = tokens[2].replace('.', '') + '_' + tokens[3].slice(0, 2);
+                getLangfile(lang)
+                    .then((json) => {
+                        resolve(json[songF]);
+                    })
+                    .catch((e) => reject(e));
+            });
+        }
     </script>
-    
+
+    <!-- 内联 player.js 内容 -->
     <script>
-        // 将player.js的内容内联到这里
         // Cache references to DOM elements.
         var elms = ['track', 'timer', 'duration', 'playBtn', 'pauseBtn', 'prevBtn', 'nextBtn', 'settingBtn', 'playlistBtn', 'volumeBtn', 'progress', 'waveform', 'canvas', 'loading', 'playlist', 'list', 'volume', 'barEmpty', 'barFull', 'sliderBtn'];
         elms.forEach(function (elm) {
@@ -660,8 +484,25 @@
                 if (wavesurfer) {
                   wavesurfer.destroy();
                 }
-                // 由于vudio.js缺失，这里使用简化版本
-                console.log("Vudio visualization would be enabled here");
+                vudio = new Vudio(sound._sounds[0]._node, canvas, {
+                  effect: 'waveform',
+                  accuracy: accuracy,
+                  width: width,
+                  height: height,
+                  waveform: {
+                    maxHeight: height / 10 * 9,
+                    minHeight: 1,
+                    spacing: 4,
+                    color: ['#ffffff', '#e0e0e0', ' #c9c9c9'],
+                    shadowBlur: 1,
+                    shadowColor: '#939393',
+                    fadeSide: false,
+                    prettify: false,
+                    horizontalAlign: 'center',
+                    verticalAlign: 'bottom'
+                  }
+                });
+                vudio.dance();
               } else {
                 canvas.style.display = 'none';
                 waveform.style.opacity = 1;
@@ -936,13 +777,12 @@
               vudio.width = width;
               vudio.height = height;
               var accuracy = (width < 550) ? 32 : (width < 1000) ? 64 : 128;
-              // vudio.setOption 方法不存在，这里注释掉
-              // vudio.setOption({
-              //   accuracy: accuracy,
-              //   waveform: {
-              //     maxHeight: height / 10 * 9,
-              //   }
-              // });
+              vudio.setOption({
+                accuracy: accuracy,
+                waveform: {
+                  maxHeight: height / 10 * 9,
+                }
+              });
             }
           }
         };
@@ -1027,3 +867,79 @@
         });
         settingBtn.addEventListener('click', function () {
           player.toggleSetting();
+        });
+        animatedWaveform.addEventListener('change', function () {
+          // TODO: Instant change waveform 
+        });
+
+        // Setup the event listeners to enable dragging of volume slider.
+        barEmpty.addEventListener('click', function (event) {
+          var per = event.layerX / parseFloat(barEmpty.scrollWidth);
+          player.volume(per);
+        });
+        sliderBtn.addEventListener('mousedown', function () {
+          window.sliderDown = true;
+        });
+        sliderBtn.addEventListener('touchstart', function () {
+          window.sliderDown = true;
+        });
+        volume.addEventListener('mouseup', function () {
+          window.sliderDown = false;
+        });
+        volume.addEventListener('touchend', function () {
+          window.sliderDown = false;
+        });
+
+        // Image preloader
+        for (var i = 6; i < 27; i++) {
+          imagePreload(MUSIC_BASE_URL + 'images/title/' + ('00' + i).slice(-2) + '.jpg');
+        }
+
+        // i18n loading
+        function langChanged() {
+          let langSelect = document.getElementById('langSelect');
+          window.lang = langSelect.value;
+          player.updateTitle();
+          let divs = document.getElementsByClassName('playlist-item')
+          for (let i = 0; i < divs.length; i++) {
+            let div = divs[i];
+            if (window.lang === 'jp') {
+              div.innerText = jpSongTitles[i];
+            }
+            else {
+              getTranslatedSong(div.id, window.lang).then((song) => {
+                if (song) div.innerText = song;
+              })
+            }
+          }
+
+          // Translating game titles
+          firebase
+              .database()
+              .ref('i18n-titles')
+              .once('value')
+              .then(function (i18n) {
+                let gameTitles = document.getElementsByClassName('playlist-title');
+                let translatedTitles = i18n.val()[langSelect.value];
+                switch (langSelect.value) {
+                  case 'jp':
+                    for (let i = 0; i < gameTitles.length; i++) {
+                      gameTitles[i].innerText = jpGameTitles[i];
+                    }
+                    break;
+                  case 'en-gb':
+                    translatedTitles = i18n.val()['en'];
+                  default:
+                    for (let i = 0; i < gameTitles.length; i++) {
+                      let game = gameTitles[i];
+                      if (game.id in translatedTitles) {
+                        game.innerText = translatedTitles[game.id] ?? game.innerText;
+                      }
+                    }
+                }
+              });
+        }
+    </script>
+</body>
+
+</html>
