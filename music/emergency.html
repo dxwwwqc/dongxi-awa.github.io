@@ -931,4 +931,18 @@
                     }
                     break;
                   case 'en-gb':
-                    translatedTitles = i18n.val()['
+                    translatedTitles = i18n.val()['en'];
+                  default:
+                    for (let i = 0; i < gameTitles.length; i++) {
+                      let game = gameTitles[i];
+                      if (game.id in translatedTitles) {
+                        game.innerText = translatedTitles[game.id] ?? game.innerText;
+                      }
+                    }
+                }
+              });
+        }
+    </script>
+</body>
+
+</html>
