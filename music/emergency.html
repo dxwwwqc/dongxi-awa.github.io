@@ -202,9 +202,10 @@
         }
         
         function imagePreload(url) {
-            // 模拟图片预加载
+            // 对URL进行编码处理
             var img = new Image();
-            img.src = url;
+            img.src = encodeURI(url);
+            return img;
         }
         
         // 模拟 vudio.js 功能
@@ -257,7 +258,8 @@
             }
             setTimeout(() => {
                 setOpacity(foreground, 0);
-                foreground.style.backgroundImage = "url('" + imageURL + "')";
+                // 对URL进行编码处理
+                foreground.style.backgroundImage = "url('" + encodeURI(imageURL) + "')";
                 if (foreground.timer) window.clearTimeout(foreground.timer);
                 var startMS = new Date().getTime();
                 foreground.timer = window.setTimeout("changeOpacity('" + foregroundId + "',1000," + startMS + ',0,100)', 10);
@@ -379,7 +381,8 @@
               ul = document.createElement('ul');
               ul.className = 'pure-menu-list';
               if (ulth > 5) {
-                ul.style.backgroundImage = 'url(\'' + MUSIC_BASE_URL + 'images/title/' + ('00' + ulth).slice(-2) + '.jpg\')';
+                var bgImageUrl = MUSIC_BASE_URL + 'images/title/' + ('00' + ulth).slice(-2) + '.jpg';
+                ul.style.backgroundImage = 'url(\'' + encodeURI(bgImageUrl) + '\')';
               }
               ulth++;
             } else {
@@ -928,18 +931,4 @@
                     }
                     break;
                   case 'en-gb':
-                    translatedTitles = i18n.val()['en'];
-                  default:
-                    for (let i = 0; i < gameTitles.length; i++) {
-                      let game = gameTitles[i];
-                      if (game.id in translatedTitles) {
-                        game.innerText = translatedTitles[game.id] ?? game.innerText;
-                      }
-                    }
-                }
-              });
-        }
-    </script>
-</body>
-
-</html>
+                    translatedTitles = i18n.val()['
