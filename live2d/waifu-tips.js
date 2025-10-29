@@ -77,32 +77,24 @@ live2d_settings['screenshotCaptureName']= 'live2d.png';
 
 // 全局变量存储提示信息
 let waifuTipsData = {};
+let currentLive2DModel = null;
 
-// 材质配置 - 支持3套服装系列
+// 材质配置 - 按完整装扮切换（每个装扮对应一个材质ID）
 const modelTexturesConfig = {
     "38": {
-        // 三个服装系列
-        textureSets: [
-            [0, 1, 2, 3],  // 第一套服装系列 (00-03)
-            [4, 5, 6],     // 第二套服装系列 (04-06)
-            [7, 8, 9]      // 第三套服装系列 (07-09)
-        ],
+        // 每个材质ID代表一个完整的装扮
+        textures: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],  // 所有可用的材质ID
         textureNames: {
-            0: "白色默认装",
-            1: "蓝色清新装", 
-            2: "粉色可爱装",
-            3: "黑色神秘装",
-            4: "校园制服A",
-            5: "校园制服B", 
-            6: "校园制服C",
-            7: "节日礼服A",
-            8: "节日礼服B",
-            9: "节日礼服C"
-        },
-        setNames: {
-            0: "日常服装系列",
-            1: "校园制服系列", 
-            2: "节日礼服系列"
+            0: "日常装扮-白色款",    // 使用 00.png 的完整装扮
+            1: "日常装扮-蓝色款",    // 使用 01.png 的完整装扮  
+            2: "日常装扮-粉色款",    // 使用 02.png 的完整装扮
+            3: "日常装扮-黑色款",    // 使用 03.png 的完整装扮
+            4: "校园制服-款式A",     // 使用 04.png 的完整装扮
+            5: "校园制服-款式B",     // 使用 05.png 的完整装扮
+            6: "校园制服-款式C",     // 使用 06.png 的完整装扮
+            7: "节日礼服-红色款",    // 使用 07.png 的完整装扮
+            8: "节日礼服-蓝色款",    // 使用 08.png 的完整装扮
+            9: "节日礼服-紫色款"     // 使用 09.png 的完整装扮
         }
     }
 };
@@ -150,69 +142,174 @@ function hideMessage(timeout) {
     $('.waifu-tips').delay(timeout).fadeTo(200, 0);
 }
 
-// 材质切换函数 - 按系列切换
+// 材质切换函数 - 直接修改模型纹理
 function switchTextures() {
     const modelId = live2d_settings.modelId;
     let currentTexturesId = live2d_settings.modelTexturesId || 0;
     
+    console.log('开始切换装扮，当前材质ID:', currentTexturesId);
+    
     if (modelTexturesConfig[modelId]) {
-        const textureSets = modelTexturesConfig[modelId].textureSets;
+        const textures = modelTexturesConfig[modelId].textures;
         const textureNames = modelTexturesConfig[modelId].textureNames;
-        const setNames = modelTexturesConfig[modelId].setNames;
         
-        // 找到当前材质ID属于哪个系列
-        let currentSetIndex = -1;
-        let currentTextureIndexInSet = -1;
+        // 找到当前材质ID在列表中的位置
+        const currentIndex = textures.indexOf(currentTexturesId);
         
-        for (let i = 0; i < textureSets.length; i++) {
-            const indexInSet = textureSets[i].indexOf(currentTexturesId);
-            if (indexInSet !== -1) {
-                currentSetIndex = i;
-                currentTextureIndexInSet = indexInSet;
-                break;
-            }
-        }
+        // 切换到下一个材质（循环）
+        let nextIndex = (currentIndex + 1) % textures.length;
+        const newTexturesId = textures[nextIndex];
         
-        if (currentSetIndex === -1) {
-            // 如果没找到，默认使用第一个系列的第一个材质
-            currentSetIndex = 0;
-            currentTextureIndexInSet = 0;
-        }
+        console.log('切换到新材质ID:', newTexturesId, '装扮名称:', textureNames[newTexturesId]);
         
-        // 切换到下一个系列
-        const nextSetIndex = (currentSetIndex + 1) % textureSets.length;
-        const nextTextureSet = textureSets[nextSetIndex];
+        // 直接设置材质
+        setTexture(newTexturesId);
         
-        // 在新系列中随机选择一个材质
-        const randomIndex = Math.floor(Math.random() * nextTextureSet.length);
-        const newTexturesId = nextTextureSet[randomIndex];
-        
-        // 加载新材质
-        loadModel(modelId, newTexturesId);
-        
-        // 显示系列切换消息（从 waifu-tips.json 获取）
+        // 显示切换消息
         const textureName = textureNames[newTexturesId];
-        const setName = setNames[nextSetIndex];
         
         // 从提示数据中获取换装消息
-        let changeMessage = `换上${textureName}啦~ (${setName})`;
+        let changeMessage = `换上${textureName}啦~`;
         if (waifuTipsData && waifuTipsData.textures && waifuTipsData.textures[newTexturesId]) {
             const messages = waifuTipsData.textures[newTexturesId];
             changeMessage = Array.isArray(messages) ? messages[Math.floor(Math.random() * messages.length)] : messages;
         }
         
         showMessage(changeMessage, 3000, true);
-        console.log(`切换到系列: ${setName}, 材质: ${textureName} (ID: ${newTexturesId})`);
+        console.log(`切换到装扮: ${textureName} (ID: ${newTexturesId})`);
         
     } else {
-        showMessage('这个模型没有其他材质呢~', 3000);
+        showMessage('这个模型没有其他装扮呢~', 3000);
     }
 }
 
-// 在配置部分后面添加 initModel 函数
+// 直接设置材质的方法
+function setTexture(textureId) {
+    console.log('设置材质到 ID:', textureId);
+    
+    // 更新设置
+    live2d_settings.modelTexturesId = textureId;
+    
+    if (live2d_settings.modelStorage) {
+        localStorage.setItem('modelTexturesId', textureId);
+    } else {
+        sessionStorage.setItem('modelTexturesId', textureId);
+    }
+    
+    // 如果模型已经加载，直接设置纹理
+    if (currentLive2DModel && currentLive2DModel.setTexture) {
+        try {
+            console.log('使用 setTexture 方法直接设置材质');
+            currentLive2DModel.setTexture(textureId);
+            return true;
+        } catch (e) {
+            console.log('setTexture 方法失败:', e);
+        }
+    }
+    
+    // 如果无法直接设置纹理，重新加载模型
+    console.log('重新加载模型以应用新材质');
+    reloadModelWithTexture(textureId);
+    return false;
+}
+
+// 重新加载模型并应用指定材质
+function reloadModelWithTexture(textureId) {
+    console.log('重新加载模型，应用材质ID:', textureId);
+    
+    // 更新设置
+    live2d_settings.modelTexturesId = textureId;
+    
+    // 使用完整路径
+    var modelPath = '/dongxi-awa.github.io/live2d/model/' + live2d_settings.modelId + '/index.json';
+    
+    // 添加时间戳避免缓存
+    const timestamp = new Date().getTime();
+    const modelPathWithCache = modelPath + '?t=' + timestamp;
+    
+    console.log('使用防缓存路径:', modelPathWithCache);
+    
+    // 清除之前的模型
+    const live2dElement = document.getElementById('live2d');
+    if (live2dElement) {
+        while (live2dElement.firstChild) {
+            live2dElement.removeChild(live2dElement.firstChild);
+        }
+    }
+    
+    // 重新加载模型
+    try {
+        loadlive2d('live2d', modelPathWithCache, function() {
+            console.log('模型重新加载完成，材质ID:', textureId);
+            // 更新当前模型引用
+            updateCurrentModelReference();
+        });
+    } catch (error) {
+        console.error('重新加载模型时出错:', error);
+    }
+}
+
+// 更新当前模型引用
+function updateCurrentModelReference() {
+    // 尝试获取当前的 Live2D 模型实例
+    setTimeout(function() {
+        if (window.Live2DManager && window.Live2DManager.getInstance()) {
+            try {
+                const manager = window.Live2DManager.getInstance();
+                currentLive2DModel = manager.getModel(0);
+                console.log('更新模型引用:', currentLive2DModel ? '成功' : '失败');
+            } catch (e) {
+                console.log('获取模型实例失败:', e);
+            }
+        }
+    }, 1000);
+}
+
+// 验证材质文件是否存在
+function validateTextureFiles() {
+    console.log('验证材质文件是否存在...');
+    const textureFiles = ['00.png', '01.png', '02.png', '03.png', '04.png', '05.png', '06.png', '07.png', '08.png', '09.png'];
+    
+    textureFiles.forEach((file, index) => {
+        const texturePath = `/dongxi-awa.github.io/live2d/model/38/textures.1024/${file}`;
+        $.ajax({
+            url: texturePath,
+            type: 'HEAD',
+            success: function() {
+                console.log(`✅ 材质文件 ${file} 存在 (ID: ${index})`);
+            },
+            error: function() {
+                console.warn(`❌ 材质文件 ${file} 不存在 (ID: ${index})`);
+            }
+        });
+    });
+}
+
+// 初始化函数
 function initModel(waifuPath, type) {
     console.log('初始化 Live2D 模型...');
     
+    // 首先验证模型文件是否存在
+    const modelPath = '/dongxi-awa.github.io/live2d/model/38/index.json';
+    console.log('验证模型文件:', modelPath);
+    
+    $.ajax({
+        url: modelPath,
+        type: 'HEAD',
+        success: function() {
+            console.log('✅ 模型文件存在，继续初始化...');
+            continueInitialization(waifuPath);
+        },
+        error: function() {
+            console.error('❌ 模型文件不存在:', modelPath);
+            showMessage('模型文件不存在，请检查文件路径', 5000);
+            // 即使模型文件不存在，也继续初始化其他功能
+            continueInitialization(waifuPath);
+        }
+    });
+}
+
+function continueInitialization(waifuPath) {
     /* 加载看板娘样式 */
     live2d_settings.waifuSize = live2d_settings.waifuSize.split('x');
     live2d_settings.waifuTipsSize = live2d_settings.waifuTipsSize.split('x');
@@ -233,6 +330,21 @@ function initModel(waifuPath, type) {
         $(".waifu").css("right", live2d_settings.waifuEdgeSide[1]+'px');
     }
     
+    // 强制显示工具栏和所有按钮
+    $('.waifu-tool').show();
+    $('.waifu-tool .fui-home').show();
+    $('.waifu-tool .fui-chat').show();
+    $('.waifu-tool .fui-eye').show();
+    $('.waifu-tool .fui-user').show();
+    $('.waifu-tool .fui-photo').show();
+    $('.waifu-tool .fui-info-circle').show();
+    $('.waifu-tool .fui-cross').show();
+    
+    console.log('工具栏状态:', $('.waifu-tool').is(':visible') ? '可见' : '隐藏');
+    
+    // 验证材质文件
+    validateTextureFiles();
+    
     // 加载提示配置
     if (typeof(waifuPath) == "object") {
         loadTipsMessage(waifuPath);
@@ -249,62 +361,45 @@ function initModel(waifuPath, type) {
                 console.error('加载提示文件失败:', error);
                 showMessage('提示文件加载失败，但模型仍可正常显示~', 3000);
                 // 即使提示文件加载失败，也继续初始化模型
-                loadModel(live2d_settings.modelId, live2d_settings.modelTexturesId);
+                loadInitialModel();
             }
         });
     }
-    
-    // 隐藏不需要的工具栏按钮
-    if (!live2d_settings.showToolMenu) $('.waifu-tool').hide();
-    if (!live2d_settings.canCloseLive2d) $('.waifu-tool .fui-cross').hide();
-    if (!live2d_settings.canSwitchModel) $('.waifu-tool .fui-eye').hide();
-    if (!live2d_settings.canSwitchTextures) $('.waifu-tool .fui-user').hide();
-    if (!live2d_settings.canSwitchHitokoto) $('.waifu-tool .fui-chat').hide();
-    if (!live2d_settings.canTakeScreenshot) $('.waifu-tool .fui-photo').hide();
-    if (!live2d_settings.canTurnToHomePage) $('.waifu-tool .fui-home').hide();
-    if (!live2d_settings.canTurnToAboutPage) $('.waifu-tool .fui-info-circle').hide();
-
-    // 加载模型
-    var modelId = live2d_settings.modelId;
-    var modelTexturesId = live2d_settings.modelTexturesId;
-    loadModel(modelId, modelTexturesId);
 }
 
-function loadModel(modelId, modelTexturesId=0) {
-    // 安全性检查：确保材质ID在有效范围内 (0-9)
-    const safeTexturesId = Math.max(0, Math.min(modelTexturesId, 9));
+// 初始加载模型
+function loadInitialModel() {
+    const modelId = live2d_settings.modelId;
+    const modelTexturesId = live2d_settings.modelTexturesId;
     
-    if (live2d_settings.modelStorage) {
-        localStorage.setItem('modelId', modelId);
-        localStorage.setItem('modelTexturesId', safeTexturesId);
-    } else {
-        sessionStorage.setItem('modelId', modelId);
-        sessionStorage.setItem('modelTexturesId', safeTexturesId);
-    }
-
-    // 更新当前设置
-    live2d_settings.modelId = modelId;
-    live2d_settings.modelTexturesId = safeTexturesId;
-
+    console.log('初始加载模型，ID:', modelId, '材质ID:', modelTexturesId);
+    
     // 使用完整路径
     var modelPath = '/dongxi-awa.github.io/live2d/model/' + modelId + '/index.json';
-    console.log('安全加载模型:', modelPath, '材质ID:', safeTexturesId);
+    
+    // 添加时间戳避免缓存
+    const timestamp = new Date().getTime();
+    const modelPathWithCache = modelPath + '?t=' + timestamp;
+    
+    console.log('初始模型路径:', modelPathWithCache);
     
     try {
-        loadlive2d('live2d', modelPath, function() {
-            if (live2d_settings.showF12Status) {
-                console.log('[Status]','live2d','模型',modelId+'-'+safeTexturesId,'加载完成');
-            }
+        loadlive2d('live2d', modelPathWithCache, function() {
+            console.log('初始模型加载完成');
+            // 更新模型引用
+            updateCurrentModelReference();
             
-            // 显示当前材质信息
-            if (modelTexturesConfig[modelId]) {
-                const textureName = modelTexturesConfig[modelId].textureNames[safeTexturesId];
-                showMessage(`当前服装: ${textureName}`, 2000);
-            }
+            // 显示欢迎消息
+            setTimeout(function() {
+                if (modelTexturesConfig[modelId]) {
+                    const textureName = modelTexturesConfig[modelId].textureNames[modelTexturesId];
+                    showMessage(`当前装扮: ${textureName}`, 2000);
+                }
+            }, 1000);
         });
     } catch (error) {
-        console.error('加载模型时出错:', error);
-        showMessage('模型加载出现问题，请刷新页面重试~', 5000);
+        console.error('初始模型加载失败:', error);
+        showMessage('模型加载失败，请刷新页面重试~', 5000);
     }
 }
 
@@ -334,7 +429,8 @@ function loadTipsMessage(result) {
     
     $('.waifu-tool .fui-user').click(function (){
         // 材质切换功能
-        if (modelTexturesConfig[live2d_settings.modelId] && modelTexturesConfig[live2d_settings.modelId].textureSets.length > 1) {
+        console.log('点击换装按钮，当前模型ID:', live2d_settings.modelId);
+        if (modelTexturesConfig[live2d_settings.modelId] && modelTexturesConfig[live2d_settings.modelId].textures.length > 1) {
             switchTextures();
         } else {
             showMessage('👗 当前只有一套衣服呢', 3000);
@@ -379,6 +475,6 @@ function loadTipsMessage(result) {
         showMessage(hoverText, 2000);
     });
 
-    // 加载模型
-    loadModel(live2d_settings.modelId, live2d_settings.modelTexturesId);
+    // 加载初始模型
+    loadInitialModel();
 }
