@@ -43,7 +43,7 @@ const modelFiles = [
     { file: "index2.json", name: "特别风格", message: "特别场合的装扮，是不是很漂亮？ ✨" }
 ];
 
-// 材质切换函数 - 使用不同的JSON文件
+// 材质切换函数
 function switchTextures() {
     currentModelIndex = (currentModelIndex + 1) % modelFiles.length;
     const model = modelFiles[currentModelIndex];
@@ -51,15 +51,15 @@ function switchTextures() {
     console.log('切换到:', model.name, '文件:', model.file);
     showMessage('正在切换装扮...', 1000);
     
-    // 加载不同的JSON文件
     setTimeout(() => {
         var modelPath = 'https://dxwwwqc.github.io/dongxi-awa.github.io/live2d/model/38/' + model.file + '?t=' + new Date().getTime();
-        loadlive2d('live2d', modelPath);
+        // 强制使用材质ID 0
+        loadlive2d('live2d', modelPath, 0);
         showMessage(model.message, 3000, true);
     }, 500);
 }
 
-// initModel 函数 - 完整保留
+// initModel 函数
 function initModel(waifuPath, type) {
     console.log('初始化 Live2D 模型...');
     
@@ -107,12 +107,13 @@ function initModel(waifuPath, type) {
     if (!live2d_settings.canTurnToHomePage) $('.waifu-tool .fui-home').hide();
     if (!live2d_settings.canTurnToAboutPage) $('.waifu-tool .fui-info-circle').hide();
 
-    // 加载默认模型 - 使用 index.json
+    // 加载默认模型
     var modelPath = 'https://dxwwwqc.github.io/dongxi-awa.github.io/live2d/model/38/index.json';
     loadlive2d('live2d', modelPath);
 }
 
-// 其他原有函数保持不变
+// ========== 必需的工具函数 ==========
+
 String.prototype.render = function(context) {
     var tokenReg = /(\\)?\{([^\{\}\\]+)(\\)?\}/g;
     return this.replace(tokenReg, function (word, slash1, token, slash2) {
@@ -162,6 +163,7 @@ function showHitokoto() {
     showMessage(text, 5000, true);
 }
 
+// 必需的 loadTipsMessage 函数
 function loadTipsMessage(result) {
     $('.waifu-tool .fui-home').click(function (){
         window.location.href = 'https://dxwwwqc.github.io/dongxi-awa.github.io/';
