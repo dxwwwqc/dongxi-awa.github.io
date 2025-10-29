@@ -72,7 +72,7 @@ const modelConfig = {
 // 当前模型索引
 let currentModelIndex = 0;
 
-// 模型切换函数 - 现在切换的是完全不同的JSON文件
+// 模型切换函数
 function switchTextures() {
     const modelId = live2d_settings.modelId;
     
@@ -85,25 +85,48 @@ function switchTextures() {
         
         console.log('切换到模型:', currentModel.name, '文件:', currentModel.file);
         
-        // 加载新的模型文件
-        loadModelFile(modelId, currentModel.file, currentModel.id);
+        // 显示切换消息
+        showMessage('正在切换装扮...', 1500);
         
-        // 显示消息
-        showMessage(currentModel.message, 3000, true);
+        // 延迟加载，确保消息显示
+        setTimeout(() => {
+            // 加载新的模型文件
+            loadModelFile(modelId, currentModel.file, currentModel.id);
+            
+            // 显示完成消息
+            setTimeout(() => {
+                showMessage(currentModel.message, 3000, true);
+            }, 1000);
+        }, 500);
         
     } else {
         showMessage('这个模型没有其他材质呢~', 3000);
     }
 }
 
-// 加载模型文件函数
+// 加载模型文件函数 - 修复版本
 function loadModelFile(modelId, modelFile, textureId) {
     // 更新当前设置
     live2d_settings.modelId = modelId;
     live2d_settings.modelTexturesId = textureId;
     
-    var modelPath = 'https://dxwwwqc.github.io/dongxi-awa.github.io/live2d/model/' + modelId + '/' + modelFile;
+    // 添加时间戳避免缓存
+    var timestamp = new Date().getTime();
+    var modelPath = 'https://dxwwwqc.github.io/dongxi-awa.github.io/live2d/model/' + modelId + '/' + modelFile + '?t=' + timestamp;
+    
     console.log('加载模型文件:', modelPath);
+    
+    // 安全地清理canvas内容
+    try {
+        var canvas = document.getElementById('live2d');
+        if (canvas && canvas.getContext) {
+            var ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+    } catch (e) {
+        // 忽略清理错误，继续加载
+        console.log('Canvas清理跳过:', e.message);
+    }
     
     // 直接加载新的模型文件
     loadlive2d('live2d', modelPath);
@@ -117,7 +140,13 @@ function loadModelFile(modelId, modelFile, textureId) {
 function loadDefaultModel() {
     const modelId = live2d_settings.modelId;
     const defaultModel = modelConfig[modelId].models[0];
-    loadModelFile(modelId, defaultModel.file, defaultModel.id);
+    
+    // 为默认模型也添加时间戳
+    var timestamp = new Date().getTime();
+    var modelPath = 'https://dxwwwqc.github.io/dongxi-awa.github.io/live2d/model/' + modelId + '/' + defaultModel.file + '?t=' + timestamp;
+    
+    console.log('初始化加载模型:', modelPath);
+    loadlive2d('live2d', modelPath);
 }
 
 // 其他函数保持不变...
