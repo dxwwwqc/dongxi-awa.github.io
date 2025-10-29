@@ -280,10 +280,7 @@ window.addEventListener('load', function() {
 <script>
 window.addEventListener('load', function() {
     if (window.SakanaWidget) {
-        const widget = SakanaWidget.init({
-            el: '.sakana-widget',
-            inertia: 0.01,
-        });
+        const widget = new SakanaWidget().mount('#sakana-widget');
         const container = document.getElementById('sakana-widget');
         
         let isDragging = false;
@@ -318,8 +315,14 @@ window.addEventListener('load', function() {
             if (isDragging) {
                 isDragging = false;
                 container.style.transition = '';
+                widget.applyForce(0.3, 0.1);
             }
         });
+    } else {
+        // 兼容脚本加载延迟
+        document.querySelector('script[src*="sakana.min.js"]').onload = function() {
+            new SakanaWidget().mount('#sakana-widget');
+        };
     }
 });
 </script>
