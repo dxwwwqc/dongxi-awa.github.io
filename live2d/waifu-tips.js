@@ -1,15 +1,11 @@
 window.live2d_settings = Array(); 
 
-// 后端接口
+// 基础配置
 live2d_settings['modelAPI'] = 'https://dxwwwqc.github.io/dongxi-awa.github.io/live2d/model/'; 
 live2d_settings['tipsMessage'] = 'https://dxwwwqc.github.io/dongxi-awa.github.io/live2d/waifu-tips.json'; 
 live2d_settings['hitokotoAPI'] = 'local'; 
-
-// 默认模型
 live2d_settings['modelId'] = 38;            
 live2d_settings['modelTexturesId'] = 0;             
-
-// 工具栏设置
 live2d_settings['showToolMenu'] = true;         
 live2d_settings['canCloseLive2d'] = true;         
 live2d_settings['canSwitchModel'] = false;         
@@ -18,8 +14,6 @@ live2d_settings['canSwitchHitokoto'] = true;
 live2d_settings['canTakeScreenshot'] = true;         
 live2d_settings['canTurnToHomePage'] = true;         
 live2d_settings['canTurnToAboutPage'] = true;         
-
-// 其他设置保持不变...
 live2d_settings['modelStorage'] = false;         
 live2d_settings['modelRandMode'] = 'switch';     
 live2d_settings['modelTexturesRandMode'] = 'switch';      
@@ -30,7 +24,7 @@ live2d_settings['waifuTipsSize'] = '250x70';
 live2d_settings['waifuFontSize'] = '12px';       
 live2d_settings['waifuToolFont'] = '14px';       
 live2d_settings['waifuToolLine'] = '20px';       
-live2d_settings['waifuToolTop'] = '0px'         
+live2d_settings['waifuToolTop'] = '0px';         
 live2d_settings['waifuMinWidth'] = '768px';      
 live2d_settings['waifuEdgeSide'] = 'left:0';     
 live2d_settings['waifuDraggable'] = 'disable';    
@@ -41,142 +35,35 @@ live2d_settings['homePageUrl'] = 'https://dxwwwqc.github.io/dongxi-awa.github.io
 live2d_settings['aboutPageUrl'] = 'https://www.fghrsh.net/post/123.html';   
 live2d_settings['screenshotCaptureName'] = 'live2d.png'; 
 
-/****************************************************************************************************/
+// 使用不同的JSON文件
+let currentModelIndex = 0;
+const modelFiles = [
+    { file: "index.json", name: "日常风格", message: "换上日常服装啦~ 感觉轻松自在！ 🌸" },
+    { file: "index1.json", name: "休闲风格", message: "休闲装扮，适合放松的时光~ 🎀" },
+    { file: "index2.json", name: "特别风格", message: "特别场合的装扮，是不是很漂亮？ ✨" }
+];
 
-// 材质配置 - 为每个风格指定固定的材质ID
-const textureConfig = {
-    "38": {
-        styles: [
-            {
-                id: 0,
-                name: "日常风格",
-                textureId: 0, // 固定使用材质0
-                message: "换上日常服装啦~ 感觉轻松自在！ 🌸"
-            },
-            {
-                id: 1, 
-                name: "休闲风格", 
-                textureId: 4, // 固定使用材质4（04.png作为基础）
-                message: "休闲装扮，适合放松的时光~ 🎀"
-            },
-            {
-                id: 2,
-                name: "特别风格", 
-                textureId: 7, // 固定使用材质7（07.png作为基础）
-                message: "特别场合的装扮，是不是很漂亮？ ✨"
-            }
-        ]
-    }
-};
-
-// 当前风格索引
-let currentStyleIndex = 0;
-
-// 材质切换函数 - 使用固定的材质ID
+// 材质切换函数 - 使用不同的JSON文件
 function switchTextures() {
-    const modelId = live2d_settings.modelId;
+    currentModelIndex = (currentModelIndex + 1) % modelFiles.length;
+    const model = modelFiles[currentModelIndex];
     
-    if (textureConfig[modelId]) {
-        const styles = textureConfig[modelId].styles;
-        
-        // 循环切换
-        currentStyleIndex = (currentStyleIndex + 1) % styles.length;
-        const currentStyle = styles[currentStyleIndex];
-        
-        console.log('切换到风格:', currentStyle.name, '固定材质ID:', currentStyle.textureId);
-        
-        // 显示切换消息
-        showMessage('正在切换装扮...', 1500);
-        
-        // 延迟加载，确保消息显示
-        setTimeout(() => {
-            // 加载模型并指定固定的材质ID
-            loadModelWithTexture(modelId, currentStyle.textureId);
-            
-            // 显示完成消息
-            setTimeout(() => {
-                showMessage(currentStyle.message, 3000, true);
-            }, 1000);
-        }, 500);
-        
-    } else {
-        showMessage('这个模型没有其他材质呢~', 3000);
-    }
+    console.log('切换到:', model.name, '文件:', model.file);
+    showMessage('正在切换装扮...', 1000);
+    
+    // 加载不同的JSON文件
+    setTimeout(() => {
+        var modelPath = 'https://dxwwwqc.github.io/dongxi-awa.github.io/live2d/model/38/' + model.file + '?t=' + new Date().getTime();
+        loadlive2d('live2d', modelPath);
+        showMessage(model.message, 3000, true);
+    }, 500);
 }
 
-// 加载模型并指定材质ID
-function loadModelWithTexture(modelId, textureId) {
-    // 更新当前设置
-    live2d_settings.modelId = modelId;
-    live2d_settings.modelTexturesId = textureId;
-    
-    // 使用单个JSON文件，但通过材质ID控制显示
-    var modelPath = 'https://dxwwwqc.github.io/dongxi-awa.github.io/live2d/model/' + modelId + '/index.json';
-    
-    // 添加时间戳避免缓存
-    var timestamp = new Date().getTime();
-    var urlWithTimestamp = modelPath + '?t=' + timestamp;
-    
-    console.log('加载模型:', modelPath, '固定材质ID:', textureId);
-    
-    // 使用loadlive2d加载模型并指定材质
-    loadlive2d('live2d', urlWithTimestamp, textureId);
-    
-    if (live2d_settings.showF12Status) {
-        console.log('[Status]','live2d','模型',modelId,'材质',textureId,'加载完成');
-    }
-}
-
-// 初始化加载默认模型
-function loadDefaultModel() {
-    const modelId = live2d_settings.modelId;
-    const defaultStyle = textureConfig[modelId].styles[0];
-    
-    loadModelWithTexture(modelId, defaultStyle.textureId);
-}
-
-// 其他函数保持不变...
-String.prototype.render = function(context) {
-    var tokenReg = /(\\)?\{([^\{\}\\]+)(\\)?\}/g;
-    return this.replace(tokenReg, function (word, slash1, token, slash2) {
-        if (slash1 || slash2) { return word.replace('\\', ''); }
-        var variables = token.replace(/\s/g, '').split('.');
-        var currentObject = context;
-        var i, length, variable;
-        for (i = 0, length = variables.length; i < length; ++i) {
-            variable = variables[i];
-            currentObject = currentObject[variable];
-            if (currentObject === undefined || currentObject === null) return '';
-        }
-        return currentObject;
-    });
-};
-
-function showMessage(text, timeout, flag) {
-    if(flag || sessionStorage.getItem('waifu-text') === '' || sessionStorage.getItem('waifu-text') === null){
-        if(Array.isArray(text)) text = text[Math.floor(Math.random() * text.length + 1)-1];
-        if (live2d_settings.showF12Message) console.log('[Message]', text.replace(/<[^<>]+>/g,''));
-        
-        if(flag) sessionStorage.setItem('waifu-text', text);
-        
-        $('.waifu-tips').stop();
-        $('.waifu-tips').html(text).fadeTo(200, 1);
-        if (timeout === undefined) timeout = 5000;
-        hideMessage(timeout);
-    }
-}
-
-function hideMessage(timeout) {
-    $('.waifu-tips').stop().css('opacity',1);
-    if (timeout === undefined) timeout = 5000;
-    window.setTimeout(function() {sessionStorage.removeItem('waifu-text')}, timeout);
-    $('.waifu-tips').delay(timeout).fadeTo(200, 0);
-}
-
+// initModel 函数 - 完整保留
 function initModel(waifuPath, type) {
     console.log('初始化 Live2D 模型...');
     
-    // 样式设置...
+    // 样式设置
     live2d_settings.waifuSize = live2d_settings.waifuSize.split('x');
     live2d_settings.waifuTipsSize = live2d_settings.waifuTipsSize.split('x');
     live2d_settings.waifuEdgeSide = live2d_settings.waifuEdgeSide.split(':');
@@ -220,21 +107,56 @@ function initModel(waifuPath, type) {
     if (!live2d_settings.canTurnToHomePage) $('.waifu-tool .fui-home').hide();
     if (!live2d_settings.canTurnToAboutPage) $('.waifu-tool .fui-info-circle').hide();
 
-    // 加载默认模型
-    loadDefaultModel();
+    // 加载默认模型 - 使用 index.json
+    var modelPath = 'https://dxwwwqc.github.io/dongxi-awa.github.io/live2d/model/38/index.json';
+    loadlive2d('live2d', modelPath);
 }
 
-// showHitokoto 和 loadTipsMessage 函数保持不变...
+// 其他原有函数保持不变
+String.prototype.render = function(context) {
+    var tokenReg = /(\\)?\{([^\{\}\\]+)(\\)?\}/g;
+    return this.replace(tokenReg, function (word, slash1, token, slash2) {
+        if (slash1 || slash2) { return word.replace('\\', ''); }
+        var variables = token.replace(/\s/g, '').split('.');
+        var currentObject = context;
+        var i, length, variable;
+        for (i = 0, length = variables.length; i < length; ++i) {
+            variable = variables[i];
+            currentObject = currentObject[variable];
+            if (currentObject === undefined || currentObject === null) return '';
+        }
+        return currentObject;
+    });
+};
+
+function showMessage(text, timeout, flag) {
+    if(flag || sessionStorage.getItem('waifu-text') === '' || sessionStorage.getItem('waifu-text') === null){
+        if(Array.isArray(text)) text = text[Math.floor(Math.random() * text.length + 1)-1];
+        if (live2d_settings.showF12Message) console.log('[Message]', text.replace(/<[^<>]+>/g,''));
+        
+        if(flag) sessionStorage.setItem('waifu-text', text);
+        
+        $('.waifu-tips').stop();
+        $('.waifu-tips').html(text).fadeTo(200, 1);
+        if (timeout === undefined) timeout = 5000;
+        hideMessage(timeout);
+    }
+}
+
+function hideMessage(timeout) {
+    $('.waifu-tips').stop().css('opacity',1);
+    if (timeout === undefined) timeout = 5000;
+    window.setTimeout(function() {sessionStorage.removeItem('waifu-text')}, timeout);
+    $('.waifu-tips').delay(timeout).fadeTo(200, 0);
+}
+
 function showHitokoto() {
     const texts = [
         '欢迎来到我的博客！',
         '今天也要开心哦~',
         '代码写的很棒呢！',
         '这个看板娘可爱吗？',
-        '记得常来看看哦！',
-        '嘿嘿，被我发现你在偷看~',
-        '今天的学习任务完成了吗？',
-        '要好好照顾自己哦！'
+        '记得常来看看哦！'
     ];
     const text = texts[Math.floor(Math.random() * texts.length)];
     showMessage(text, 5000, true);
@@ -254,11 +176,7 @@ function loadTipsMessage(result) {
     });
     
     $('.waifu-tool .fui-user').click(function (){
-        if (textureConfig[live2d_settings.modelId]) {
-            switchTextures();
-        } else {
-            showMessage('👗 当前只有一套衣服呢', 3000);
-        }
+        switchTextures();
     });
     
     $('.waifu-tool .fui-photo').click(function (){
@@ -286,10 +204,7 @@ function loadTipsMessage(result) {
             '啊！别碰我！', 
             '再摸我要生气了！', 
             '讨厌~',
-            '是…是不小心碰到了吧',
-            '萝莉控是什么呀',
-            '你看到我的小熊了吗',
-            '嘿嘿，被发现了~'
+            '是…是不小心碰到了吧'
         ];
         const text = texts[Math.floor(Math.random() * texts.length)];
         showMessage(text, 3000, true);
