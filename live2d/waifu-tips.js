@@ -75,21 +75,34 @@ live2d_settings['screenshotCaptureName']= 'live2d.png';
 
 /****************************************************************************************************/
 
-// 材质配置 - 模型38有4个材质 (0-3)
+// 全局变量存储提示信息
+let waifuTipsData = {};
+
+// 材质配置 - 支持3套服装系列
 const modelTexturesConfig = {
     "38": {
-        textures: [0, 1, 2, 3],  // 可用的材质ID
+        // 三个服装系列
+        textureSets: [
+            [0, 1, 2, 3],  // 第一套服装系列 (00-03)
+            [4, 5, 6],     // 第二套服装系列 (04-06)
+            [7, 8, 9]      // 第三套服装系列 (07-09)
+        ],
         textureNames: {
             0: "白色默认装",
             1: "蓝色清新装", 
             2: "粉色可爱装",
-            3: "黑色神秘装"
+            3: "黑色神秘装",
+            4: "校园制服A",
+            5: "校园制服B", 
+            6: "校园制服C",
+            7: "节日礼服A",
+            8: "节日礼服B",
+            9: "节日礼服C"
         },
-        messages: {
-            0: "换回白色默认服装啦~ ✨",
-            1: "穿上蓝色清新服装，感觉好凉爽！ 💙",
-            2: "粉色衣服好可爱呢~ 💖",
-            3: "黑色神秘风格，酷酷的！ 🖤"
+        setNames: {
+            0: "日常服装系列",
+            1: "校园制服系列", 
+            2: "节日礼服系列"
         }
     }
 };
@@ -137,32 +150,60 @@ function hideMessage(timeout) {
     $('.waifu-tips').delay(timeout).fadeTo(200, 0);
 }
 
-// 材质切换函数
+// 材质切换函数 - 按系列切换
 function switchTextures() {
     const modelId = live2d_settings.modelId;
     let currentTexturesId = live2d_settings.modelTexturesId || 0;
     
-    // 确保当前材质ID在有效范围内 (0-3)
-    currentTexturesId = Math.max(0, Math.min(currentTexturesId, 3));
-    
     if (modelTexturesConfig[modelId]) {
-        const textures = modelTexturesConfig[modelId].textures;
+        const textureSets = modelTexturesConfig[modelId].textureSets;
         const textureNames = modelTexturesConfig[modelId].textureNames;
-        const messages = modelTexturesConfig[modelId].messages;
+        const setNames = modelTexturesConfig[modelId].setNames;
         
-        // 找到当前材质ID在列表中的位置
-        const currentIndex = textures.indexOf(currentTexturesId);
-        let nextIndex = (currentIndex + 1) % textures.length;
-        const newTexturesId = textures[nextIndex];
+        // 找到当前材质ID属于哪个系列
+        let currentSetIndex = -1;
+        let currentTextureIndexInSet = -1;
+        
+        for (let i = 0; i < textureSets.length; i++) {
+            const indexInSet = textureSets[i].indexOf(currentTexturesId);
+            if (indexInSet !== -1) {
+                currentSetIndex = i;
+                currentTextureIndexInSet = indexInSet;
+                break;
+            }
+        }
+        
+        if (currentSetIndex === -1) {
+            // 如果没找到，默认使用第一个系列的第一个材质
+            currentSetIndex = 0;
+            currentTextureIndexInSet = 0;
+        }
+        
+        // 切换到下一个系列
+        const nextSetIndex = (currentSetIndex + 1) % textureSets.length;
+        const nextTextureSet = textureSets[nextSetIndex];
+        
+        // 在新系列中随机选择一个材质
+        const randomIndex = Math.floor(Math.random() * nextTextureSet.length);
+        const newTexturesId = nextTextureSet[randomIndex];
         
         // 加载新材质
         loadModel(modelId, newTexturesId);
         
-        // 显示消息
-        const message = messages[newTexturesId];
-        showMessage(message, 3000, true);
+        // 显示系列切换消息（从 waifu-tips.json 获取）
+        const textureName = textureNames[newTexturesId];
+        const setName = setNames[nextSetIndex];
         
-        console.log(`切换到材质: ${textureNames[newTexturesId]} (ID: ${newTexturesId})`);
+        // 从提示数据中获取换装消息
+        let changeMessage = `换上${textureName}啦~ (${setName})`;
+        if (waifuTipsData && waifuTipsData.textures && waifuTipsData.textures[newTexturesId]) {
+            const messages = waifuTipsData.textures[newTexturesId];
+            changeMessage = Array.isArray(messages) ? messages[Math.floor(Math.random() * messages.length)] : messages;
+        }
+        
+        showMessage(changeMessage, 3000, true);
+        console.log(`切换到系列: ${setName}, 材质: ${textureName} (ID: ${newTexturesId})`);
+        
     } else {
         showMessage('这个模型没有其他材质呢~', 3000);
     }
@@ -201,6 +242,7 @@ function initModel(waifuPath, type) {
             url: waifuPath == '' ? live2d_settings.tipsMessage : waifuPath,
             dataType: "json",
             success: function (result){ 
+                waifuTipsData = result; // 保存提示数据
                 loadTipsMessage(result); 
             },
             error: function(xhr, status, error) {
@@ -229,8 +271,8 @@ function initModel(waifuPath, type) {
 }
 
 function loadModel(modelId, modelTexturesId=0) {
-    // 安全性检查：确保材质ID在0-3范围内
-    const safeTexturesId = Math.max(0, Math.min(modelTexturesId, 3));
+    // 安全性检查：确保材质ID在有效范围内 (0-9)
+    const safeTexturesId = Math.max(0, Math.min(modelTexturesId, 9));
     
     if (live2d_settings.modelStorage) {
         localStorage.setItem('modelId', modelId);
@@ -249,7 +291,17 @@ function loadModel(modelId, modelTexturesId=0) {
     console.log('安全加载模型:', modelPath, '材质ID:', safeTexturesId);
     
     try {
-        loadlive2d('live2d', modelPath, (live2d_settings.showF12Status ? console.log('[Status]','live2d','模型',modelId+'-'+safeTexturesId,'加载完成'):null));
+        loadlive2d('live2d', modelPath, function() {
+            if (live2d_settings.showF12Status) {
+                console.log('[Status]','live2d','模型',modelId+'-'+safeTexturesId,'加载完成');
+            }
+            
+            // 显示当前材质信息
+            if (modelTexturesConfig[modelId]) {
+                const textureName = modelTexturesConfig[modelId].textureNames[safeTexturesId];
+                showMessage(`当前服装: ${textureName}`, 2000);
+            }
+        });
     } catch (error) {
         console.error('加载模型时出错:', error);
         showMessage('模型加载出现问题，请刷新页面重试~', 5000);
@@ -257,18 +309,13 @@ function loadModel(modelId, modelTexturesId=0) {
 }
 
 function showHitokoto() {
-    const texts = [
-        '欢迎来到我的博客！',
-        '今天也要开心哦~',
-        '代码写的很棒呢！',
-        '这个看板娘可爱吗？',
-        '记得常来看看哦！',
-        '嘿嘿，被我发现你在偷看~',
-        '今天的学习任务完成了吗？',
-        '要好好照顾自己哦！'
-    ];
-    const text = texts[Math.floor(Math.random() * texts.length)];
-    showMessage(text, 5000, true);
+    // 从 waifu-tips.json 获取一言
+    let hitokotoText = '欢迎来到我的博客！';
+    if (waifuTipsData && waifuTipsData.hitokoto) {
+        const hitokotos = waifuTipsData.hitokoto;
+        hitokotoText = Array.isArray(hitokotos) ? hitokotos[Math.floor(Math.random() * hitokotos.length)] : hitokotos;
+    }
+    showMessage(hitokotoText, 5000, true);
 }
 
 function loadTipsMessage(result) {
@@ -287,7 +334,7 @@ function loadTipsMessage(result) {
     
     $('.waifu-tool .fui-user').click(function (){
         // 材质切换功能
-        if (modelTexturesConfig[live2d_settings.modelId] && modelTexturesConfig[live2d_settings.modelId].textures.length > 1) {
+        if (modelTexturesConfig[live2d_settings.modelId] && modelTexturesConfig[live2d_settings.modelId].textureSets.length > 1) {
             switchTextures();
         } else {
             showMessage('👗 当前只有一套衣服呢', 3000);
@@ -313,28 +360,25 @@ function loadTipsMessage(result) {
         }, 1300);
     });
     
-    // 交互功能
+    // 交互功能 - 从 waifu-tips.json 获取消息
     $(document).on("click", "#live2d", function (){
-        const texts = [
-            '啊！别碰我！', 
-            '再摸我要生气了！', 
-            '讨厌~',
-            '是…是不小心碰到了吧',
-            '萝莉控是什么呀',
-            '你看到我的小熊了吗',
-            '嘿嘿，被发现了~'
-        ];
-        const text = texts[Math.floor(Math.random() * texts.length)];
-        showMessage(text, 3000, true);
+        let clickText = '啊！别碰我！';
+        if (waifuTipsData && waifuTipsData.click) {
+            const clicks = waifuTipsData.click;
+            clickText = Array.isArray(clicks) ? clicks[Math.floor(Math.random() * clicks.length)] : clicks;
+        }
+        showMessage(clickText, 3000, true);
     });
 
     $(document).on("mouseover", "#live2d", function (){
-        const texts = [
-            '干嘛呢你，快把手拿开',
-            '鼠…鼠标放错地方了！',
-            '嘿嘿嘿~'
-        ];
-        const text = texts[Math.floor(Math.random() * texts.length)];
-        showMessage(text, 2000);
+        let hoverText = '干嘛呢你，快把手拿开';
+        if (waifuTipsData && waifuTipsData.mouseover) {
+            const hovers = waifuTipsData.mouseover;
+            hoverText = Array.isArray(hovers) ? hovers[Math.floor(Math.random() * hovers.length)] : hovers;
+        }
+        showMessage(hoverText, 2000);
     });
+
+    // 加载模型
+    loadModel(live2d_settings.modelId, live2d_settings.modelTexturesId);
 }
