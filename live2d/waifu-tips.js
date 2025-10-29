@@ -43,59 +43,59 @@ live2d_settings['screenshotCaptureName'] = 'live2d.png';
 
 /****************************************************************************************************/
 
-// 模型配置 - 使用不同的JSON文件
-const modelConfig = {
+// 材质配置 - 为每个风格指定固定的材质ID
+const textureConfig = {
     "38": {
-        models: [
+        styles: [
             {
                 id: 0,
                 name: "日常风格",
-                file: "index.json",
+                textureId: 0, // 固定使用材质0
                 message: "换上日常服装啦~ 感觉轻松自在！ 🌸"
             },
             {
                 id: 1, 
-                name: "休闲风格",
-                file: "index1.json", 
+                name: "休闲风格", 
+                textureId: 4, // 固定使用材质4（04.png作为基础）
                 message: "休闲装扮，适合放松的时光~ 🎀"
             },
             {
                 id: 2,
                 name: "特别风格", 
-                file: "index2.json",
+                textureId: 7, // 固定使用材质7（07.png作为基础）
                 message: "特别场合的装扮，是不是很漂亮？ ✨"
             }
         ]
     }
 };
 
-// 当前模型索引
-let currentModelIndex = 0;
+// 当前风格索引
+let currentStyleIndex = 0;
 
-// 模型切换函数
+// 材质切换函数 - 使用固定的材质ID
 function switchTextures() {
     const modelId = live2d_settings.modelId;
     
-    if (modelConfig[modelId]) {
-        const models = modelConfig[modelId].models;
+    if (textureConfig[modelId]) {
+        const styles = textureConfig[modelId].styles;
         
         // 循环切换
-        currentModelIndex = (currentModelIndex + 1) % models.length;
-        const currentModel = models[currentModelIndex];
+        currentStyleIndex = (currentStyleIndex + 1) % styles.length;
+        const currentStyle = styles[currentStyleIndex];
         
-        console.log('切换到模型:', currentModel.name, '文件:', currentModel.file);
+        console.log('切换到风格:', currentStyle.name, '固定材质ID:', currentStyle.textureId);
         
         // 显示切换消息
         showMessage('正在切换装扮...', 1500);
         
         // 延迟加载，确保消息显示
         setTimeout(() => {
-            // 加载新的模型文件
-            loadModelFile(modelId, currentModel.file, currentModel.id);
+            // 加载模型并指定固定的材质ID
+            loadModelWithTexture(modelId, currentStyle.textureId);
             
             // 显示完成消息
             setTimeout(() => {
-                showMessage(currentModel.message, 3000, true);
+                showMessage(currentStyle.message, 3000, true);
             }, 1000);
         }, 500);
         
@@ -104,49 +104,35 @@ function switchTextures() {
     }
 }
 
-// 加载模型文件函数 - 修复版本
-function loadModelFile(modelId, modelFile, textureId) {
+// 加载模型并指定材质ID
+function loadModelWithTexture(modelId, textureId) {
     // 更新当前设置
     live2d_settings.modelId = modelId;
     live2d_settings.modelTexturesId = textureId;
     
+    // 使用单个JSON文件，但通过材质ID控制显示
+    var modelPath = 'https://dxwwwqc.github.io/dongxi-awa.github.io/live2d/model/' + modelId + '/index.json';
+    
     // 添加时间戳避免缓存
     var timestamp = new Date().getTime();
-    var modelPath = 'https://dxwwwqc.github.io/dongxi-awa.github.io/live2d/model/' + modelId + '/' + modelFile + '?t=' + timestamp;
+    var urlWithTimestamp = modelPath + '?t=' + timestamp;
     
-    console.log('加载模型文件:', modelPath);
+    console.log('加载模型:', modelPath, '固定材质ID:', textureId);
     
-    // 安全地清理canvas内容
-    try {
-        var canvas = document.getElementById('live2d');
-        if (canvas && canvas.getContext) {
-            var ctx = canvas.getContext('2d');
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-        }
-    } catch (e) {
-        // 忽略清理错误，继续加载
-        console.log('Canvas清理跳过:', e.message);
-    }
-    
-    // 直接加载新的模型文件
-    loadlive2d('live2d', modelPath);
+    // 使用loadlive2d加载模型并指定材质
+    loadlive2d('live2d', urlWithTimestamp, textureId);
     
     if (live2d_settings.showF12Status) {
-        console.log('[Status]','live2d','模型文件',modelFile,'加载完成');
+        console.log('[Status]','live2d','模型',modelId,'材质',textureId,'加载完成');
     }
 }
 
 // 初始化加载默认模型
 function loadDefaultModel() {
     const modelId = live2d_settings.modelId;
-    const defaultModel = modelConfig[modelId].models[0];
+    const defaultStyle = textureConfig[modelId].styles[0];
     
-    // 为默认模型也添加时间戳
-    var timestamp = new Date().getTime();
-    var modelPath = 'https://dxwwwqc.github.io/dongxi-awa.github.io/live2d/model/' + modelId + '/' + defaultModel.file + '?t=' + timestamp;
-    
-    console.log('初始化加载模型:', modelPath);
-    loadlive2d('live2d', modelPath);
+    loadModelWithTexture(modelId, defaultStyle.textureId);
 }
 
 // 其他函数保持不变...
@@ -268,7 +254,7 @@ function loadTipsMessage(result) {
     });
     
     $('.waifu-tool .fui-user').click(function (){
-        if (modelConfig[live2d_settings.modelId]) {
+        if (textureConfig[live2d_settings.modelId]) {
             switchTextures();
         } else {
             showMessage('👗 当前只有一套衣服呢', 3000);
