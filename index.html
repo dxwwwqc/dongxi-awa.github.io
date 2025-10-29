@@ -335,7 +335,7 @@ window.addEventListener('load', function() {
     if (typeof initModel === 'function') {
         console.log('initModel 函数已找到，开始初始化');
         
-        // 初始化模型
+        // 使用正确的路径 - 添加 /dongxi-awa.github.io
         initModel("/dongxi-awa.github.io/live2d/waifu-tips.json");
     } else {
         console.error('initModel 函数未定义！');
@@ -344,10 +344,11 @@ window.addEventListener('load', function() {
         console.log('- loadlive2d:', typeof loadlive2d);
         console.log('- initModel:', typeof initModel);
         
-        // 备用方案：直接加载模型
+        // 备用方案：直接加载模型（使用正确路径）
         if (typeof loadlive2d === 'function') {
             console.log('使用备用方案加载模型...');
-            loadlive2d('live2d', '/live2d/model/38/index.json', function() {
+            // 使用正确的路径
+            loadlive2d('live2d', '/dongxi-awa.github.io/live2d/model/38/index.json', function() {
                 console.log('模型加载完成!');
                 // 显示欢迎消息
                 if (typeof showMessage === 'function') {
@@ -358,7 +359,7 @@ window.addEventListener('load', function() {
             console.error('loadlive2d 函数也未定义，请检查脚本加载');
         }
     }
-}); // 这里添加了缺少的右大括号和括号
+});
 </script>
 
 <!-- Sakana Widget 石蒜模拟器 -->

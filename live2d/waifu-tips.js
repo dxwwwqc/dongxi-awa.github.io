@@ -21,8 +21,8 @@ window.live2d_settings = Array(); /*
 
 
 // 后端接口 - 修改为本地路径
-live2d_settings['modelAPI']             = '/live2d/model/';   // 自建 API 修改这里
-live2d_settings['tipsMessage']          = '/live2d/waifu-tips.json';  // 完整路径
+live2d_settings['modelAPI']             = '/dongxi-awa.github.io/live2d/model/';   // 添加 /dongxi-awa.github.io
+live2d_settings['tipsMessage']          = '/dongxi-awa.github.io/live2d/waifu-tips.json';  // 添加 /dongxi-awa.github.io       = '/live2d/waifu-tips.json';  // 完整路径
 live2d_settings['hitokotoAPI']          = 'local';            // 使用本地一言
 
 // 默认模型 - 使用你的模型
@@ -177,11 +177,10 @@ function loadModel(modelId, modelTexturesId=0) {
         sessionStorage.setItem('modelTexturesId', modelTexturesId);
     }
 
-    var modelPath = '/live2d/model/' + modelId + '/index.json';
+  var modelPath = '/dongxi-awa.github.io/live2d/model/' + modelId + '/index.json';
     console.log('加载模型:', modelPath);
     loadlive2d('live2d', modelPath, (live2d_settings.showF12Status ? console.log('[Status]','live2d','模型',modelId+'-'+modelTexturesId,'加载完成'):null));
 }
-
 // ... loadTipsMessage 函数保持不变
 
 function showHitokoto() {
