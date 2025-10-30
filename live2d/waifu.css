@@ -46,9 +46,6 @@
 .waifu-tool span:hover {
     color: #34495e;
 }
-.waifu #live2d{
-    position: relative;
-}
 
 @keyframes shake {
     2% {
