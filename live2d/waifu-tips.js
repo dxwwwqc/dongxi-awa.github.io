@@ -109,6 +109,8 @@ function initModel(waifuPath, type) {
 
     // 加载默认模型
     var modelPath = 'https://dxwwwqc.github.io/dongxi-awa.github.io/live2d/model/38/index.json';
+    var modelPath = 'https://dxwwwqc.github.io/dongxi-awa.github.io/live2d/model/38/index1.json';
+    var modelPath = 'https://dxwwwqc.github.io/dongxi-awa.github.io/live2d/model/38/index2.json';
     loadlive2d('live2d', modelPath);
 }
 
