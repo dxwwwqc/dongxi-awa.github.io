@@ -213,13 +213,13 @@
 
 <!-- 正确的脚本加载顺序 -->
 <script src="/dongxi-awa.github.io/live2d/live2d.js"></script>
+<script src="/dongxi-awa.github.io/live2d/waifu-tips.js"></script>
 
-<!-- 简化的初始化脚本，不依赖 waifu-tips.js -->
 <script type="text/javascript">
-// 简化的 Live2D 初始化（不依赖外部配置文件）
+// 完整的 Live2D 初始化
 function initializeLive2D() {
     console.log('开始初始化 Live2D...');
-    console.log('环境检测 - jQuery:', typeof $, 'loadlive2d:', typeof loadlive2d);
+    console.log('环境检测 - jQuery:', typeof $, 'initModel:', typeof initModel, 'loadlive2d:', typeof loadlive2d);
     
     // 检查依赖是否加载完成
     if (typeof $ === 'undefined') {
@@ -228,103 +228,28 @@ function initializeLive2D() {
         return;
     }
     
-    if (typeof loadlive2d === 'undefined') {
-        console.log('等待 Live2D 加载...');
+    if (typeof initModel === 'undefined') {
+        console.log('等待 waifu-tips.js 加载...');
         setTimeout(initializeLive2D, 100);
         return;
     }
 
     try {
-        // 固定路径
-        const basePath = '/dongxi-awa.github.io';
-        const modelPath = basePath + '/live2d/model/38/index.json';
+        // 使用完整的 initModel 功能
+        const tipsPath = '/dongxi-awa.github.io/live2d/waifu-tips.json';
+        console.log('使用完整功能初始化，路径:', tipsPath);
         
-        console.log('加载模型路径:', modelPath);
-        
-        // 直接加载模型
-        loadlive2d('live2d', modelPath, function() {
-            console.log('Live2D 模型加载完成!');
-            
-            // 显示欢迎消息
-            showWelcomeMessage();
-            
-            // 初始化基本交互
-            initBasicInteractions();
-        });
+        initModel(tipsPath);
         
     } catch (error) {
         console.error('Live2D 初始化失败:', error);
+        
+        // 备用方案：直接加载模型
+        if (typeof loadlive2d === 'function') {
+            console.log('使用备用方案加载模型...');
+            loadlive2d('live2d', '/dongxi-awa.github.io/live2d/model/38/index.json');
+        }
     }
-}
-
-// 显示欢迎消息
-function showWelcomeMessage() {
-    const messages = [
-        "欢迎来到我的博客！",
-        "你好呀~ 很高兴见到你！",
-        "欢迎光临！希望你喜欢这里~"
-    ];
-    const text = messages[Math.floor(Math.random() * messages.length)];
-    showMessage(text, 4000);
-}
-
-// 显示消息
-function showMessage(text, timeout) {
-    const $tips = $('.waifu-tips');
-    $tips.stop();
-    $tips.html(text).fadeTo(200, 1);
-    
-    if (timeout === undefined) timeout = 5000;
-    $tips.delay(timeout).fadeTo(200, 0);
-}
-
-// 初始化基本交互
-function initBasicInteractions() {
-    // 点击看板娘
-    $('#live2d').on('click', function() {
-        const messages = [
-            "哎呀，别戳我呀~",
-            "再戳我就要生气了！",
-            "有什么事情吗？",
-            "你好呀~"
-        ];
-        const text = messages[Math.floor(Math.random() * messages.length)];
-        showMessage(text, 3000);
-    });
-    
-    // 工具栏按钮功能
-    $('.waifu-tool .fui-home').click(function() {
-        window.location.href = 'https://dxwwwqc.github.io/dongxi-awa.github.io/';
-    });
-    
-    $('.waifu-tool .fui-chat').click(function() {
-        const messages = [
-            "今天天气真不错呢~",
-            "要和我聊些什么吗？",
-            "博客内容还喜欢吗？"
-        ];
-        const text = messages[Math.floor(Math.random() * messages.length)];
-        showMessage(text, 4000);
-    });
-    
-    $('.waifu-tool .fui-user').click(function() {
-        showMessage("🚧 换装功能暂不可用", 3000);
-    });
-    
-    $('.waifu-tool .fui-photo').click(function() {
-        showMessage("📸 截图功能暂不可用", 3000);
-    });
-    
-    $('.waifu-tool .fui-info-circle').click(function() {
-        window.open('https://www.fghrsh.net/post/123.html');
-    });
-    
-    $('.waifu-tool .fui-cross').click(function() {
-        showMessage("再见啦~ 想我的时候可以刷新页面哦", 2000);
-        setTimeout(() => {
-            $('#waifu-container').hide();
-        }, 2000);
-    });
 }
 
 // 页面加载后初始化
@@ -333,9 +258,20 @@ document.addEventListener('DOMContentLoaded', function() {
     setTimeout(initializeLive2D, 500);
 });
 
-// 备用初始化
+// 最终检查
 window.addEventListener('load', function() {
     console.log('页面完全加载完成');
+    
+    // 如果 waifu-tips.js 加载失败，尝试直接加载模型
+    setTimeout(function() {
+        const canvas = document.getElementById('live2d');
+        if (!canvas || canvas.width === 0) {
+            console.log('检测到看板娘未正确加载，强制重试...');
+            if (typeof loadlive2d === 'function') {
+                loadlive2d('live2d', '/dongxi-awa.github.io/live2d/model/38/index.json');
+            }
+        }
+    }, 5000);
 });
 </script>
 
