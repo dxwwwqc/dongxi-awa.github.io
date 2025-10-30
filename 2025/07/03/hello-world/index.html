@@ -219,7 +219,7 @@
 <link rel="stylesheet" href="/dongxi-awa.github.io/live2d/waifu.css">
 
 <!-- 看板娘容器 -->
-<div class="waifu" style="position: fixed; bottom: 0px; left: 20px; z-index: 998;">
+<div class="waifu" id="waifu-container" style="position: fixed; bottom: 0px; left: 20px; z-index: 998;">
     <div class="waifu-tips"></div>
     <canvas id="live2d" class="live2d" width="280" height="250"></canvas>
     <div class="waifu-tool">
@@ -238,38 +238,108 @@
 <script src="/dongxi-awa.github.io/live2d/waifu-tips.js"></script>
 
 <script type="text/javascript">
-// 等待页面完全加载
-window.addEventListener('load', function() {
-    console.log('初始化 Live2D...');
+// 增强的 Live2D 初始化函数
+function initializeLive2D() {
+    console.log('开始初始化 Live2D...');
+    console.log('环境检测 - jQuery:', typeof $, 'initModel:', typeof initModel, 'loadlive2d:', typeof loadlive2d);
     
-    // 检查必要的组件
-    if (typeof initModel === 'function') {
-        console.log('initModel 函数已找到，开始初始化');
+    // 检查依赖是否加载完成
+    if (typeof $ === 'undefined') {
+        console.log('等待 jQuery 加载...');
+        setTimeout(initializeLive2D, 100);
+        return;
+    }
+    
+    if (typeof initModel === 'undefined' && typeof loadlive2d === 'undefined') {
+        console.log('等待 Live2D 组件加载...');
+        setTimeout(initializeLive2D, 100);
+        return;
+    }
+
+    try {
+        // 自动检测环境并设置正确路径
+        const isGitHubPages = window.location.hostname.includes('github.io');
+        let basePath = '';
         
-        // 使用正确的路径 - 添加 /dongxi-awa.github.io
-        initModel("/dongxi-awa.github.io/live2d/waifu-tips.json");
-    } else {
-        console.error('initModel 函数未定义！');
-        console.log('组件检查:');
-        console.log('- jQuery:', typeof $);
-        console.log('- loadlive2d:', typeof loadlive2d);
-        console.log('- initModel:', typeof initModel);
+        // GitHub Pages 特殊处理
+        if (isGitHubPages) {
+            const pathSegments = window.location.pathname.split('/').filter(Boolean);
+            if (pathSegments.length > 0 && pathSegments[0] !== 'dongxi-awa.github.io') {
+                basePath = '/' + pathSegments[0];
+            }
+        }
         
-        // 备用方案：直接加载模型（使用正确路径）
-        if (typeof loadlive2d === 'function') {
-            console.log('使用备用方案加载模型...');
-            // 使用正确的路径
-            loadlive2d('live2d', '/dongxi-awa.github.io/live2d/model/38/index.json', function() {
-                console.log('模型加载完成!');
+        // 优先使用 initModel
+        if (typeof initModel === 'function') {
+            const tipsPath = basePath + '/live2d/waifu-tips.json';
+            console.log('使用 initModel 初始化，路径:', tipsPath);
+            initModel(tipsPath);
+        } 
+        // 备用方案：直接加载模型
+        else if (typeof loadlive2d === 'function') {
+            const modelPath = basePath + '/live2d/model/38/index.json';
+            console.log('使用 loadlive2d 直接加载模型，路径:', modelPath);
+            loadlive2d('live2d', modelPath, function() {
+                console.log('Live2D 模型加载完成!');
                 // 显示欢迎消息
                 if (typeof showMessage === 'function') {
                     showMessage('欢迎光临！', 3000);
                 }
             });
-        } else {
-            console.error('loadlive2d 函数也未定义，请检查脚本加载');
         }
+        
+    } catch (error) {
+        console.error('Live2D 初始化失败:', error);
+        
+        // 最终备用方案
+        setTimeout(function() {
+            if (typeof loadlive2d === 'function') {
+                console.log('尝试最终备用方案...');
+                loadlive2d('live2d', '/live2d/model/38/index.json');
+            }
+        }, 1000);
     }
+}
+
+// 多种初始化触发方式
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM 加载完成，准备初始化 Live2D');
+    setTimeout(initializeLive2D, 500);
+});
+
+// 最终检查：如果页面加载完成后仍未初始化，强制重试
+window.addEventListener('load', function() {
+    console.log('页面完全加载完成');
+    
+    // 10秒后检查看板娘是否成功加载
+    setTimeout(function() {
+        const canvas = document.getElementById('live2d');
+        const waifuContainer = document.getElementById('waifu-container');
+        
+        if (canvas && canvas.width === 0) {
+            console.log('检测到看板娘未正确加载，强制重试...');
+            if (typeof loadlive2d === 'function') {
+                // 尝试多种可能的路径
+                const possiblePaths = [
+                    '/live2d/model/38/index.json',
+                    '/dongxi-awa.github.io/live2d/model/38/index.json',
+                    './live2d/model/38/index.json'
+                ];
+                
+                for (let path of possiblePaths) {
+                    console.log('尝试路径:', path);
+                    try {
+                        loadlive2d('live2d', path);
+                        break;
+                    } catch (e) {
+                        console.log('路径失败:', path, e);
+                    }
+                }
+            }
+        } else if (canvas) {
+            console.log('看板娘已成功加载');
+        }
+    }, 10000);
 });
 </script>
 
@@ -278,7 +348,8 @@ window.addEventListener('load', function() {
 <div id="sakana-widget" style="position: fixed; bottom: 20px; right: 20px; z-index: 999; width: 120px; height: 180px; cursor: move;"></div>
 <script src="https://cdn.jsdelivr.net/npm/sakana-widget@2.7.1/lib/sakana.min.js"></script>
 <script>
-window.addEventListener('load', function() {
+// Sakana Widget 初始化
+function initSakanaWidget() {
     if (window.SakanaWidget) {
         const widget = new SakanaWidget().mount('#sakana-widget');
         const container = document.getElementById('sakana-widget');
@@ -318,12 +389,17 @@ window.addEventListener('load', function() {
                 widget.applyForce(0.3, 0.1);
             }
         });
+        
+        console.log('Sakana Widget 初始化成功');
     } else {
-        // 兼容脚本加载延迟
-        document.querySelector('script[src*="sakana.min.js"]').onload = function() {
-            new SakanaWidget().mount('#sakana-widget');
-        };
+        console.log('等待 Sakana Widget 加载...');
+        setTimeout(initSakanaWidget, 100);
     }
+}
+
+// 初始化 Sakana Widget
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(initSakanaWidget, 1000);
 });
 </script>
         </div>
