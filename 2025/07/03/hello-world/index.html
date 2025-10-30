@@ -241,6 +241,7 @@
 // 增强的 Live2D 初始化函数
 function initializeLive2D() {
     console.log('开始初始化 Live2D...');
+    console.log('当前URL:', window.location.href);
     console.log('环境检测 - jQuery:', typeof $, 'initModel:', typeof initModel, 'loadlive2d:', typeof loadlive2d);
     
     // 检查依赖是否加载完成
@@ -257,28 +258,15 @@ function initializeLive2D() {
     }
 
     try {
-        // 自动检测环境并设置正确路径
-        const isGitHubPages = window.location.hostname.includes('github.io');
-        let basePath = '';
+        // 根据您的特殊URL结构设置固定路径
+        const basePath = '/dongxi-awa.github.io';
+        console.log('使用基础路径:', basePath);
         
-        // GitHub Pages 特殊处理
-        if (isGitHubPages) {
-            const pathSegments = window.location.pathname.split('/').filter(Boolean);
-            if (pathSegments.length > 0 && pathSegments[0] !== 'dongxi-awa.github.io') {
-                basePath = '/' + pathSegments[0];
-            }
-        }
-        
-        // 优先使用 initModel
-        if (typeof initModel === 'function') {
-            const tipsPath = basePath + '/live2d/waifu-tips.json';
-            console.log('使用 initModel 初始化，路径:', tipsPath);
-            initModel(tipsPath);
-        } 
-        // 备用方案：直接加载模型
-        else if (typeof loadlive2d === 'function') {
+        // 方法1：直接加载模型（推荐，避免 waifu-tips.json 问题）
+        if (typeof loadlive2d === 'function') {
             const modelPath = basePath + '/live2d/model/38/index.json';
-            console.log('使用 loadlive2d 直接加载模型，路径:', modelPath);
+            console.log('直接加载模型，路径:', modelPath);
+            
             loadlive2d('live2d', modelPath, function() {
                 console.log('Live2D 模型加载完成!');
                 // 显示欢迎消息
@@ -287,15 +275,36 @@ function initializeLive2D() {
                 }
             });
         }
+        // 方法2：使用 initModel（备用）
+        else if (typeof initModel === 'function') {
+            const tipsPath = basePath + '/live2d/waifu-tips.json';
+            console.log('使用 initModel 初始化，路径:', tipsPath);
+            initModel(tipsPath);
+        }
         
     } catch (error) {
         console.error('Live2D 初始化失败:', error);
         
-        // 最终备用方案
+        // 备用方案
         setTimeout(function() {
             if (typeof loadlive2d === 'function') {
-                console.log('尝试最终备用方案...');
-                loadlive2d('live2d', '/live2d/model/38/index.json');
+                console.log('尝试备用路径...');
+                // 尝试多个可能的路径
+                const backupPaths = [
+                    '/dongxi-awa.github.io/live2d/model/38/index.json',
+                    '/live2d/model/38/index.json',
+                    './live2d/model/38/index.json'
+                ];
+                
+                for (let path of backupPaths) {
+                    console.log('尝试路径:', path);
+                    try {
+                        loadlive2d('live2d', path);
+                        break;
+                    } catch (e) {
+                        console.log('路径失败:', path);
+                    }
+                }
             }
         }, 1000);
     }
@@ -307,39 +316,24 @@ document.addEventListener('DOMContentLoaded', function() {
     setTimeout(initializeLive2D, 500);
 });
 
-// 最终检查：如果页面加载完成后仍未初始化，强制重试
+// 最终检查
 window.addEventListener('load', function() {
     console.log('页面完全加载完成');
     
-    // 10秒后检查看板娘是否成功加载
+    // 8秒后检查看板娘是否成功加载
     setTimeout(function() {
         const canvas = document.getElementById('live2d');
-        const waifuContainer = document.getElementById('waifu-container');
         
-        if (canvas && canvas.width === 0) {
-            console.log('检测到看板娘未正确加载，强制重试...');
+        if (!canvas || canvas.width === 0) {
+            console.log('检测到看板娘未正确加载，最终重试...');
+            // 最终强制尝试
             if (typeof loadlive2d === 'function') {
-                // 尝试多种可能的路径
-                const possiblePaths = [
-                    '/live2d/model/38/index.json',
-                    '/dongxi-awa.github.io/live2d/model/38/index.json',
-                    './live2d/model/38/index.json'
-                ];
-                
-                for (let path of possiblePaths) {
-                    console.log('尝试路径:', path);
-                    try {
-                        loadlive2d('live2d', path);
-                        break;
-                    } catch (e) {
-                        console.log('路径失败:', path, e);
-                    }
-                }
+                loadlive2d('live2d', '/dongxi-awa.github.io/live2d/model/38/index.json');
             }
-        } else if (canvas) {
+        } else {
             console.log('看板娘已成功加载');
         }
-    }, 10000);
+    }, 8000);
 });
 </script>
 
