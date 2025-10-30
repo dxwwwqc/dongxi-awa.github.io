@@ -46,12 +46,21 @@ const modelFiles = [
 // 全局变量存储 JSON 数据
 let waifuTipsData = null;
 
-// 使用 load_rand_textures 消息
+// 使用 load_rand_textures 消息 - 换装开始提示
 function getRandomTextureMessage() {
     if (!waifuTipsData || !waifuTipsData.waifu.load_rand_textures) {
-        return "换上新衣服啦~";
+        return "正在换装...";
     }
     const messages = waifuTipsData.waifu.load_rand_textures;
+    return messages[Math.floor(Math.random() * messages.length)];
+}
+
+// 使用 change_costume_messages 消息 - 换装完成反馈
+function getRandomCostumeMessage() {
+    if (!waifuTipsData || !waifuTipsData.waifu.change_costume_messages) {
+        return "换装完成！";
+    }
+    const messages = waifuTipsData.waifu.change_costume_messages;
     return messages[Math.floor(Math.random() * messages.length)];
 }
 
@@ -68,7 +77,6 @@ function showModelMessage(modelId) {
 // 欢迎消息函数 - 从 JSON 读取
 function showWelcomeMessage() {
     if (!waifuTipsData || !waifuTipsData.waifu.welcome_messages) {
-        // 默认消息
         const defaultMessages = ["欢迎来到我的博客！"];
         const text = defaultMessages[Math.floor(Math.random() * defaultMessages.length)];
         showMessage(text, 6000, true);
@@ -83,7 +91,6 @@ function showWelcomeMessage() {
 // 一言函数 - 从 JSON 读取
 function showHitokoto() {
     if (!waifuTipsData || !waifuTipsData.waifu.hitokoto_messages) {
-        // 默认消息
         const defaultMessages = ["欢迎来到我的博客！"];
         const text = defaultMessages[Math.floor(Math.random() * defaultMessages.length)];
         showMessage(text, 5000, true);
@@ -101,15 +108,18 @@ function switchTextures() {
     const model = modelFiles[currentModelIndex];
     
     console.log('切换到:', model.name, '文件:', model.file);
-    showMessage('正在切换装扮...', 1000);
+    
+    // 使用 load_rand_textures 作为切换提示
+    const switchMessage = getRandomTextureMessage();
+    showMessage(switchMessage, 1000);
     
     setTimeout(() => {
         var modelPath = 'https://dxwwwqc.github.io/dongxi-awa.github.io/live2d/model/38/' + model.file + '?t=' + new Date().getTime();
         loadlive2d('live2d', modelPath, 0);
         
-        // 使用 load_rand_textures 中的消息
-        const textureMessage = getRandomTextureMessage();
-        showMessage(textureMessage, 3000, true);
+        // 使用 change_costume_messages 作为换装完成后的反馈
+        const costumeMessage = getRandomCostumeMessage();
+        showMessage(costumeMessage, 3000, true);
     }, 500);
 }
 
@@ -148,7 +158,6 @@ function showSeasonGreeting() {
     
     for (const season of waifuTipsData.seasons) {
         if (season.date.includes('-')) {
-            // 处理日期范围
             const [start, end] = season.date.split('-');
             const startMonth = parseInt(start.split('/')[0]);
             const startDay = parseInt(start.split('/')[1]);
@@ -163,7 +172,6 @@ function showSeasonGreeting() {
                 return;
             }
         } else if (season.date === currentDate) {
-            // 处理具体日期
             const text = season.text[0].replace('{year}', year);
             showMessage(text, 6000, true);
             return;
@@ -185,7 +193,6 @@ function showReferrerMessage() {
         messageType = 'localhost';
     } else if (referrer.includes('baidu.com')) {
         messageType = 'baidu';
-        // 提取搜索关键词
         const match = referrer.match(/[?&]wd=([^&]*)/) || referrer.match(/[?&]word=([^&]*)/);
         if (match) searchQuery = decodeURIComponent(match[1]);
     } else if (referrer.includes('so.com')) {
@@ -198,7 +205,6 @@ function showReferrerMessage() {
         if (match) searchQuery = decodeURIComponent(match[1]);
     } else {
         messageType = 'default';
-        // 获取来源网站名称
         const hostname = new URL(referrer).hostname;
         const knownSites = waifuTipsData.waifu.referrer_hostname;
         if (knownSites && knownSites[hostname]) {
@@ -222,17 +228,13 @@ function initConsoleDetection() {
     
     const consoleMessages = waifuTipsData.waifu.console_open_msg;
     
-    // 检测 F12 打开
-    let lastKey = '';
     document.addEventListener('keydown', function(e) {
         if (e.key === 'F12') {
             const text = consoleMessages[Math.floor(Math.random() * consoleMessages.length)];
             showMessage(text, 4000);
         }
-        lastKey = e.key;
     });
     
-    // 检测 Ctrl+Shift+I 等组合键
     document.addEventListener('keydown', function(e) {
         if (e.key === 'I' && e.ctrlKey && e.shiftKey) {
             const text = consoleMessages[Math.floor(Math.random() * consoleMessages.length)];
@@ -261,7 +263,6 @@ function initMouseoverTips() {
             const texts = item.text;
             if (texts && texts.length > 0) {
                 let text = texts[Math.floor(Math.random() * texts.length)];
-                // 替换模板变量
                 if (this.textContent) {
                     text = text.replace('{text}', this.textContent.trim());
                 }
@@ -300,17 +301,15 @@ function initModel(waifuPath, type) {
         waifuTipsData = waifuPath;
         loadTipsMessage(waifuPath);
         
-        // 初始化各种检测功能
         initConsoleDetection();
         initCopyDetection();
         initMouseoverTips();
         
-        // 显示欢迎消息序列
         setTimeout(() => {
-            showWelcomeMessage(); // 初次欢迎
-            setTimeout(showSeasonGreeting, 7000); // 节日问候
-            setTimeout(showTimeGreeting, 14000); // 时间问候
-            setTimeout(showReferrerMessage, 21000); // 来源消息
+            showWelcomeMessage();
+            setTimeout(showSeasonGreeting, 7000);
+            setTimeout(showTimeGreeting, 14000);
+            setTimeout(showReferrerMessage, 21000);
         }, 1000);
     } else {
         $.ajax({
@@ -321,17 +320,15 @@ function initModel(waifuPath, type) {
                 waifuTipsData = result;
                 loadTipsMessage(result);
                 
-                // 初始化各种检测功能
                 initConsoleDetection();
                 initCopyDetection();
                 initMouseoverTips();
                 
-                // 显示欢迎消息序列
                 setTimeout(() => {
-                    showWelcomeMessage(); // 初次欢迎
-                    setTimeout(showSeasonGreeting, 7000); // 节日问候
-                    setTimeout(showTimeGreeting, 14000); // 时间问候
-                    setTimeout(showReferrerMessage, 21000); // 来源消息
+                    showWelcomeMessage();
+                    setTimeout(showSeasonGreeting, 7000);
+                    setTimeout(showTimeGreeting, 14000);
+                    setTimeout(showReferrerMessage, 21000);
                 }, 1000);
             }
         });
