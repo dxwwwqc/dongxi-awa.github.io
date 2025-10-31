@@ -39,8 +39,8 @@ live2d_settings['screenshotCaptureName'] = 'live2d.png';
 let currentModelIndex = 0;
 const modelFiles = [
     { file: "index.json", name: "日常风格", message: "换上日常服装啦~ 感觉轻松自在！ 🌸" },
-    { file: "index1.json", name: "休闲风格", message: "休闲装扮，适合放松的时光~ 🎀" },
-    { file: "index2.json", name: "特别风格", message: "特别场合的装扮，是不是很漂亮？ ✨" }
+    { file: "index1.json", name: "特殊风格", message: "特别场合的装扮，是不是很漂亮？ ✨" },
+    { file: "index2.json", name: "泳装风格", message: "泳装装扮，有些害羞呢~ 🎀" }
 ];
 
 // 全局变量存储 JSON 数据
