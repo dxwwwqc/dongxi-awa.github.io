@@ -146,6 +146,35 @@ function showTimeGreeting() {
     }
 }
 
+// 日期范围检测
+function isDateInRange(month, day, start, end) {
+    const startMonth = parseInt(start.split('/')[0]);
+    const startDay = parseInt(start.split('/')[1]);
+    const endMonth = parseInt(end.split('/')[0]);
+    const endDay = parseInt(end.split('/')[1]);
+    
+    const currentDate = parseInt(month + day);
+    const startDate = parseInt(startMonth.toString().padStart(2, '0') + startDay.toString().padStart(2, '0'));
+    const endDate = parseInt(endMonth.toString().padStart(2, '0') + endDay.toString().padStart(2, '0'));
+    
+    return currentDate >= startDate && currentDate <= endDate;
+}
+
+// 显示节日消息和特效
+function showSeasonMessage(season, year) {
+    const texts = season.text;
+    let text = texts[Math.floor(Math.random() * texts.length)];
+    text = text.replace(/{year}/g, year);
+    
+    // 显示消息
+    showMessage(text, 6000, true);
+    
+    // 应用特效
+    if (season.effect) {
+        applySeasonEffect(season.effect);
+    }
+}
+
 // 节日问候函数
 function showSeasonGreeting() {
     if (!waifuTipsData || !waifuTipsData.seasons) return;
@@ -158,25 +187,311 @@ function showSeasonGreeting() {
     
     for (const season of waifuTipsData.seasons) {
         if (season.date.includes('-')) {
+            // 处理日期范围
             const [start, end] = season.date.split('-');
-            const startMonth = parseInt(start.split('/')[0]);
-            const startDay = parseInt(start.split('/')[1]);
-            const endMonth = parseInt(end.split('/')[0]);
-            const endDay = parseInt(end.split('/')[1]);
-            
-            if ((month === startMonth && day >= startDay) || 
-                (month === endMonth && day <= endDay) ||
-                (month > startMonth && month < endMonth)) {
-                const text = season.text[0].replace('{year}', year);
-                showMessage(text, 6000, true);
+            if (isDateInRange(month, day, start, end)) {
+                showSeasonMessage(season, year);
                 return;
             }
         } else if (season.date === currentDate) {
-            const text = season.text[0].replace('{year}', year);
-            showMessage(text, 6000, true);
+            // 处理具体日期
+            showSeasonMessage(season, year);
             return;
         }
     }
+}
+
+// 应用节日特效
+function applySeasonEffect(effect) {
+    switch(effect) {
+        case 'confetti':
+            createConfettiEffect();
+            break;
+        case 'fireworks':
+            createFireworksEffect();
+            break;
+        case 'hearts':
+            createHeartsEffect();
+            break;
+        case 'snow':
+            createSnowEffect();
+            break;
+        case 'bubbles':
+            createBubblesEffect();
+            break;
+        case 'ghost':
+            createGhostEffect();
+            break;
+        case 'countdown':
+            createCountdownEffect();
+            break;
+    }
+}
+
+// 随机颜色生成
+function getRandomColor() {
+    const colors = ['#ff6b6b', '#fdcb6e', '#74b9ff', '#55efc4', '#a29bfe', '#ff7979', '#badc58', '#7ed6df'];
+    return colors[Math.floor(Math.random() * colors.length)];
+}
+
+// 创建彩带特效
+function createConfettiEffect() {
+    for (let i = 0; i < 30; i++) {
+        setTimeout(() => {
+            const confetti = document.createElement('div');
+            confetti.className = 'confetti';
+            confetti.style.cssText = `
+                position: fixed;
+                width: 8px;
+                height: 8px;
+                background: ${getRandomColor()};
+                top: -10px;
+                left: ${Math.random() * 100}vw;
+                animation: confettiFall ${Math.random() * 3 + 2}s linear forwards;
+                z-index: 10000;
+                pointer-events: none;
+                border-radius: 1px;
+            `;
+            document.body.appendChild(confetti);
+            
+            setTimeout(() => confetti.remove(), 5000);
+        }, i * 100);
+    }
+}
+
+// 创建爱心特效
+function createHeartsEffect() {
+    for (let i = 0; i < 15; i++) {
+        setTimeout(() => {
+            const heart = document.createElement('div');
+            heart.innerHTML = '💖';
+            heart.style.cssText = `
+                position: fixed;
+                font-size: 24px;
+                top: 100vh;
+                left: ${Math.random() * 100}vw;
+                animation: heartFloat ${Math.random() * 4 + 3}s ease-in forwards;
+                z-index: 10000;
+                pointer-events: none;
+                opacity: 0.8;
+            `;
+            document.body.appendChild(heart);
+            
+            setTimeout(() => heart.remove(), 7000);
+        }, i * 200);
+    }
+}
+
+// 创建气泡特效
+function createBubblesEffect() {
+    for (let i = 0; i < 20; i++) {
+        setTimeout(() => {
+            const bubble = document.createElement('div');
+            bubble.innerHTML = '🎈';
+            bubble.style.cssText = `
+                position: fixed;
+                font-size: 20px;
+                bottom: -50px;
+                left: ${Math.random() * 100}vw;
+                animation: bubbleRise ${Math.random() * 5 + 3}s ease-in forwards;
+                z-index: 10000;
+                pointer-events: none;
+            `;
+            document.body.appendChild(bubble);
+            
+            setTimeout(() => bubble.remove(), 8000);
+        }, i * 250);
+    }
+}
+
+// 创建幽灵特效（万圣节）
+function createGhostEffect() {
+    for (let i = 0; i < 8; i++) {
+        setTimeout(() => {
+            const ghost = document.createElement('div');
+            ghost.innerHTML = '👻';
+            ghost.style.cssText = `
+                position: fixed;
+                font-size: 30px;
+                top: ${Math.random() * 100}vh;
+                left: -50px;
+                animation: ghostFloat ${Math.random() * 8 + 5}s ease-in-out forwards;
+                z-index: 10000;
+                pointer-events: none;
+                opacity: 0.7;
+            `;
+            document.body.appendChild(ghost);
+            
+            setTimeout(() => ghost.remove(), 13000);
+        }, i * 600);
+    }
+}
+
+// 创建倒计时特效（跨年）
+function createCountdownEffect() {
+    const countdowns = ['3', '2', '1', '🎉'];
+    countdowns.forEach((text, index) => {
+        setTimeout(() => {
+            const countdown = document.createElement('div');
+            countdown.innerHTML = text;
+            countdown.style.cssText = `
+                position: fixed;
+                font-size: 60px;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                animation: countdownPop 0.5s ease-out forwards;
+                z-index: 10001;
+                pointer-events: none;
+                font-weight: bold;
+                color: #ff6b6b;
+                text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            `;
+            document.body.appendChild(countdown);
+            
+            setTimeout(() => {
+                countdown.style.animation = 'countdownFade 0.5s ease-out forwards';
+                setTimeout(() => countdown.remove(), 500);
+            }, 800);
+        }, index * 1000);
+    });
+}
+
+// 创建烟花特效
+function createFireworksEffect() {
+    for (let i = 0; i < 5; i++) {
+        setTimeout(() => {
+            const firework = document.createElement('div');
+            firework.innerHTML = '✨';
+            firework.style.cssText = `
+                position: fixed;
+                font-size: 40px;
+                top: ${20 + Math.random() * 60}vh;
+                left: ${20 + Math.random() * 60}vw;
+                animation: fireworkExplode 1.5s ease-out forwards;
+                z-index: 10000;
+                pointer-events: none;
+                opacity: 0;
+            `;
+            document.body.appendChild(firework);
+            
+            setTimeout(() => firework.remove(), 1500);
+        }, i * 300);
+    }
+}
+
+// 创建雪花特效
+function createSnowEffect() {
+    for (let i = 0; i < 25; i++) {
+        setTimeout(() => {
+            const snow = document.createElement('div');
+            snow.innerHTML = '❄';
+            snow.style.cssText = `
+                position: fixed;
+                font-size: 18px;
+                top: -30px;
+                left: ${Math.random() * 100}vw;
+                animation: snowFall ${Math.random() * 8 + 5}s linear forwards;
+                z-index: 10000;
+                pointer-events: none;
+                opacity: 0.8;
+            `;
+            document.body.appendChild(snow);
+            
+            setTimeout(() => snow.remove(), 13000);
+        }, i * 200);
+    }
+}
+
+// 添加 CSS 动画样式
+function addSeasonStyles() {
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes confettiFall {
+            to {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+        
+        @keyframes heartFloat {
+            to {
+                transform: translateY(-100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+        
+        @keyframes bubbleRise {
+            to {
+                transform: translateY(-120vh) rotate(180deg);
+                opacity: 0;
+            }
+        }
+        
+        @keyframes ghostFloat {
+            0% {
+                transform: translateX(0) translateY(0);
+                opacity: 0.7;
+            }
+            50% {
+                transform: translateX(100vw) translateY(-50vh);
+                opacity: 1;
+            }
+            100% {
+                transform: translateX(100vw) translateY(-100vh);
+                opacity: 0;
+            }
+        }
+        
+        @keyframes countdownPop {
+            0% {
+                transform: translate(-50%, -50%) scale(0);
+                opacity: 0;
+            }
+            70% {
+                transform: translate(-50%, -50%) scale(1.2);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes countdownFade {
+            to {
+                transform: translate(-50%, -50%) scale(0);
+                opacity: 0;
+            }
+        }
+        
+        @keyframes fireworkExplode {
+            0% {
+                transform: scale(0);
+                opacity: 0;
+            }
+            50% {
+                transform: scale(1.5);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(1);
+                opacity: 0;
+            }
+        }
+        
+        @keyframes snowFall {
+            to {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+        
+        .confetti, .heart, .bubble, .ghost, .snow {
+            pointer-events: none;
+        }
+    `;
+    document.head.appendChild(style);
 }
 
 // 来源检测函数
@@ -275,6 +590,9 @@ function initMouseoverTips() {
 // initModel 函数
 function initModel(waifuPath, type) {
     console.log('初始化 Live2D 模型...');
+    
+    // 添加节日特效样式
+    addSeasonStyles();
     
     // 样式设置
     live2d_settings.waifuSize = live2d_settings.waifuSize.split('x');
