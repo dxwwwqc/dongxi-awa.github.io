@@ -1,27 +1,411 @@
-// 全局配置
-let live2d_settings = {};
-let waifuTipsData = null;
+window.live2d_settings = Array(); 
+
+// 基础配置
+live2d_settings['modelAPI'] = 'https://dxwwwqc.github.io/dongxi-awa.github.io/live2d/model/'; 
+live2d_settings['tipsMessage'] = 'https://dxwwwqc.github.io/dongxi-awa.github.io/live2d/waifu-tips.json'; 
+live2d_settings['hitokotoAPI'] = 'local'; 
+live2d_settings['modelId'] = 38;            
+live2d_settings['modelTexturesId'] = 0;             
+live2d_settings['showToolMenu'] = true;         
+live2d_settings['canCloseLive2d'] = true;         
+live2d_settings['canSwitchModel'] = false;         
+live2d_settings['canSwitchTextures'] = true;          
+live2d_settings['canSwitchHitokoto'] = true;         
+live2d_settings['canTakeScreenshot'] = true;         
+live2d_settings['canTurnToHomePage'] = true;         
+live2d_settings['canTurnToAboutPage'] = true;         
+live2d_settings['modelStorage'] = false;         
+live2d_settings['modelRandMode'] = 'switch';     
+live2d_settings['modelTexturesRandMode'] = 'switch';      
+live2d_settings['showHitokoto'] = true;         
+live2d_settings['showF12Status'] = true;         
+live2d_settings['waifuSize'] = '280x250';    
+live2d_settings['waifuTipsSize'] = '250x70';     
+live2d_settings['waifuFontSize'] = '12px';       
+live2d_settings['waifuToolFont'] = '14px';       
+live2d_settings['waifuToolLine'] = '20px';       
+live2d_settings['waifuToolTop'] = '0px';         
+live2d_settings['waifuMinWidth'] = '768px';      
+live2d_settings['waifuEdgeSide'] = 'left:0';     
+live2d_settings['waifuDraggable'] = 'disable';    
+live2d_settings['waifuDraggableRevert'] = true;         
+live2d_settings['l2dVersion'] = '1.4.2';        
+live2d_settings['l2dVerDate'] = '2018.11.12'; 
+live2d_settings['homePageUrl'] = 'https://dxwwwqc.github.io/dongxi-awa.github.io/';       
+live2d_settings['aboutPageUrl'] = 'https://www.fghrsh.net/post/123.html';   
+live2d_settings['screenshotCaptureName'] = 'live2d.png'; 
+
+// 使用不同的JSON文件
 let currentModelIndex = 0;
+const modelFiles = [
+    { file: "index.json", name: "日常风格", message: "换上日常服装啦~ 感觉轻松自在！ 🌸" },
+    { file: "index1.json", name: "特殊风格", message: "特别场合的装扮，是不是很漂亮？ ✨" },
+    { file: "index2.json", name: "泳装风格", message: "泳装装扮，有些害羞呢~ 🎀" }
+];
 
-// 状态管理
-const waifuState = {
-    mood: 'happy',
-    lastInteraction: Date.now(),
-    interactionCount: 0,
-    currentCostume: 'default',
-    isSleeping: false
-};
+// 全局变量存储 JSON 数据
+let waifuTipsData = null;
 
-// 消息缓存
-let messageCache = new Map();
-let lastMessageTime = 0;
+// 使用 load_rand_textures 消息 - 换装开始提示
+function getRandomTextureMessage() {
+    if (!waifuTipsData || !waifuTipsData.waifu.load_rand_textures) {
+        return "正在换装...";
+    }
+    const messages = waifuTipsData.waifu.load_rand_textures;
+    return messages[Math.floor(Math.random() * messages.length)];
+}
 
-// 添加节日特效样式函数（修复缺失的函数）
-function addSeasonStyles() {
-    if (document.getElementById('season-styles')) return;
+// 使用 change_costume_messages 消息 - 换装完成反馈
+function getRandomCostumeMessage() {
+    if (!waifuTipsData || !waifuTipsData.waifu.change_costume_messages) {
+        return "换装完成！";
+    }
+    const messages = waifuTipsData.waifu.change_costume_messages;
+    return messages[Math.floor(Math.random() * messages.length)];
+}
+
+// 显示模型信息
+function showModelMessage(modelId) {
+    if (!waifuTipsData || !waifuTipsData.waifu.model_message) return;
     
+    const modelMessages = waifuTipsData.waifu.model_message;
+    if (modelMessages[modelId]) {
+        showMessage(modelMessages[modelId][0], 4000, true);
+    }
+}
+
+// 欢迎消息函数 - 从 JSON 读取
+function showWelcomeMessage() {
+    if (!waifuTipsData || !waifuTipsData.waifu.welcome_messages) {
+        const defaultMessages = ["欢迎来到我的博客！"];
+        const text = defaultMessages[Math.floor(Math.random() * defaultMessages.length)];
+        showMessage(text, 6000, true);
+        return;
+    }
+    
+    const messages = waifuTipsData.waifu.welcome_messages;
+    const text = messages[Math.floor(Math.random() * messages.length)];
+    showMessage(text, 6000, true);
+}
+
+// 一言函数 - 从 JSON 读取
+function showHitokoto() {
+    if (!waifuTipsData || !waifuTipsData.waifu.hitokoto_messages) {
+        const defaultMessages = ["欢迎来到我的博客！"];
+        const text = defaultMessages[Math.floor(Math.random() * defaultMessages.length)];
+        showMessage(text, 5000, true);
+        return;
+    }
+    
+    const messages = waifuTipsData.waifu.hitokoto_messages;
+    const text = messages[Math.floor(Math.random() * messages.length)];
+    showMessage(text, 5000, true);
+}
+
+// 材质切换函数
+function switchTextures() {
+    currentModelIndex = (currentModelIndex + 1) % modelFiles.length;
+    const model = modelFiles[currentModelIndex];
+    
+    console.log('切换到:', model.name, '文件:', model.file);
+    
+    // 使用 load_rand_textures 作为切换提示
+    const switchMessage = getRandomTextureMessage();
+    showMessage(switchMessage, 1000);
+    
+    setTimeout(() => {
+        var modelPath = 'https://dxwwwqc.github.io/dongxi-awa.github.io/live2d/model/38/' + model.file + '?t=' + new Date().getTime();
+        loadlive2d('live2d', modelPath, 0);
+        
+        // 使用 change_costume_messages 作为换装完成后的反馈
+        const costumeMessage = getRandomCostumeMessage();
+        showMessage(costumeMessage, 3000, true);
+    }, 500);
+}
+
+// 时间问候函数
+function showTimeGreeting() {
+    if (!waifuTipsData || !waifuTipsData.waifu.hour_tips) return;
+    
+    const hour = new Date().getHours();
+    let timeKey = 'default';
+    
+    if (hour >= 5 && hour < 7) timeKey = 't5-7';
+    else if (hour >= 7 && hour < 11) timeKey = 't7-11';
+    else if (hour >= 11 && hour < 14) timeKey = 't11-14';
+    else if (hour >= 14 && hour < 17) timeKey = 't14-17';
+    else if (hour >= 17 && hour < 19) timeKey = 't17-19';
+    else if (hour >= 19 && hour < 21) timeKey = 't19-21';
+    else if (hour >= 21 && hour < 23) timeKey = 't21-23';
+    else if (hour >= 23 || hour < 5) timeKey = 't23-5';
+    
+    const tips = waifuTipsData.waifu.hour_tips[timeKey];
+    if (tips && tips.length > 0) {
+        const text = tips[Math.floor(Math.random() * tips.length)];
+        showMessage(text, 5000, true);
+    }
+}
+
+// 日期范围检测
+function isDateInRange(month, day, start, end) {
+    const startMonth = parseInt(start.split('/')[0]);
+    const startDay = parseInt(start.split('/')[1]);
+    const endMonth = parseInt(end.split('/')[0]);
+    const endDay = parseInt(end.split('/')[1]);
+    
+    const currentDate = parseInt(month + day);
+    const startDate = parseInt(startMonth.toString().padStart(2, '0') + startDay.toString().padStart(2, '0'));
+    const endDate = parseInt(endMonth.toString().padStart(2, '0') + endDay.toString().padStart(2, '0'));
+    
+    return currentDate >= startDate && currentDate <= endDate;
+}
+
+// 显示节日消息和特效
+function showSeasonMessage(season, year) {
+    const texts = season.text;
+    let text = texts[Math.floor(Math.random() * texts.length)];
+    text = text.replace(/{year}/g, year);
+    
+    // 显示消息
+    showMessage(text, 6000, true);
+    
+    // 应用特效
+    if (season.effect) {
+        applySeasonEffect(season.effect);
+    }
+}
+
+// 节日问候函数
+function showSeasonGreeting() {
+    if (!waifuTipsData || !waifuTipsData.seasons) return;
+    
+    const now = new Date();
+    const month = (now.getMonth() + 1).toString().padStart(2, '0');
+    const day = now.getDate().toString().padStart(2, '0');
+    const currentDate = month + '/' + day;
+    const year = now.getFullYear();
+    
+    for (const season of waifuTipsData.seasons) {
+        if (season.date.includes('-')) {
+            // 处理日期范围
+            const [start, end] = season.date.split('-');
+            if (isDateInRange(month, day, start, end)) {
+                showSeasonMessage(season, year);
+                return;
+            }
+        } else if (season.date === currentDate) {
+            // 处理具体日期
+            showSeasonMessage(season, year);
+            return;
+        }
+    }
+}
+
+// 应用节日特效
+function applySeasonEffect(effect) {
+    switch(effect) {
+        case 'confetti':
+            createConfettiEffect();
+            break;
+        case 'fireworks':
+            createFireworksEffect();
+            break;
+        case 'hearts':
+            createHeartsEffect();
+            break;
+        case 'snow':
+            createSnowEffect();
+            break;
+        case 'bubbles':
+            createBubblesEffect();
+            break;
+        case 'ghost':
+            createGhostEffect();
+            break;
+        case 'countdown':
+            createCountdownEffect();
+            break;
+    }
+}
+
+// 随机颜色生成
+function getRandomColor() {
+    const colors = ['#ff6b6b', '#fdcb6e', '#74b9ff', '#55efc4', '#a29bfe', '#ff7979', '#badc58', '#7ed6df'];
+    return colors[Math.floor(Math.random() * colors.length)];
+}
+
+// 创建彩带特效
+function createConfettiEffect() {
+    for (let i = 0; i < 30; i++) {
+        setTimeout(() => {
+            const confetti = document.createElement('div');
+            confetti.className = 'confetti';
+            confetti.style.cssText = `
+                position: fixed;
+                width: 8px;
+                height: 8px;
+                background: ${getRandomColor()};
+                top: -10px;
+                left: ${Math.random() * 100}vw;
+                animation: confettiFall ${Math.random() * 3 + 2}s linear forwards;
+                z-index: 10000;
+                pointer-events: none;
+                border-radius: 1px;
+            `;
+            document.body.appendChild(confetti);
+            
+            setTimeout(() => confetti.remove(), 5000);
+        }, i * 100);
+    }
+}
+
+// 创建爱心特效
+function createHeartsEffect() {
+    for (let i = 0; i < 15; i++) {
+        setTimeout(() => {
+            const heart = document.createElement('div');
+            heart.innerHTML = '💖';
+            heart.style.cssText = `
+                position: fixed;
+                font-size: 24px;
+                top: 100vh;
+                left: ${Math.random() * 100}vw;
+                animation: heartFloat ${Math.random() * 4 + 3}s ease-in forwards;
+                z-index: 10000;
+                pointer-events: none;
+                opacity: 0.8;
+            `;
+            document.body.appendChild(heart);
+            
+            setTimeout(() => heart.remove(), 7000);
+        }, i * 200);
+    }
+}
+
+// 创建气泡特效
+function createBubblesEffect() {
+    for (let i = 0; i < 20; i++) {
+        setTimeout(() => {
+            const bubble = document.createElement('div');
+            bubble.innerHTML = '🎈';
+            bubble.style.cssText = `
+                position: fixed;
+                font-size: 20px;
+                bottom: -50px;
+                left: ${Math.random() * 100}vw;
+                animation: bubbleRise ${Math.random() * 5 + 3}s ease-in forwards;
+                z-index: 10000;
+                pointer-events: none;
+            `;
+            document.body.appendChild(bubble);
+            
+            setTimeout(() => bubble.remove(), 8000);
+        }, i * 250);
+    }
+}
+
+// 创建幽灵特效（万圣节）
+function createGhostEffect() {
+    for (let i = 0; i < 8; i++) {
+        setTimeout(() => {
+            const ghost = document.createElement('div');
+            ghost.innerHTML = '👻';
+            ghost.style.cssText = `
+                position: fixed;
+                font-size: 30px;
+                top: ${Math.random() * 100}vh;
+                left: -50px;
+                animation: ghostFloat ${Math.random() * 8 + 5}s ease-in-out forwards;
+                z-index: 10000;
+                pointer-events: none;
+                opacity: 0.7;
+            `;
+            document.body.appendChild(ghost);
+            
+            setTimeout(() => ghost.remove(), 13000);
+        }, i * 600);
+    }
+}
+
+// 创建倒计时特效（跨年）
+function createCountdownEffect() {
+    const countdowns = ['3', '2', '1', '🎉'];
+    countdowns.forEach((text, index) => {
+        setTimeout(() => {
+            const countdown = document.createElement('div');
+            countdown.innerHTML = text;
+            countdown.style.cssText = `
+                position: fixed;
+                font-size: 60px;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                animation: countdownPop 0.5s ease-out forwards;
+                z-index: 10001;
+                pointer-events: none;
+                font-weight: bold;
+                color: #ff6b6b;
+                text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            `;
+            document.body.appendChild(countdown);
+            
+            setTimeout(() => {
+                countdown.style.animation = 'countdownFade 0.5s ease-out forwards';
+                setTimeout(() => countdown.remove(), 500);
+            }, 800);
+        }, index * 1000);
+    });
+}
+
+// 创建烟花特效
+function createFireworksEffect() {
+    for (let i = 0; i < 5; i++) {
+        setTimeout(() => {
+            const firework = document.createElement('div');
+            firework.innerHTML = '✨';
+            firework.style.cssText = `
+                position: fixed;
+                font-size: 40px;
+                top: ${20 + Math.random() * 60}vh;
+                left: ${20 + Math.random() * 60}vw;
+                animation: fireworkExplode 1.5s ease-out forwards;
+                z-index: 10000;
+                pointer-events: none;
+                opacity: 0;
+            `;
+            document.body.appendChild(firework);
+            
+            setTimeout(() => firework.remove(), 1500);
+        }, i * 300);
+    }
+}
+
+// 创建雪花特效
+function createSnowEffect() {
+    for (let i = 0; i < 25; i++) {
+        setTimeout(() => {
+            const snow = document.createElement('div');
+            snow.innerHTML = '❄';
+            snow.style.cssText = `
+                position: fixed;
+                font-size: 18px;
+                top: -30px;
+                left: ${Math.random() * 100}vw;
+                animation: snowFall ${Math.random() * 8 + 5}s linear forwards;
+                z-index: 10000;
+                pointer-events: none;
+                opacity: 0.8;
+            `;
+            document.body.appendChild(snow);
+            
+            setTimeout(() => snow.remove(), 13000);
+        }, i * 200);
+    }
+}
+
+// 添加 CSS 动画样式
+function addSeasonStyles() {
     const style = document.createElement('style');
-    style.id = 'season-styles';
     style.textContent = `
         @keyframes confettiFall {
             to {
@@ -110,645 +494,271 @@ function addSeasonStyles() {
     document.head.appendChild(style);
 }
 
-// 节日特效函数
-function createConfettiEffect() {
-    if (window.isMobile) {
-        for (let i = 0; i < 15; i++) {
-            setTimeout(() => createParticle('confetti'), i * 100);
-        }
-        return;
-    }
-    for (let i = 0; i < 30; i++) {
-        setTimeout(() => createParticle('confetti'), i * 100);
-    }
-}
-
-function createHeartsEffect() {
-    for (let i = 0; i < 15; i++) {
-        setTimeout(() => {
-            const heart = document.createElement('div');
-            heart.innerHTML = '💖';
-            heart.style.cssText = `
-                position: fixed;
-                font-size: 24px;
-                top: 100vh;
-                left: ${Math.random() * 100}vw;
-                animation: heartFloat ${Math.random() * 4 + 3}s ease-in forwards;
-                z-index: 10000;
-                pointer-events: none;
-                opacity: 0.8;
-            `;
-            document.body.appendChild(heart);
-            setTimeout(() => heart.remove(), 7000);
-        }, i * 200);
-    }
-}
-
-function createParticle(type) {
-    const particle = document.createElement('div');
-    const colors = ['#ff6b6b', '#fdcb6e', '#74b9ff', '#55efc4', '#a29bfe'];
-    const color = colors[Math.floor(Math.random() * colors.length)];
-    
-    particle.className = type;
-    particle.style.cssText = `
-        position: fixed;
-        width: 8px;
-        height: 8px;
-        background: ${color};
-        top: -10px;
-        left: ${Math.random() * 100}vw;
-        animation: confettiFall ${Math.random() * 3 + 2}s linear forwards;
-        z-index: 10000;
-        pointer-events: none;
-        border-radius: 1px;
-    `;
-    document.body.appendChild(particle);
-    setTimeout(() => particle.remove(), 5000);
-}
-
-// 节日问候函数
-function showSeasonGreeting() {
-    if (!waifuTipsData?.seasons) return;
-    
-    const now = new Date();
-    const month = (now.getMonth() + 1).toString().padStart(2, '0');
-    const day = now.getDate().toString().padStart(2, '0');
-    const currentDate = month + '/' + day;
-    const year = now.getFullYear();
-    
-    for (const season of waifuTipsData.seasons) {
-        if (season.date.includes('-')) {
-            const [start, end] = season.date.split('-');
-            if (isDateInRange(month, day, start, end)) {
-                showSeasonMessage(season, year);
-                return;
-            }
-        } else if (season.date === currentDate) {
-            showSeasonMessage(season, year);
-            return;
-        }
-    }
-}
-
-function isDateInRange(month, day, start, end) {
-    const startMonth = parseInt(start.split('/')[0]);
-    const startDay = parseInt(start.split('/')[1]);
-    const endMonth = parseInt(end.split('/')[0]);
-    const endDay = parseInt(end.split('/')[1]);
-    
-    const currentDate = parseInt(month + day);
-    const startDate = parseInt(startMonth.toString().padStart(2, '0') + startDay.toString().padStart(2, '0'));
-    const endDate = parseInt(endMonth.toString().padStart(2, '0') + endDay.toString().padStart(2, '0'));
-    
-    return currentDate >= startDate && currentDate <= endDate;
-}
-
-function showSeasonMessage(season, year) {
-    const texts = season.text;
-    let text = texts[Math.floor(Math.random() * texts.length)];
-    text = text.replace(/{year}/g, year);
-    
-    showMessage(text, 6000, true);
-    
-    if (season.effect) {
-        applySeasonEffect(season.effect);
-    }
-}
-
-function applySeasonEffect(effect) {
-    if (window.isMobile) return; // 移动端禁用特效
-    
-    switch(effect) {
-        case 'confetti':
-            createConfettiEffect();
-            break;
-        case 'hearts':
-            createHeartsEffect();
-            break;
-        // 可以添加其他特效...
-    }
-}
-
-// 初始化函数
-async function initWaifu() {
-    try {
-        console.log('开始初始化看板娘...');
-        
-        // 加载配置
-        await loadConfig();
-        
-        // 初始化功能
-        initMobileOptimization();
-        initTouchFeedback();
-        loadUserPreferences();
-        addSeasonStyles(); // 现在这个函数已定义
-        
-        // 设置样式
-        applyStyles();
-        
-        // 初始化事件监听
-        initConsoleDetection();
-        initCopyDetection();
-        initMouseoverTips();
-        initToolbarEvents();
-        
-        // 加载模型
-        loadDefaultModel();
-        
-        // 显示欢迎消息序列
-        showWelcomeSequence();
-        
-        // 启动状态更新
-        setInterval(updateWaifuBehavior, 60000);
-        
-        // 页面可见性检测
-        initVisibilityDetection();
-        
-        console.log('看板娘初始化完成');
-        
-    } catch (error) {
-        console.error('看板娘初始化失败:', error);
-        loadFallbackConfig();
-        
-        // 即使失败也显示基本功能
-        addSeasonStyles();
-        applyBasicStyles();
-        initBasicEvents();
-        loadDefaultModel();
-        showBasicWelcome();
-    }
-}
-
-// 加载配置
-async function loadConfig() {
-    const configUrl = live2d_settings.tipsMessage || '/live2d/waifu-tips.json';
-    console.log('加载配置:', configUrl);
-    
-    const response = await fetch(configUrl);
-    if (!response.ok) {
-        throw new Error(`配置加载失败: ${response.status}`);
-    }
-    
-    waifuTipsData = await response.json();
-    console.log('配置加载成功', waifuTipsData);
-    
-    // 合并设置
-    live2d_settings = { ...live2d_settings, ...waifuTipsData.settings };
-}
-
-// 移动端优化
-function initMobileOptimization() {
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    
-    if (isMobile) {
-        live2d_settings.waifuSize = '200x180';
-        live2d_settings.waifuTipsSize = '220x60';
-        live2d_settings.waifuFontSize = '11px';
-        live2d_settings.waifuDraggable = 'disable';
-        window.isMobile = true;
-    }
-}
-
-// 触摸反馈
-function initTouchFeedback() {
-    let touchTimer;
-    let touchCount = 0;
-    
-    $('#live2d').on('touchstart', function(e) {
-        touchTimer = setTimeout(() => {
-            showMessage("一直按着我不放是想干嘛呀~", 3000);
-        }, 1000);
-    });
-    
-    $('#live2d').on('touchend', function(e) {
-        clearTimeout(touchTimer);
-        touchCount++;
-        
-        if (touchCount === 2) {
-            showMessage("双击喜欢！谢谢你~", 3000);
-            touchCount = 0;
-        }
-        
-        setTimeout(() => { touchCount = 0; }, 300);
-        updateStateOnInteraction('touch');
-    });
-}
-
-// 用户偏好
-function loadUserPreferences() {
-    try {
-        const saved = localStorage.getItem('waifuPreferences');
-        if (saved) {
-            const preferences = JSON.parse(saved);
-            currentModelIndex = preferences.currentModelIndex || 0;
-            
-            const lastVisit = new Date(preferences.lastVisit);
-            const daysSinceLastVisit = Math.floor((new Date() - lastVisit) / (1000 * 60 * 60 * 24));
-            
-            if (daysSinceLastVisit > 7) {
-                showMessage(`好久不见！已经${daysSinceLastVisit}天没看到你了~`, 5000);
-            }
-        }
-    } catch (e) {
-        console.warn('用户偏好加载失败:', e);
-    }
-}
-
-function saveUserPreferences() {
-    try {
-        const preferences = {
-            currentModelIndex: currentModelIndex,
-            lastVisit: new Date().toISOString(),
-            interactionHistory: waifuState.interactionCount,
-            favoriteCostume: waifuState.currentCostume
-        };
-        localStorage.setItem('waifuPreferences', JSON.stringify(preferences));
-    } catch (e) {
-        console.warn('用户偏好保存失败:', e);
-    }
-}
-
-// 消息系统
-function getMessage(path, fallback = '') {
-    if (!waifuTipsData) return fallback;
-    
-    try {
-        const keys = path.split('.');
-        let value = waifuTipsData;
-        
-        for (const key of keys) {
-            value = value[key];
-            if (value === undefined) return fallback;
-        }
-        
-        if (Array.isArray(value)) {
-            return value[Math.floor(Math.random() * value.length)];
-        }
-        
-        return value || fallback;
-    } catch (e) {
-        return fallback;
-    }
-}
-
-function showMessage(text, timeout, flag) {
-    // 防抖处理
-    if (Date.now() - lastMessageTime < 1000) return;
-    lastMessageTime = Date.now();
-    
-    try {
-        // 缓存处理
-        const cacheKey = Array.isArray(text) ? text.join('|') : text;
-        if (messageCache.has(cacheKey)) {
-            text = messageCache.get(cacheKey);
-        } else {
-            if (Array.isArray(text)) {
-                text = text[Math.floor(Math.random() * text.length)];
-            }
-            messageCache.set(cacheKey, text);
-        }
-        
-        // 显示消息
-        if (flag || !sessionStorage.getItem('waifu-text')) {
-            if (live2d_settings.showF12Message !== false) {
-                console.log('[Message]', text.replace(/<[^<>]+>/g,''));
-            }
-            
-            if (flag) sessionStorage.setItem('waifu-text', text);
-            
-            $('.waifu-tips').stop();
-            $('.waifu-tips').html(text).fadeTo(200, 1);
-            
-            hideMessage(timeout || 5000);
-        }
-    } catch (e) {
-        console.warn('消息显示失败:', e);
-    }
-}
-
-function hideMessage(timeout) {
-    try {
-        $('.waifu-tips').stop().css('opacity', 1);
-        window.setTimeout(() => {
-            sessionStorage.removeItem('waifu-text');
-        }, timeout);
-        $('.waifu-tips').delay(timeout).fadeTo(200, 0);
-    } catch (e) {
-        console.warn('消息隐藏失败:', e);
-    }
-}
-
-// 欢迎消息序列
-function showWelcomeSequence() {
-    setTimeout(() => {
-        showWelcomeMessage();
-        setTimeout(showSeasonGreeting, 7000);
-        setTimeout(showTimeGreeting, 14000);
-        setTimeout(showReferrerMessage, 21000);
-    }, 1000);
-}
-
-function showWelcomeMessage() {
-    const message = getMessage('waifu.welcome_messages', '欢迎来到我的博客！');
-    showMessage(message, 6000, true);
-}
-
-function showHitokoto() {
-    const message = getMessage('waifu.hitokoto_messages', '今天也要开心哦~');
-    showMessage(message, 5000, true);
-}
-
-// 时间问候
-function showTimeGreeting() {
-    const hour = new Date().getHours();
-    let timeKey = 'default';
-    
-    if (hour >= 5 && hour < 7) timeKey = 't5-7';
-    else if (hour >= 7 && hour < 11) timeKey = 't7-11';
-    else if (hour >= 11 && hour < 14) timeKey = 't11-14';
-    else if (hour >= 14 && hour < 17) timeKey = 't14-17';
-    else if (hour >= 17 && hour < 19) timeKey = 't17-19';
-    else if (hour >= 19 && hour < 21) timeKey = 't19-21';
-    else if (hour >= 21 && hour < 23) timeKey = 't21-23';
-    else if (hour >= 23 || hour < 5) timeKey = 't23-5';
-    
-    const message = getMessage(`waifu.hour_tips.${timeKey}`);
-    if (message) showMessage(message, 5000, true);
-}
-
-// 来源检测
+// 来源检测函数
 function showReferrerMessage() {
-    try {
-        const referrer = document.referrer;
-        let messageType = 'none';
-        let searchQuery = '';
-        let pageTitle = document.title.replace(' - 小冬栖的博客', '');
-        
-        if (!referrer) {
-            messageType = 'none';
-        } else if (referrer.includes('baidu.com')) {
-            messageType = 'baidu';
-            const match = referrer.match(/[?&]wd=([^&]*)/) || referrer.match(/[?&]word=([^&]*)/);
-            if (match) searchQuery = decodeURIComponent(match[1]);
-        } else if (referrer.includes('so.com')) {
-            messageType = 'so';
-            const match = referrer.match(/[?&]q=([^&]*)/);
-            if (match) searchQuery = decodeURIComponent(match[1]);
-        } else if (referrer.includes('google.com')) {
-            messageType = 'google';
-            const match = referrer.match(/[?&]q=([^&]*)/);
-            if (match) searchQuery = decodeURIComponent(match[1]);
+    if (!waifuTipsData || !waifuTipsData.waifu.referrer_message) return;
+    
+    const referrer = document.referrer;
+    let messageType = 'none';
+    let searchQuery = '';
+    
+    if (!referrer) {
+        messageType = 'none';
+    } else if (referrer.includes('localhost') || referrer.includes('127.0.0.1')) {
+        messageType = 'localhost';
+    } else if (referrer.includes('baidu.com')) {
+        messageType = 'baidu';
+        const match = referrer.match(/[?&]wd=([^&]*)/) || referrer.match(/[?&]word=([^&]*)/);
+        if (match) searchQuery = decodeURIComponent(match[1]);
+    } else if (referrer.includes('so.com')) {
+        messageType = 'so';
+        const match = referrer.match(/[?&]q=([^&]*)/);
+        if (match) searchQuery = decodeURIComponent(match[1]);
+    } else if (referrer.includes('google.com')) {
+        messageType = 'google';
+        const match = referrer.match(/[?&]q=([^&]*)/);
+        if (match) searchQuery = decodeURIComponent(match[1]);
+    } else {
+        messageType = 'default';
+        const hostname = new URL(referrer).hostname;
+        const knownSites = waifuTipsData.waifu.referrer_hostname;
+        if (knownSites && knownSites[hostname]) {
+            searchQuery = knownSites[hostname][0];
         } else {
-            messageType = 'default';
-            const hostname = new URL(referrer).hostname;
-            const knownSites = getMessage('waifu.referrer_hostname', {});
-            searchQuery = knownSites[hostname] || hostname;
+            searchQuery = hostname;
         }
-        
-        let message = getMessage(`waifu.referrer_message.${messageType}`);
-        if (message) {
-            message = message.replace(/{query}/g, searchQuery)
-                            .replace(/{title}/g, pageTitle)
-                            .replace(/{site}/g, searchQuery);
-            showMessage(message, 5000, true);
-        }
-    } catch (e) {
-        console.warn('来源检测失败:', e);
-    }
-}
-
-// 材质切换
-function switchTextures() {
-    try {
-        const modelFiles = [
-            { file: "index.json", name: "日常风格", message: "换上日常服装啦~ 感觉轻松自在！ 🌸" },
-            { file: "index1.json", name: "特殊风格", message: "特别场合的装扮，是不是很漂亮？ ✨" },
-            { file: "index2.json", name: "泳装风格", message: "泳装装扮，有些害羞呢~ 🎀" }
-        ];
-        
-        currentModelIndex = (currentModelIndex + 1) % modelFiles.length;
-        const model = modelFiles[currentModelIndex];
-        
-        // 切换提示
-        showMessage("正在换装...", 1000);
-        
-        setTimeout(() => {
-            const modelPath = `https://dxwwwqc.github.io/dongxi-awa.github.io/live2d/model/38/${model.file}?t=${Date.now()}`;
-            loadlive2d('live2d', modelPath, 0);
-            
-            // 完成提示
-            showMessage(model.message, 3000, true);
-            
-            waifuState.currentCostume = model.name;
-            saveUserPreferences();
-        }, 500);
-    } catch (e) {
-        console.warn('换装失败:', e);
-        showMessage('换装出错了~', 3000);
-    }
-}
-
-// 状态管理
-function updateWaifuBehavior() {
-    const now = Date.now();
-    const idleTime = now - waifuState.lastInteraction;
-    
-    if (idleTime > 15 * 60 * 1000 && !waifuState.isSleeping) {
-        waifuState.isSleeping = true;
-        showMessage("Zzz... 有点困了呢...", 0);
-    }
-}
-
-function updateStateOnInteraction(type) {
-    waifuState.lastInteraction = Date.now();
-    waifuState.interactionCount++;
-    waifuState.isSleeping = false;
-    
-    if (type === 'click' || type === 'touch') {
-        waifuState.mood = ['happy', 'shy'][Math.floor(Math.random() * 2)];
     }
     
-    saveUserPreferences();
+    const messageTemplate = waifuTipsData.waifu.referrer_message[messageType];
+    if (messageTemplate) {
+        let message = messageTemplate.join('');
+        message = message.replace('{text}', searchQuery);
+        showMessage(message, 5000, true);
+    }
 }
 
-// 事件监听
+// 控制台打开检测
 function initConsoleDetection() {
+    if (!waifuTipsData || !waifuTipsData.waifu.console_open_msg) return;
+    
+    const consoleMessages = waifuTipsData.waifu.console_open_msg;
+    
     document.addEventListener('keydown', function(e) {
-        if (e.key === 'F12' || (e.key === 'I' && e.ctrlKey && e.shiftKey)) {
-            showMessage("哈哈，你打开了控制台，是想要看看我的秘密吗？", 4000);
+        if (e.key === 'F12') {
+            const text = consoleMessages[Math.floor(Math.random() * consoleMessages.length)];
+            showMessage(text, 4000);
+        }
+    });
+    
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'I' && e.ctrlKey && e.shiftKey) {
+            const text = consoleMessages[Math.floor(Math.random() * consoleMessages.length)];
+            showMessage(text, 4000);
         }
     });
 }
 
+// 复制检测函数
 function initCopyDetection() {
+    if (!waifuTipsData || !waifuTipsData.waifu.copy_message) return;
+    
     document.addEventListener('copy', function() {
-        showMessage("你都复制了些什么呀，转载要记得加上出处哦", 3000);
+        const copyMessages = waifuTipsData.waifu.copy_message;
+        const text = copyMessages[Math.floor(Math.random() * copyMessages.length)];
+        showMessage(text, 3000);
     });
 }
 
+// 初始化鼠标悬停提示
 function initMouseoverTips() {
-    // 基本悬停提示
-    const basicHover = [
-        { selector: ".fui-home", text: ["点击前往首页"] },
-        { selector: ".fui-chat", text: ["和我聊天吧~"] },
-        { selector: ".fui-user", text: ["喜欢换装 Play 吗？"] },
-        { selector: "#live2d", text: ["干嘛呢你，快把手拿开", "鼠…鼠标放错地方了！"] }
-    ];
+    if (!waifuTipsData || !waifuTipsData.mouseover) return;
     
-    basicHover.forEach(item => {
+    waifuTipsData.mouseover.forEach(item => {
         $(document).on("mouseover", item.selector, function (){
-            const text = item.text[Math.floor(Math.random() * item.text.length)];
-            showMessage(text, 2000);
+            const texts = item.text;
+            if (texts && texts.length > 0) {
+                let text = texts[Math.floor(Math.random() * texts.length)];
+                if (this.textContent) {
+                    text = text.replace('{text}', this.textContent.trim());
+                }
+                showMessage(text, 2000);
+            }
         });
     });
 }
 
-function initVisibilityDetection() {
-    document.addEventListener('visibilitychange', function() {
-        if (!document.hidden && waifuState.isSleeping) {
-            waifuState.isSleeping = false;
-            showMessage("啊，你回来啦！", 3000);
-        }
-    });
+// initModel 函数
+function initModel(waifuPath, type) {
+    console.log('初始化 Live2D 模型...');
+    
+    // 添加节日特效样式
+    addSeasonStyles();
+    
+    // 样式设置
+    live2d_settings.waifuSize = live2d_settings.waifuSize.split('x');
+    live2d_settings.waifuTipsSize = live2d_settings.waifuTipsSize.split('x');
+    live2d_settings.waifuEdgeSide = live2d_settings.waifuEdgeSide.split(':');
+    
+    $("#live2d").attr("width", live2d_settings.waifuSize[0]);
+    $("#live2d").attr("height", live2d_settings.waifuSize[1]);
+    $(".waifu-tips").width(live2d_settings.waifuTipsSize[0]);
+    $(".waifu-tips").height(live2d_settings.waifuTipsSize[1]);
+    $(".waifu-tips").css("top", live2d_settings.waifuToolTop);
+    $(".waifu-tips").css("font-size", live2d_settings.waifuFontSize);
+    $(".waifu-tool").css("font-size", live2d_settings.waifuToolFont);
+    $(".waifu-tool span").css("line-height", live2d_settings.waifuToolLine);
+    
+    if (live2d_settings.waifuEdgeSide[0] == 'left') {
+        $(".waifu").css("left", live2d_settings.waifuEdgeSide[1]+'px');
+    } else if (live2d_settings.waifuEdgeSide[0] == 'right') {
+        $(".waifu").css("right", live2d_settings.waifuEdgeSide[1]+'px');
+    }
+    
+    // 加载提示配置
+    if (typeof(waifuPath) == "object") {
+        waifuTipsData = waifuPath;
+        loadTipsMessage(waifuPath);
+        
+        initConsoleDetection();
+        initCopyDetection();
+        initMouseoverTips();
+        
+        setTimeout(() => {
+            showWelcomeMessage();
+            setTimeout(showSeasonGreeting, 7000);
+            setTimeout(showTimeGreeting, 14000);
+            setTimeout(showReferrerMessage, 21000);
+        }, 1000);
+    } else {
+        $.ajax({
+            cache: true,
+            url: waifuPath == '' ? live2d_settings.tipsMessage : waifuPath,
+            dataType: "json",
+            success: function (result){ 
+                waifuTipsData = result;
+                loadTipsMessage(result);
+                
+                initConsoleDetection();
+                initCopyDetection();
+                initMouseoverTips();
+                
+                setTimeout(() => {
+                    showWelcomeMessage();
+                    setTimeout(showSeasonGreeting, 7000);
+                    setTimeout(showTimeGreeting, 14000);
+                    setTimeout(showReferrerMessage, 21000);
+                }, 1000);
+            }
+        });
+    }
+    
+    // 隐藏不需要的工具栏按钮
+    if (!live2d_settings.showToolMenu) $('.waifu-tool').hide();
+    if (!live2d_settings.canCloseLive2d) $('.waifu-tool .fui-cross').hide();
+    if (!live2d_settings.canSwitchModel) $('.waifu-tool .fui-eye').hide();
+    if (!live2d_settings.canSwitchTextures) $('.waifu-tool .fui-user').hide();
+    if (!live2d_settings.canSwitchHitokoto) $('.waifu-tool .fui-chat').hide();
+    if (!live2d_settings.canTakeScreenshot) $('.waifu-tool .fui-photo').hide();
+    if (!live2d_settings.canTurnToHomePage) $('.waifu-tool .fui-home').hide();
+    if (!live2d_settings.canTurnToAboutPage) $('.waifu-tool .fui-info-circle').hide();
+
+    // 加载默认模型
+    var modelPath = 'https://dxwwwqc.github.io/dongxi-awa.github.io/live2d/model/38/index.json';
+    loadlive2d('live2d', modelPath);
 }
 
-// 样式应用
-function applyStyles() {
-    try {
-        if (!live2d_settings.waifuSize) return;
-        
-        const size = live2d_settings.waifuSize.split('x');
-        const tipsSize = live2d_settings.waifuTipsSize.split('x');
-        
-        $("#live2d").attr("width", size[0]).attr("height", size[1]);
-        $(".waifu-tips").width(tipsSize[0]).height(tipsSize[1]);
-        
-        if (live2d_settings.waifuFontSize) {
-            $(".waifu-tips").css("font-size", live2d_settings.waifuFontSize);
+// ========== 必需的工具函数 ==========
+
+String.prototype.render = function(context) {
+    var tokenReg = /(\\)?\{([^\{\}\\]+)(\\)?\}/g;
+    return this.replace(tokenReg, function (word, slash1, token, slash2) {
+        if (slash1 || slash2) { return word.replace('\\', ''); }
+        var variables = token.replace(/\s/g, '').split('.');
+        var currentObject = context;
+        var i, length, variable;
+        for (i = 0, length = variables.length; i < length; ++i) {
+            variable = variables[i];
+            currentObject = currentObject[variable];
+            if (currentObject === undefined || currentObject === null) return '';
         }
-    } catch (e) {
-        console.warn('样式应用失败:', e);
+        return currentObject;
+    });
+};
+
+function showMessage(text, timeout, flag) {
+    if(flag || sessionStorage.getItem('waifu-text') === '' || sessionStorage.getItem('waifu-text') === null){
+        if(Array.isArray(text)) text = text[Math.floor(Math.random() * text.length + 1)-1];
+        if (live2d_settings.showF12Message) console.log('[Message]', text.replace(/<[^<>]+>/g,''));
+        
+        if(flag) sessionStorage.setItem('waifu-text', text);
+        
+        $('.waifu-tips').stop();
+        $('.waifu-tips').html(text).fadeTo(200, 1);
+        if (timeout === undefined) timeout = 5000;
+        hideMessage(timeout);
     }
 }
 
-function applyBasicStyles() {
-    // 基本样式保障
-    $("#live2d").attr("width", 280).attr("height", 250);
-    $(".waifu-tips").width(250).height(70);
+function hideMessage(timeout) {
+    $('.waifu-tips').stop().css('opacity',1);
+    if (timeout === undefined) timeout = 5000;
+    window.setTimeout(function() {sessionStorage.removeItem('waifu-text')}, timeout);
+    $('.waifu-tips').delay(timeout).fadeTo(200, 0);
 }
 
-// 工具栏事件
-function initToolbarEvents() {
-    $('.waifu-tool .fui-home').click(() => {
-        window.location.href = live2d_settings.homePageUrl || 'https://dxwwwqc.github.io/dongxi-awa.github.io/';
+// 必需的 loadTipsMessage 函数
+function loadTipsMessage(result) {
+    $('.waifu-tool .fui-home').click(function (){
+        window.location.href = 'https://dxwwwqc.github.io/dongxi-awa.github.io/';
     });
     
-    $('.waifu-tool .fui-chat').click(() => {
+    $('.waifu-tool .fui-chat').click(function (){
         showHitokoto();
     });
     
-    $('.waifu-tool .fui-eye').click(() => {
+    $('.waifu-tool .fui-eye').click(function (){
         showMessage('🚫 当前只有一个模型，无法切换哦~', 3000);
     });
     
-    $('.waifu-tool .fui-user').click(() => {
+    $('.waifu-tool .fui-user').click(function (){
         switchTextures();
     });
     
-    $('.waifu-tool .fui-photo').click(() => {
-        showMessage("照好了嘛，是不是很可爱呢？", 2000);
+    $('.waifu-tool .fui-photo').click(function (){
+        const screenshotMsg = result.waifu.screenshot_message[0];
+        showMessage(screenshotMsg, 2000);
         if (window.Live2D) {
             window.Live2D.captureName = 'live2d.png';
             window.Live2D.captureFrame = true;
         }
     });
     
-    $('.waifu-tool .fui-info-circle').click(() => {
-        window.open(live2d_settings.aboutPageUrl || 'https://www.fghrsh.net/post/123.html');
+    $('.waifu-tool .fui-info-circle').click(function (){
+        window.open('https://www.fghrsh.net/post/123.html');
     });
     
-    $('.waifu-tool .fui-cross').click(() => {
-        showMessage("我们还能再见面的吧…", 1300);
-        setTimeout(() => $('.waifu').hide(), 1300);
+    $('.waifu-tool .fui-cross').click(function (){
+        const hiddenMsg = result.waifu.hidden_message[0];
+        showMessage(hiddenMsg, 1300);
+        setTimeout(() => {
+            $('.waifu').hide();
+        }, 1300);
     });
     
-    // 点击交互
+    // 交互功能 - 从 JSON 读取台词
     $(document).on("click", "#live2d", function (){
-        const messages = [
-            "是…是不小心碰到了吧",
-            "萝莉控是什么呀", 
-            "杂鱼",
-            "再摸的话我可要报警了！⌇●﹏●⌇",
-            "110吗，这里有个变态一直在摸我(ó﹏ò｡)"
-        ];
-        const text = messages[Math.floor(Math.random() * messages.length)];
-        showMessage(text, 3000, true);
-        updateStateOnInteraction('click');
+        const clickItem = result.click.find(item => item.selector === '.waifu #live2d');
+        if (clickItem && clickItem.text) {
+            const text = clickItem.text[Math.floor(Math.random() * clickItem.text.length)];
+            showMessage(text, 3000, true);
+        }
     });
-}
 
-function initBasicEvents() {
-    // 基本事件保障
-    $(document).on("click", "#live2d", function (){
-        showMessage("你好呀~", 3000, true);
+    $(document).on("mouseover", "#live2d", function (){
+        const mouseoverItem = result.mouseover.find(item => item.selector === '.waifu #live2d');
+        if (mouseoverItem && mouseoverItem.text) {
+            const text = mouseoverItem.text[Math.floor(Math.random() * mouseoverItem.text.length)];
+            showMessage(text, 2000);
+        }
     });
-}
-
-// 加载默认模型
-function loadDefaultModel() {
-    try {
-        const modelPath = `https://dxwwwqc.github.io/dongxi-awa.github.io/live2d/model/38/index.json`;
-        console.log('加载模型:', modelPath);
-        loadlive2d('live2d', modelPath);
-    } catch (e) {
-        console.error('模型加载失败:', e);
-    }
-}
-
-function showBasicWelcome() {
-    setTimeout(() => {
-        showMessage("欢迎来到小冬栖的博客！🎉", 6000, true);
-    }, 1000);
-}
-
-// 备用配置
-function loadFallbackConfig() {
-    console.warn('使用备用配置');
-    live2d_settings = {
-        modelAPI: 'https://dxwwwqc.github.io/dongxi-awa.github.io/live2d/model/',
-        homePageUrl: 'https://dxwwwqc.github.io/dongxi-awa.github.io/',
-        aboutPageUrl: 'https://www.fghrsh.net/post/123.html',
-        waifuSize: '280x250',
-        waifuTipsSize: '250x70'
-    };
-}
-
-// 启动
-$(document).ready(function() {
-    console.log('DOM 准备就绪，初始化看板娘');
-    
-    // 设置默认配置
-    live2d_settings = {
-        modelAPI: 'https://dxwwwqc.github.io/dongxi-awa.github.io/live2d/model/',
-        tipsMessage: '/dongxi-awa.github.io/live2d/waifu-tips.json',
-        homePageUrl: 'https://dxwwwqc.github.io/dongxi-awa.github.io/',
-        aboutPageUrl: 'https://www.fghrsh.net/post/123.html',
-        showF12Message: true
-    };
-    
-    // 合并全局设置
-    if (window.live2d_settings) {
-        live2d_settings = { ...live2d_settings, ...window.live2d_settings };
-    }
-    
-    // 初始化
-    setTimeout(() => {
-        initWaifu();
-    }, 1000);
-});
-
-// 兼容性函数
-function initModel(waifuPath, type) {
-    console.log('使用 initModel 初始化');
-    initWaifu();
 }
