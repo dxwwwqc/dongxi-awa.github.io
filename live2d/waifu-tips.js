@@ -589,12 +589,20 @@ function initMouseoverTips() {
 
 // ========== 新增的交互功能 ==========
 
-// 1. 鼠标手势交互
+// 1. 鼠标手势交互 - 优化版本
 function initMouseGestures() {
     let mousePath = [];
     let lastPoint = null;
+    let isDrawing = false;
+    
+    document.addEventListener('mousedown', function(e) {
+        isDrawing = true;
+        mousePath = [];
+    });
     
     document.addEventListener('mousemove', function(e) {
+        if (!isDrawing) return;
+        
         const point = {x: e.clientX, y: e.clientY, time: Date.now()};
         
         if (lastPoint) {
@@ -603,36 +611,40 @@ function initMouseGestures() {
                 Math.pow(point.y - lastPoint.y, 2)
             );
             
-            if (distance > 5) {
+            // 增加最小移动距离，减少噪点
+            if (distance > 8) {
                 mousePath.push(point);
                 
-                if (mousePath.length > 50) {
+                // 保持路径长度合理
+                if (mousePath.length > 80) {
                     mousePath.shift();
                 }
             }
+        } else {
+            mousePath.push(point);
         }
         
         lastPoint = point;
     });
     
-    document.addEventListener('click', function(e) {
-        analyzeMouseGesture(mousePath);
+    document.addEventListener('mouseup', function(e) {
+        if (isDrawing && mousePath.length > 15) {
+            analyzeMouseGesture(mousePath);
+        }
+        isDrawing = false;
         mousePath = [];
+        lastPoint = null;
     });
 }
 
 function analyzeMouseGesture(path) {
-    if (path.length < 10) return;
-    
-    const start = path[0];
-    const end = path[path.length - 1];
-    const deltaX = end.x - start.x;
-    const deltaY = end.y - start.y;
+    if (path.length < 20) return;
     
     if (!waifuTipsData || !waifuTipsData.waifu.mouse_gestures) return;
     
     const gestures = waifuTipsData.waifu.mouse_gestures;
     
+    // 优先检测心形（最难触发）
     if (isHeartGesture(path)) {
         const text = gestures.heart[Math.floor(Math.random() * gestures.heart.length)];
         showMessage(text, 3000);
@@ -640,13 +652,21 @@ function analyzeMouseGesture(path) {
         return;
     }
     
+    // 然后检测圆形
     if (isCircleGesture(path)) {
         const text = gestures.circle[Math.floor(Math.random() * gestures.circle.length)];
         showMessage(text, 3000);
         return;
     }
     
-    if (Math.abs(deltaX) > 100 && Math.abs(deltaY) < 50) {
+    // 最后检测方向手势
+    const start = path[0];
+    const end = path[path.length - 1];
+    const deltaX = end.x - start.x;
+    const deltaY = end.y - start.y;
+    
+    // 增加方向检测的阈值
+    if (Math.abs(deltaX) > 150 && Math.abs(deltaY) < 60) {
         if (deltaX > 0) {
             const text = gestures.right[Math.floor(Math.random() * gestures.right.length)];
             showMessage(text, 2000);
@@ -658,30 +678,83 @@ function analyzeMouseGesture(path) {
 }
 
 function isHeartGesture(path) {
-    if (path.length < 20) return false;
+    // 心形需要更复杂的路径
+    if (path.length < 40) return false;
     
-    const midY = path[Math.floor(path.length/2)].y;
-    const startY = path[0].y;
+    // 计算路径的总长度
+    let totalLength = 0;
+    for (let i = 1; i < path.length; i++) {
+        totalLength += Math.sqrt(
+            Math.pow(path[i].x - path[i-1].x, 2) + 
+            Math.pow(path[i].y - path[i-1].y, 2)
+        );
+    }
     
-    return Math.abs(midY - startY) > 50;
+    // 心形应该有较长的路径
+    if (totalLength < 300) return false;
+    
+    // 计算边界框
+    const xs = path.map(p => p.x);
+    const ys = path.map(p => p.y);
+    const minX = Math.min(...xs);
+    const maxX = Math.max(...xs);
+    const minY = Math.min(...ys);
+    const maxY = Math.max(...ys);
+    
+    const width = maxX - minX;
+    const height = maxY - minY;
+    
+    // 心形应该大致是方形的（宽高比接近1）
+    if (Math.abs(width - height) > Math.min(width, height) * 0.5) return false;
+    
+    // 心形应该有明显的凹陷特征
+    // 检查路径是否有两个峰值（心形的两个凸起）
+    const midIndex = Math.floor(path.length / 2);
+    const leftPeak = Math.min(...path.slice(0, midIndex).map(p => p.y));
+    const rightPeak = Math.min(...path.slice(midIndex).map(p => p.y));
+    
+    // 检查是否有底部凹陷（心形底部的V形）
+    const bottomPoints = path.filter(p => p.y > minY + height * 0.7);
+    if (bottomPoints.length < 5) return false;
+    
+    // 计算凹陷程度
+    const bottomCenterX = bottomPoints.reduce((sum, p) => sum + p.x, 0) / bottomPoints.length;
+    const expectedCenterX = minX + width / 2;
+    
+    // 心形底部应该大致在中心
+    return Math.abs(bottomCenterX - expectedCenterX) < width * 0.3;
 }
 
 function isCircleGesture(path) {
-    if (path.length < 30) return false;
+    if (path.length < 35) return false;
     
+    // 计算质心
     const centerX = path.reduce((sum, p) => sum + p.x, 0) / path.length;
     const centerY = path.reduce((sum, p) => sum + p.y, 0) / path.length;
     
+    // 计算每个点到质心的距离
     const distances = path.map(p => 
         Math.sqrt(Math.pow(p.x - centerX, 2) + Math.pow(p.y - centerY, 2))
     );
     
     const avgDistance = distances.reduce((a, b) => a + b) / distances.length;
+    
+    // 计算圆形度：距离的方差应该很小
     const variance = distances.reduce((sum, d) => sum + Math.pow(d - avgDistance, 2), 0) / distances.length;
     
-    return variance < 1000;
+    // 圆形度的阈值更严格
+    const circularity = variance / avgDistance;
+    
+    // 圆形应该闭合（起点和终点接近）
+    const start = path[0];
+    const end = path[path.length - 1];
+    const closureDistance = Math.sqrt(
+        Math.pow(start.x - end.x, 2) + Math.pow(start.y - end.y, 2)
+    );
+    
+    // 路径应该足够圆且闭合
+    return circularity < 0.3 && closureDistance < 50;
 }
-
 // 2. 智能感知交互
 function initSmartInteraction() {
     let userActive = true;
