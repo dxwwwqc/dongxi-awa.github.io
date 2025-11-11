@@ -46,11 +46,6 @@ const modelFiles = [
 // 全局变量存储 JSON 数据
 let waifuTipsData = null;
 
-// 对话系统变量
-let conversationState = 'idle';
-let currentTopic = '';
-let userMood = 'neutral';
-
 // 使用 load_rand_textures 消息 - 换装开始提示
 function getRandomTextureMessage() {
     if (!waifuTipsData || !waifuTipsData.waifu.load_rand_textures) {
@@ -495,75 +490,6 @@ function addSeasonStyles() {
         .confetti, .heart, .bubble, .ghost, .snow {
             pointer-events: none;
         }
-        
-        /* 对话选项样式 */
-        .conversation-options {
-            margin-top: 10px;
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-        }
-        
-        .conversation-btn {
-            background: rgba(255, 255, 255, 0.9);
-            border: 1px solid #ddd;
-            border-radius: 15px;
-            padding: 5px 10px;
-            font-size: 11px;
-            cursor: pointer;
-            transition: all 0.3s;
-            color: #333;
-        }
-        
-        .conversation-btn:hover {
-            background: #f0f0f0;
-            transform: scale(1.05);
-        }
-        
-        .quiz-options {
-            margin-top: 10px;
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-        }
-        
-        .quiz-option {
-            background: rgba(255, 255, 255, 0.9);
-            border: 1px solid #ddd;
-            border-radius: 15px;
-            padding: 5px 10px;
-            font-size: 11px;
-            cursor: pointer;
-            transition: all 0.3s;
-            color: #333;
-        }
-        
-        .quiz-option:hover {
-            background: #f0f0f0;
-            transform: scale(1.05);
-        }
-        
-        .quiz-option.correct {
-            background: #d4edda;
-            border-color: #c3e6cb;
-        }
-        
-        .quiz-option.incorrect {
-            background: #f8d7da;
-            border-color: #f5c6cb;
-        }
-        
-        .waifu-conversation {
-            position: absolute;
-            bottom: 100%;
-            left: 0;
-            right: 0;
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 10px;
-            padding: 10px;
-            margin-bottom: 5px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
     `;
     document.head.appendChild(style);
 }
@@ -663,172 +589,178 @@ function initMouseoverTips() {
 
 // ========== 新增的交互功能 ==========
 
-// 开始对话
-function startConversation() {
-    if (!waifuTipsData || !waifuTipsData.waifu.conversation_topics) return;
+// 1. 鼠标手势交互
+function initMouseGestures() {
+    let mousePath = [];
+    let lastPoint = null;
     
-    const topics = Object.keys(waifuTipsData.waifu.conversation_topics);
-    const randomTopic = topics[Math.floor(Math.random() * topics.length)];
-    currentTopic = randomTopic;
-    
-    const topicData = waifuTipsData.waifu.conversation_topics[randomTopic];
-    const questions = topicData.questions;
-    const question = questions[Math.floor(Math.random() * questions.length)];
-    
-    showMessage(question, 6000, true);
-    conversationState = 'waiting_response';
-    
-    // 显示选项按钮
-    setTimeout(() => {
-        showConversationOptions(randomTopic);
-    }, 1000);
-}
-
-// 显示对话选项
-function showConversationOptions(topic) {
-    const topicData = waifuTipsData.waifu.conversation_topics[topic];
-    const responses = Object.keys(topicData.responses);
-    
-    let optionsHTML = '<div class="conversation-options">';
-    optionsHTML += '<div style="font-size:10px; margin-bottom:5px; color:#666;">选择回答：</div>';
-    
-    responses.forEach(response => {
-        optionsHTML += `<button class="conversation-btn" onclick="handleResponse('${response}')">${response}</button>`;
-    });
-    
-    optionsHTML += '<button class="conversation-btn" onclick="endConversation()" style="margin-top:5px; background:#ff6b6b; color:white;">结束对话</button></div>';
-    
-    // 临时显示选项
-    const tempDiv = document.createElement('div');
-    tempDiv.innerHTML = optionsHTML;
-    tempDiv.className = 'waifu-conversation';
-    document.querySelector('.waifu-tips').appendChild(tempDiv);
-    
-    setTimeout(() => {
-        if (tempDiv.parentNode && conversationState === 'waiting_response') {
-            tempDiv.parentNode.removeChild(tempDiv);
-            showMessage("没有选择吗？那下次再聊吧~", 3000);
-            conversationState = 'idle';
-        }
-    }, 10000);
-}
-
-// 处理用户响应
-function handleResponse(responseType) {
-    if (conversationState === 'waiting_response' && currentTopic) {
-        const topicData = waifuTipsData.waifu.conversation_topics[currentTopic];
-        const responses = topicData.responses[responseType];
+    document.addEventListener('mousemove', function(e) {
+        const point = {x: e.clientX, y: e.clientY, time: Date.now()};
         
-        if (responses) {
-            const response = responses[Math.floor(Math.random() * responses.length)];
-            showMessage(response, 4000, true);
+        if (lastPoint) {
+            const distance = Math.sqrt(
+                Math.pow(point.x - lastPoint.x, 2) + 
+                Math.pow(point.y - lastPoint.y, 2)
+            );
             
-            // 清理选项
-            const options = document.querySelector('.waifu-conversation');
-            if (options) options.remove();
-            
-            conversationState = 'idle';
-            
-            // 30% 几率继续对话
-            setTimeout(() => {
-                if (Math.random() < 0.3) {
-                    setTimeout(startConversation, 2000);
+            if (distance > 5) {
+                mousePath.push(point);
+                
+                if (mousePath.length > 50) {
+                    mousePath.shift();
                 }
-            }, 4000);
+            }
+        }
+        
+        lastPoint = point;
+    });
+    
+    document.addEventListener('click', function(e) {
+        analyzeMouseGesture(mousePath);
+        mousePath = [];
+    });
+}
+
+function analyzeMouseGesture(path) {
+    if (path.length < 10) return;
+    
+    const start = path[0];
+    const end = path[path.length - 1];
+    const deltaX = end.x - start.x;
+    const deltaY = end.y - start.y;
+    
+    if (!waifuTipsData || !waifuTipsData.waifu.mouse_gestures) return;
+    
+    const gestures = waifuTipsData.waifu.mouse_gestures;
+    
+    if (isHeartGesture(path)) {
+        const text = gestures.heart[Math.floor(Math.random() * gestures.heart.length)];
+        showMessage(text, 3000);
+        createHeartsEffect();
+        return;
+    }
+    
+    if (isCircleGesture(path)) {
+        const text = gestures.circle[Math.floor(Math.random() * gestures.circle.length)];
+        showMessage(text, 3000);
+        return;
+    }
+    
+    if (Math.abs(deltaX) > 100 && Math.abs(deltaY) < 50) {
+        if (deltaX > 0) {
+            const text = gestures.right[Math.floor(Math.random() * gestures.right.length)];
+            showMessage(text, 2000);
+        } else {
+            const text = gestures.left[Math.floor(Math.random() * gestures.left.length)];
+            showMessage(text, 2000);
         }
     }
 }
 
-// 结束对话
-function endConversation() {
-    const options = document.querySelector('.waifu-conversation');
-    if (options) options.remove();
+function isHeartGesture(path) {
+    if (path.length < 20) return false;
     
-    showMessage("聊天很开心呢！下次再聊吧~", 3000);
-    conversationState = 'idle';
+    const midY = path[Math.floor(path.length/2)].y;
+    const startY = path[0].y;
+    
+    return Math.abs(midY - startY) > 50;
 }
 
-// 开始问答游戏
-function startQuiz() {
-    if (!waifuTipsData || !waifuTipsData.waifu.quiz_questions) return;
+function isCircleGesture(path) {
+    if (path.length < 30) return false;
     
-    const questions = waifuTipsData.waifu.quiz_questions;
-    const randomQuestion = questions[Math.floor(Math.random() * questions.length)];
+    const centerX = path.reduce((sum, p) => sum + p.x, 0) / path.length;
+    const centerY = path.reduce((sum, p) => sum + p.y, 0) / path.length;
     
-    let quizHTML = `<div style="margin-bottom:5px;">${randomQuestion.question}</div>`;
-    quizHTML += '<div class="quiz-options">';
+    const distances = path.map(p => 
+        Math.sqrt(Math.pow(p.x - centerX, 2) + Math.pow(p.y - centerY, 2))
+    );
     
-    randomQuestion.options.forEach((option, index) => {
-        quizHTML += `<button class="quiz-option" onclick="checkAnswer(${index}, ${randomQuestion.answer})">${option}</button>`;
-    });
+    const avgDistance = distances.reduce((a, b) => a + b) / distances.length;
+    const variance = distances.reduce((sum, d) => sum + Math.pow(d - avgDistance, 2), 0) / distances.length;
     
-    quizHTML += '</div>';
-    quizHTML += `<div style="font-size:10px; color:#666; margin-top:5px;">${randomQuestion.hint}</div>`;
-    
-    showMessage(quizHTML, 15000, false);
+    return variance < 1000;
 }
 
-// 检查答案
-function checkAnswer(selectedIndex, correctIndex) {
-    const options = document.querySelectorAll('.quiz-option');
+// 2. 智能感知交互
+function initSmartInteraction() {
+    let userActive = true;
+    let inactiveTimer;
     
-    options.forEach((option, index) => {
-        if (index === correctIndex) {
-            option.classList.add('correct');
-        } else if (index === selectedIndex && selectedIndex !== correctIndex) {
-            option.classList.add('incorrect');
-        }
-        option.disabled = true;
-    });
-    
-    if (selectedIndex === correctIndex) {
-        setTimeout(() => {
-            showMessage("回答正确！你真了解我呢~ 🎉", 3000, true);
-        }, 1000);
-    } else {
-        setTimeout(() => {
-            showMessage("答错了呢~ 不过没关系！", 3000, true);
-        }, 1000);
+    function resetInactiveTimer() {
+        userActive = true;
+        clearTimeout(inactiveTimer);
+        inactiveTimer = setTimeout(() => {
+            userActive = false;
+            showInactiveMessage();
+        }, 300000);
     }
+    
+    function showInactiveMessage() {
+        if (!waifuTipsData || !waifuTipsData.waifu.inactive_messages) return;
+        
+        const messages = waifuTipsData.waifu.inactive_messages;
+        const text = messages[Math.floor(Math.random() * messages.length)];
+        showMessage(text, 4000);
+    }
+    
+    ['mousemove', 'click', 'keydown', 'scroll'].forEach(event => {
+        document.addEventListener(event, resetInactiveTimer, { passive: true });
+    });
+    
+    resetInactiveTimer();
 }
 
-// 讲述故事
-function tellStory() {
-    if (!waifuTipsData || !waifuTipsData.waifu.story_messages) return;
+// 3. 滚动感知交互
+function initScrollInteraction() {
+    let lastScrollTop = 0;
+    let scrollDirection = 'down';
+    let sectionMessagesShown = new Set();
     
-    const stories = waifuTipsData.waifu.story_messages;
-    const story = stories[Math.floor(Math.random() * stories.length)];
-    
-    showMessage(story, 6000, true);
-}
-
-// 初始化双击事件
-function initDoubleClick() {
-    let lastClick = 0;
-    $('#live2d').on('click', function() {
-        const now = new Date().getTime();
-        if (now - lastClick < 300) { // 300ms 内算作双击
-            // 从多种交互中随机选择
-            const interactions = [startConversation, startQuiz, tellStory];
-            const randomInteraction = interactions[Math.floor(Math.random() * interactions.length)];
-            randomInteraction();
+    window.addEventListener('scroll', function() {
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        scrollDirection = scrollTop > lastScrollTop ? 'down' : 'up';
+        lastScrollTop = scrollTop;
+        
+        checkScrollSections();
+        
+        if ((window.innerHeight + scrollTop) >= document.documentElement.scrollHeight - 100) {
+            showScrollBottomMessage();
         }
-        lastClick = now;
+    }, { passive: true });
+}
+
+function checkScrollSections() {
+    if (!waifuTipsData || !waifuTipsData.waifu.scroll_messages) return;
+    
+    const sections = document.querySelectorAll('h1, h2, h3, .post-content, .comments');
+    sections.forEach((section, index) => {
+        const rect = section.getBoundingClientRect();
+        const isVisible = rect.top < window.innerHeight && rect.bottom > 0;
+        
+        if (isVisible && !sectionMessagesShown.has(index)) {
+            sectionMessagesShown.add(index);
+            
+            let messageType = 'default';
+            if (section.tagName === 'H1') messageType = 'h1';
+            else if (section.tagName === 'H2') messageType = 'h2';
+            else if (section.className.includes('comments')) messageType = 'comments';
+            
+            const messages = waifuTipsData.waifu.scroll_messages[messageType];
+            if (messages && messages.length > 0) {
+                const text = messages[Math.floor(Math.random() * messages.length)];
+                showMessage(text, 3000);
+            }
+        }
     });
 }
 
-// 根据心情调整回复
-function adjustMood(interactionType) {
-    const moodChanges = {
-        'positive': 0.1,
-        'negative': -0.1,
-        'neutral': 0
-    };
+function showScrollBottomMessage() {
+    if (!waifuTipsData || !waifuTipsData.waifu.scroll_bottom_messages) return;
     
-    // 简单的情绪系统（可以扩展）
-    if (userMood === 'neutral') {
-        userMood = Math.random() < 0.5 ? 'happy' : 'shy';
-    }
+    const messages = waifuTipsData.waifu.scroll_bottom_messages;
+    const text = messages[Math.floor(Math.random() * messages.length)];
+    showMessage(text, 4000);
 }
 
 // initModel 函数
@@ -866,7 +798,11 @@ function initModel(waifuPath, type) {
         initConsoleDetection();
         initCopyDetection();
         initMouseoverTips();
-        initDoubleClick();
+        
+        // 初始化新增的交互功能
+        initMouseGestures();
+        initSmartInteraction();
+        initScrollInteraction();
         
         setTimeout(() => {
             showWelcomeMessage();
@@ -886,7 +822,11 @@ function initModel(waifuPath, type) {
                 initConsoleDetection();
                 initCopyDetection();
                 initMouseoverTips();
-                initDoubleClick();
+                
+                // 初始化新增的交互功能
+                initMouseGestures();
+                initSmartInteraction();
+                initScrollInteraction();
                 
                 setTimeout(() => {
                     showWelcomeMessage();
@@ -959,10 +899,7 @@ function loadTipsMessage(result) {
     });
     
     $('.waifu-tool .fui-chat').click(function (){
-        // 随机选择互动方式
-        const interactions = [showHitokoto, startConversation, startQuiz, tellStory];
-        const randomInteraction = interactions[Math.floor(Math.random() * interactions.length)];
-        randomInteraction();
+        showHitokoto();
     });
     
     $('.waifu-tool .fui-eye').click(function (){
@@ -1008,23 +945,6 @@ function loadTipsMessage(result) {
         if (mouseoverItem && mouseoverItem.text) {
             const text = mouseoverItem.text[Math.floor(Math.random() * mouseoverItem.text.length)];
             showMessage(text, 2000);
-        }
-    });
-    
-    // 双击事件
-    $(document).on("dblclick", "#live2d", function (){
-        const dblclickItems = result.dblclick || [];
-        const dblclickItem = dblclickItems.find(item => item.selector === '.waifu #live2d');
-        if (dblclickItem && dblclickItem.text) {
-            const text = dblclickItem.text[Math.floor(Math.random() * dblclickItem.text.length)];
-            showMessage(text, 4000, true);
-            
-            // 双击后随机触发一个交互
-            setTimeout(() => {
-                const interactions = [startConversation, startQuiz, tellStory];
-                const randomInteraction = interactions[Math.floor(Math.random() * interactions.length)];
-                randomInteraction();
-            }, 1000);
         }
     });
 }
