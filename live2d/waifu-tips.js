@@ -46,6 +46,12 @@ const modelFiles = [
 // 全局变量存储 JSON 数据
 let waifuTipsData = null;
 
+// 长按相关变量
+let longPressTimer = null;
+let longPressDuration = 0;
+let longPressStartTime = 0;
+const LONG_PRESS_THRESHOLD = 500; // 长按判定阈值（毫秒）
+
 // 使用 load_rand_textures 消息 - 换装开始提示
 function getRandomTextureMessage() {
     if (!waifuTipsData || !waifuTipsData.waifu.load_rand_textures) {
@@ -61,6 +67,24 @@ function getRandomCostumeMessage() {
         return "换装完成！";
     }
     const messages = waifuTipsData.waifu.change_costume_messages;
+    return messages[Math.floor(Math.random() * messages.length)];
+}
+
+// 获取长按消息
+function getRandomLongPressMessage() {
+    if (!waifuTipsData || !waifuTipsData.waifu.long_press_messages) {
+        return "长按检测~";
+    }
+    const messages = waifuTipsData.waifu.long_press_messages;
+    return messages[Math.floor(Math.random() * messages.length)];
+}
+
+// 获取短按长按消息
+function getRandomShortPressMessage() {
+    if (!waifuTipsData || !waifuTipsData.waifu.long_press_short) {
+        return "轻轻一按~";
+    }
+    const messages = waifuTipsData.waifu.long_press_short;
     return messages[Math.floor(Math.random() * messages.length)];
 }
 
@@ -490,6 +514,29 @@ function addSeasonStyles() {
         .confetti, .heart, .bubble, .ghost, .snow {
             pointer-events: none;
         }
+        
+        /* 长按进度指示器 */
+        .long-press-indicator {
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 2px;
+            overflow: hidden;
+            z-index: 10002;
+            pointer-events: none;
+        }
+        
+        .long-press-progress {
+            height: 100%;
+            background: linear-gradient(90deg, #ff6b6b, #74b9ff);
+            border-radius: 2px;
+            transition: width 0.1s linear;
+            width: 0%;
+        }
     `;
     document.head.appendChild(style);
 }
@@ -587,6 +634,223 @@ function initMouseoverTips() {
     });
 }
 
+// ========== 长按检测功能 ==========
+
+// 初始化长按检测
+function initLongPressDetection() {
+    const live2dElement = document.getElementById('live2d');
+    
+    if (!live2dElement) {
+        console.warn('Live2D 元素未找到，长按检测初始化失败');
+        return;
+    }
+    
+    // 鼠标事件
+    live2dElement.addEventListener('mousedown', handleLongPressStart);
+    live2dElement.addEventListener('mouseup', handleLongPressEnd);
+    live2dElement.addEventListener('mouseleave', handleLongPressCancel);
+    
+    // 触摸事件（移动端支持）
+    live2dElement.addEventListener('touchstart', handleLongPressStart);
+    live2dElement.addEventListener('touchend', handleLongPressEnd);
+    live2dElement.addEventListener('touchcancel', handleLongPressCancel);
+    
+    console.log('长按检测初始化完成');
+}
+
+// 长按开始
+function handleLongPressStart(e) {
+    e.preventDefault();
+    longPressStartTime = Date.now();
+    
+    // 创建进度指示器
+    createLongPressIndicator();
+    
+    longPressTimer = setInterval(() => {
+        longPressDuration = Date.now() - longPressStartTime;
+        const progress = Math.min((longPressDuration / 10000) * 100, 100); // 最多10秒
+        
+        // 更新进度条
+        updateLongPressProgress(progress);
+        
+        // 实时反馈（可选）
+        if (longPressDuration > 3000) {
+            showLongPressFeedback(longPressDuration);
+        }
+    }, 100);
+}
+
+// 长按结束
+function handleLongPressEnd(e) {
+    e.preventDefault();
+    clearLongPressTimer();
+    
+    const pressDuration = Date.now() - longPressStartTime;
+    
+    // 移除进度指示器
+    removeLongPressIndicator();
+    
+    if (pressDuration >= LONG_PRESS_THRESHOLD) {
+        // 触发长按事件
+        triggerLongPressAction(pressDuration);
+    } else {
+        // 短按处理（原有的点击事件）
+        triggerShortPressAction();
+    }
+    
+    longPressDuration = 0;
+    longPressStartTime = 0;
+}
+
+// 长按取消
+function handleLongPressCancel(e) {
+    e.preventDefault();
+    clearLongPressTimer();
+    removeLongPressIndicator();
+    longPressDuration = 0;
+    longPressStartTime = 0;
+}
+
+// 清理计时器
+function clearLongPressTimer() {
+    if (longPressTimer) {
+        clearInterval(longPressTimer);
+        longPressTimer = null;
+    }
+}
+
+// 创建长按进度指示器
+function createLongPressIndicator() {
+    const indicator = document.createElement('div');
+    indicator.className = 'long-press-indicator';
+    indicator.innerHTML = '<div class="long-press-progress"></div>';
+    document.getElementById('live2d').appendChild(indicator);
+}
+
+// 更新长按进度
+function updateLongPressProgress(progress) {
+    const progressBar = document.querySelector('.long-press-progress');
+    if (progressBar) {
+        progressBar.style.width = progress + '%';
+    }
+}
+
+// 移除长按进度指示器
+function removeLongPressIndicator() {
+    const indicator = document.querySelector('.long-press-indicator');
+    if (indicator) {
+        indicator.remove();
+    }
+}
+
+// 显示长按实时反馈
+function showLongPressFeedback(duration) {
+    const seconds = Math.floor(duration / 1000);
+    
+    // 只在特定时间点显示反馈，避免过于频繁
+    if ([3, 5, 8, 10].includes(seconds)) {
+        const feedbackMessages = [
+            `坚持了 ${seconds} 秒...`,
+            `${seconds}秒达成！`,
+            `长按持续：${seconds}秒`,
+            `还在按着... ${seconds}秒`
+        ];
+        
+        const message = feedbackMessages[Math.floor(Math.random() * feedbackMessages.length)];
+        showTemporaryMessage(message, 800);
+    }
+}
+
+// 显示临时消息（不干扰主要消息系统）
+function showTemporaryMessage(text, duration) {
+    const tempMsg = document.createElement('div');
+    tempMsg.style.cssText = `
+        position: absolute;
+        top: -30px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(0, 0, 0, 0.7);
+        color: white;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        white-space: nowrap;
+        z-index: 10001;
+        pointer-events: none;
+    `;
+    tempMsg.textContent = text;
+    
+    const live2dElement = document.getElementById('live2d');
+    if (live2dElement) {
+        live2dElement.appendChild(tempMsg);
+        
+        setTimeout(() => {
+            if (tempMsg.parentNode) {
+                tempMsg.remove();
+            }
+        }, duration);
+    }
+}
+
+// 触发长按动作
+function triggerLongPressAction(duration) {
+    const seconds = Math.floor(duration / 1000);
+    
+    // 检查是否有特定的长按动作
+    if (waifuTipsData && waifuTipsData.waifu.long_press_actions) {
+        const actions = waifuTipsData.waifu.long_press_actions;
+        const matchedAction = actions.find(action => seconds >= action.duration);
+        
+        if (matchedAction) {
+            let message = matchedAction.message.replace('{duration}', seconds);
+            showMessage(message, 4000, true);
+            
+            if (matchedAction.effect) {
+                applySeasonEffect(matchedAction.effect);
+            }
+            return;
+        }
+    }
+    
+    // 检查长按配置
+    if (waifuTipsData && waifuTipsData.longpress) {
+        const longpressConfig = waifuTipsData.longpress.find(item => item.selector === '.waifu #live2d');
+        if (longpressConfig && longpressConfig.actions) {
+            const actions = longpressConfig.actions;
+            let matchedAction = null;
+            
+            for (const action of actions) {
+                if (duration >= action.minDuration * 1000) {
+                    if (!action.maxDuration || duration <= action.maxDuration * 1000) {
+                        matchedAction = action;
+                        break;
+                    }
+                }
+            }
+            
+            if (matchedAction && matchedAction.text) {
+                const text = matchedAction.text[Math.floor(Math.random() * matchedAction.text.length)];
+                showMessage(text, 4000, true);
+                return;
+            }
+        }
+    }
+    
+    // 默认长按消息
+    let message = getRandomLongPressMessage();
+    message = message.replace('{duration}', seconds);
+    showMessage(message, 4000, true);
+}
+
+// 触发短按动作
+function triggerShortPressAction() {
+    // 使用短按长按消息
+    const message = getRandomShortPressMessage();
+    showMessage(message, 2000);
+}
+
+// ========== 初始化函数 ==========
+
 // initModel 函数
 function initModel(waifuPath, type) {
     console.log('初始化 Live2D 模型...');
@@ -622,6 +886,7 @@ function initModel(waifuPath, type) {
         initConsoleDetection();
         initCopyDetection();
         initMouseoverTips();
+        initLongPressDetection();
         
         setTimeout(() => {
             showWelcomeMessage();
@@ -641,6 +906,7 @@ function initModel(waifuPath, type) {
                 initConsoleDetection();
                 initCopyDetection();
                 initMouseoverTips();
+                initLongPressDetection();
                 
                 setTimeout(() => {
                     showWelcomeMessage();
