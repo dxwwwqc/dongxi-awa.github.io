@@ -652,12 +652,188 @@ function analyzeMouseGesture(path) {
         return;
     }
     
-    // 然后检测圆形
+function isCircleGesture(path) {
+    // 降低点数要求
+    if (path.length < 25) return false;
+    
+    // 计算质心
+    const centerX = path.reduce((sum, p) => sum + p.x, 0) / path.length;
+    const centerY = path.reduce((sum, p) => sum + p.y, 0) / path.length;
+    
+    // 计算每个点到质心的距离
+    const distances = path.map(p => 
+        Math.sqrt(Math.pow(p.x - centerX, 2) + Math.pow(p.y - centerY, 2))
+    );
+    
+    const avgDistance = distances.reduce((a, b) => a + b) / distances.length;
+    
+    // 计算圆形度：距离的方差应该很小
+    const variance = distances.reduce((sum, d) => sum + Math.pow(d - avgDistance, 2), 0) / distances.length;
+    
+    // 大幅降低圆形度阈值
+    const circularity = variance / avgDistance;
+    
+    // 路径应该闭合（起点和终点接近）
+    const start = path[0];
+    const end = path[path.length - 1];
+    const closureDistance = Math.sqrt(
+        Math.pow(start.x - end.x, 2) + Math.pow(start.y - end.y, 2)
+    );
+    
+    // 计算路径的弯曲程度（角度变化）
+    let totalAngleChange = 0;
+    let validAnglePoints = 0;
+    
+    for (let i = 1; i < path.length - 1; i++) {
+        const prev = path[i-1];
+        const curr = path[i];
+        const next = path[i+1];
+        
+        const v1 = { x: curr.x - prev.x, y: curr.y - prev.y };
+        const v2 = { x: next.x - curr.x, y: next.y - curr.y };
+        
+        const dot = v1.x * v2.x + v1.y * v2.y;
+        const mag1 = Math.sqrt(v1.x * v1.x + v1.y * v1.y);
+        const mag2 = Math.sqrt(v2.x * v2.x + v2.y * v2.y);
+        
+        if (mag1 > 0 && mag2 > 0) {
+            const angle = Math.acos(Math.min(Math.max(dot / (mag1 * mag2), -1), 1));
+            totalAngleChange += angle;
+            validAnglePoints++;
+        }
+    }
+    
+    const avgAngleChange = validAnglePoints > 0 ? totalAngleChange / validAnglePoints : 0;
+    
+    // 圆形应该有持续的角度变化
+    const isCircularPath = avgAngleChange > 0.1 && avgAngleChange < 0.5;
+    
+    // 计算边界框
+    const xs = path.map(p => p.x);
+    const ys = path.map(p => p.y);
+    const minX = Math.min(...xs);
+    const maxX = Math.max(...xs);
+    const minY = Math.min(...ys);
+    const maxY = Math.max(...ys);
+    const width = maxX - minX;
+    const height = maxY - minY;
+    
+    // 圆形应该大致是圆形的（宽高比接近1）
+    const aspectRatio = Math.min(width, height) / Math.max(width, height);
+    
+    console.log('圆形检测:', {
+        点数: path.length,
+        圆形度: circularity,
+        闭合距离: closureDistance,
+        角度变化: avgAngleChange,
+        宽高比: aspectRatio,
+        平均距离: avgDistance
+    });
+    
+    // 更宽松的圆形检测条件
+    return circularity < 0.5 &&           // 圆形度阈值放宽
+           closureDistance < 80 &&        // 闭合距离放宽
+           aspectRatio > 0.6 &&          // 宽高比要求降低
+           isCircularPath &&              // 有持续角度变化
+           avgDistance > 30;              // 确保不是太小的圆圈
+}
+
+// 同时优化鼠标手势的初始设置
+function initMouseGestures() {
+    let mousePath = [];
+    let lastPoint = null;
+    let isDrawing = false;
+    
+    document.addEventListener('mousedown', function(e) {
+        isDrawing = true;
+        mousePath = [{x: e.clientX, y: e.clientY, time: Date.now()}];
+        lastPoint = {x: e.clientX, y: e.clientY, time: Date.now()};
+    });
+    
+    document.addEventListener('mousemove', function(e) {
+        if (!isDrawing) return;
+        
+        const point = {x: e.clientX, y: e.clientY, time: Date.now()};
+        
+        if (lastPoint) {
+            const distance = Math.sqrt(
+                Math.pow(point.x - lastPoint.x, 2) + 
+                Math.pow(point.y - lastPoint.y, 2)
+            );
+            
+            // 稍微降低移动距离要求
+            if (distance > 5) {
+                mousePath.push(point);
+                
+                // 增加路径长度限制
+                if (mousePath.length > 60) {
+                    mousePath.shift();
+                }
+            }
+        }
+        
+        lastPoint = point;
+    });
+    
+    document.addEventListener('mouseup', function(e) {
+        if (isDrawing && mousePath.length >= 15) {
+            // 添加最终点
+            mousePath.push({x: e.clientX, y: e.clientY, time: Date.now()});
+            analyzeMouseGesture(mousePath);
+        }
+        isDrawing = false;
+        mousePath = [];
+        lastPoint = null;
+    });
+    
+    // 防止在输入框等元素上绘制
+    document.addEventListener('mousedown', function(e) {
+        const ignoreTags = ['INPUT', 'TEXTAREA', 'SELECT', 'BUTTON'];
+        if (ignoreTags.includes(e.target.tagName)) {
+            isDrawing = false;
+        }
+    });
+}
+
+function analyzeMouseGesture(path) {
+    if (path.length < 15) return;
+    
+    if (!waifuTipsData || !waifuTipsData.waifu.mouse_gestures) return;
+    
+    const gestures = waifuTipsData.waifu.mouse_gestures;
+    
+    // 优先检测圆形（现在更容易触发）
     if (isCircleGesture(path)) {
         const text = gestures.circle[Math.floor(Math.random() * gestures.circle.length)];
         showMessage(text, 3000);
         return;
     }
+    
+    // 然后检测心形（保持严格）
+    if (isHeartGesture(path)) {
+        const text = gestures.heart[Math.floor(Math.random() * gestures.heart.length)];
+        showMessage(text, 3000);
+        createHeartsEffect();
+        return;
+    }
+    
+    // 最后检测方向手势
+    const start = path[0];
+    const end = path[path.length - 1];
+    const deltaX = end.x - start.x;
+    const deltaY = end.y - start.y;
+    
+    // 方向检测的阈值也稍微放宽
+    if (Math.abs(deltaX) > 120 && Math.abs(deltaY) < 80) {
+        if (deltaX > 0) {
+            const text = gestures.right[Math.floor(Math.random() * gestures.right.length)];
+            showMessage(text, 2000);
+        } else {
+            const text = gestures.left[Math.floor(Math.random() * gestures.left.length)];
+            showMessage(text, 2000);
+        }
+    }
+}
     
     // 最后检测方向手势
     const start = path[0];
@@ -755,6 +931,7 @@ function isCircleGesture(path) {
     // 路径应该足够圆且闭合
     return circularity < 0.3 && closureDistance < 50;
 }
+
 // 2. 智能感知交互
 function initSmartInteraction() {
     let userActive = true;
