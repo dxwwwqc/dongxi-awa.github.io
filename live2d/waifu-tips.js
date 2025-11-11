@@ -717,40 +717,65 @@ function isHeartGesture(path) {
     // 心形底部应该大致在中心
     return Math.abs(bottomCenterX - expectedCenterX) < width * 0.3;
 }
-// 3. 滚动感知交互
+/// 2. 滚动感知交互 - 修复版本
 function initScrollInteraction() {
     let lastScrollTop = 0;
     let scrollDirection = 'down';
     let sectionMessagesShown = new Set();
+    let scrollTimer = null;
     
     window.addEventListener('scroll', function() {
         const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
         scrollDirection = scrollTop > lastScrollTop ? 'down' : 'up';
         lastScrollTop = scrollTop;
         
-        checkScrollSections();
-        
-        if ((window.innerHeight + scrollTop) >= document.documentElement.scrollHeight - 100) {
-            showScrollBottomMessage();
-        }
+        // 防抖处理
+        clearTimeout(scrollTimer);
+        scrollTimer = setTimeout(function() {
+            checkScrollSections();
+            
+            // 检测是否滚动到底部
+            if ((window.innerHeight + scrollTop) >= document.documentElement.scrollHeight - 100) {
+                showScrollBottomMessage();
+            }
+        }, 100);
     }, { passive: true });
 }
 
 function checkScrollSections() {
     if (!waifuTipsData || !waifuTipsData.waifu.scroll_messages) return;
     
-    const sections = document.querySelectorAll('h1, h2, h3, .post-content, .comments');
+    // 使用更通用的选择器，适应不同博客主题
+    const sections = document.querySelectorAll('h1, h2, h3, h4, article, main, .post, .content, .entry, .comments, .comment-area');
+    
     sections.forEach((section, index) => {
         const rect = section.getBoundingClientRect();
-        const isVisible = rect.top < window.innerHeight && rect.bottom > 0;
+        const viewportHeight = window.innerHeight;
+        
+        // 更宽松的可见性检测：元素在视口中间区域
+        const isVisible = rect.top < viewportHeight * 0.8 && rect.bottom > viewportHeight * 0.2;
         
         if (isVisible && !sectionMessagesShown.has(index)) {
             sectionMessagesShown.add(index);
             
             let messageType = 'default';
-            if (section.tagName === 'H1') messageType = 'h1';
-            else if (section.tagName === 'H2') messageType = 'h2';
-            else if (section.className.includes('comments')) messageType = 'comments';
+            const tagName = section.tagName.toLowerCase();
+            const className = section.className.toLowerCase();
+            
+            // 更精确的元素类型判断
+            if (tagName === 'h1') {
+                messageType = 'h1';
+            } else if (tagName === 'h2') {
+                messageType = 'h2';
+            } else if (tagName === 'h3' || tagName === 'h4') {
+                messageType = 'h3';
+            } else if (className.includes('comment') || className.includes('comments')) {
+                messageType = 'comments';
+            } else if (tagName === 'article' || className.includes('post') || className.includes('content') || className.includes('entry')) {
+                messageType = 'content';
+            }
+            
+            console.log('检测到滚动区域:', messageType, section);
             
             const messages = waifuTipsData.waifu.scroll_messages[messageType];
             if (messages && messages.length > 0) {
@@ -768,7 +793,6 @@ function showScrollBottomMessage() {
     const text = messages[Math.floor(Math.random() * messages.length)];
     showMessage(text, 4000);
 }
-
 // initModel 函数
 function initModel(waifuPath, type) {
     console.log('初始化 Live2D 模型...');
