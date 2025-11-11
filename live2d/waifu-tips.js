@@ -46,11 +46,10 @@ const modelFiles = [
 // 全局变量存储 JSON 数据
 let waifuTipsData = null;
 
-// 长按相关变量
-let longPressTimer = null;
-let longPressDuration = 0;
-let longPressStartTime = 0;
-const LONG_PRESS_THRESHOLD = 500; // 长按判定阈值（毫秒）
+// 对话系统变量
+let conversationState = 'idle';
+let currentTopic = '';
+let userMood = 'neutral';
 
 // 使用 load_rand_textures 消息 - 换装开始提示
 function getRandomTextureMessage() {
@@ -67,24 +66,6 @@ function getRandomCostumeMessage() {
         return "换装完成！";
     }
     const messages = waifuTipsData.waifu.change_costume_messages;
-    return messages[Math.floor(Math.random() * messages.length)];
-}
-
-// 获取长按消息
-function getRandomLongPressMessage() {
-    if (!waifuTipsData || !waifuTipsData.waifu.long_press_messages) {
-        return "长按检测~";
-    }
-    const messages = waifuTipsData.waifu.long_press_messages;
-    return messages[Math.floor(Math.random() * messages.length)];
-}
-
-// 获取短按长按消息
-function getRandomShortPressMessage() {
-    if (!waifuTipsData || !waifuTipsData.waifu.long_press_short) {
-        return "轻轻一按~";
-    }
-    const messages = waifuTipsData.waifu.long_press_short;
     return messages[Math.floor(Math.random() * messages.length)];
 }
 
@@ -515,27 +496,73 @@ function addSeasonStyles() {
             pointer-events: none;
         }
         
-        /* 长按进度指示器 */
-        .long-press-indicator {
-            position: absolute;
-            top: -10px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 60px;
-            height: 4px;
-            background: rgba(255, 255, 255, 0.3);
-            border-radius: 2px;
-            overflow: hidden;
-            z-index: 10002;
-            pointer-events: none;
+        /* 对话选项样式 */
+        .conversation-options {
+            margin-top: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
         }
         
-        .long-press-progress {
-            height: 100%;
-            background: linear-gradient(90deg, #ff6b6b, #74b9ff);
-            border-radius: 2px;
-            transition: width 0.1s linear;
-            width: 0%;
+        .conversation-btn {
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid #ddd;
+            border-radius: 15px;
+            padding: 5px 10px;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: #333;
+        }
+        
+        .conversation-btn:hover {
+            background: #f0f0f0;
+            transform: scale(1.05);
+        }
+        
+        .quiz-options {
+            margin-top: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        
+        .quiz-option {
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid #ddd;
+            border-radius: 15px;
+            padding: 5px 10px;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: #333;
+        }
+        
+        .quiz-option:hover {
+            background: #f0f0f0;
+            transform: scale(1.05);
+        }
+        
+        .quiz-option.correct {
+            background: #d4edda;
+            border-color: #c3e6cb;
+        }
+        
+        .quiz-option.incorrect {
+            background: #f8d7da;
+            border-color: #f5c6cb;
+        }
+        
+        .waifu-conversation {
+            position: absolute;
+            bottom: 100%;
+            left: 0;
+            right: 0;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 10px;
+            padding: 10px;
+            margin-bottom: 5px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
     `;
     document.head.appendChild(style);
@@ -634,222 +661,175 @@ function initMouseoverTips() {
     });
 }
 
-// ========== 长按检测功能 ==========
+// ========== 新增的交互功能 ==========
 
-// 初始化长按检测
-function initLongPressDetection() {
-    const live2dElement = document.getElementById('live2d');
+// 开始对话
+function startConversation() {
+    if (!waifuTipsData || !waifuTipsData.waifu.conversation_topics) return;
     
-    if (!live2dElement) {
-        console.warn('Live2D 元素未找到，长按检测初始化失败');
-        return;
-    }
+    const topics = Object.keys(waifuTipsData.waifu.conversation_topics);
+    const randomTopic = topics[Math.floor(Math.random() * topics.length)];
+    currentTopic = randomTopic;
     
-    // 鼠标事件
-    live2dElement.addEventListener('mousedown', handleLongPressStart);
-    live2dElement.addEventListener('mouseup', handleLongPressEnd);
-    live2dElement.addEventListener('mouseleave', handleLongPressCancel);
+    const topicData = waifuTipsData.waifu.conversation_topics[randomTopic];
+    const questions = topicData.questions;
+    const question = questions[Math.floor(Math.random() * questions.length)];
     
-    // 触摸事件（移动端支持）
-    live2dElement.addEventListener('touchstart', handleLongPressStart);
-    live2dElement.addEventListener('touchend', handleLongPressEnd);
-    live2dElement.addEventListener('touchcancel', handleLongPressCancel);
+    showMessage(question, 6000, true);
+    conversationState = 'waiting_response';
     
-    console.log('长按检测初始化完成');
+    // 显示选项按钮
+    setTimeout(() => {
+        showConversationOptions(randomTopic);
+    }, 1000);
 }
 
-// 长按开始
-function handleLongPressStart(e) {
-    e.preventDefault();
-    longPressStartTime = Date.now();
+// 显示对话选项
+function showConversationOptions(topic) {
+    const topicData = waifuTipsData.waifu.conversation_topics[topic];
+    const responses = Object.keys(topicData.responses);
     
-    // 创建进度指示器
-    createLongPressIndicator();
+    let optionsHTML = '<div class="conversation-options">';
+    optionsHTML += '<div style="font-size:10px; margin-bottom:5px; color:#666;">选择回答：</div>';
     
-    longPressTimer = setInterval(() => {
-        longPressDuration = Date.now() - longPressStartTime;
-        const progress = Math.min((longPressDuration / 10000) * 100, 100); // 最多10秒
-        
-        // 更新进度条
-        updateLongPressProgress(progress);
-        
-        // 实时反馈（可选）
-        if (longPressDuration > 3000) {
-            showLongPressFeedback(longPressDuration);
+    responses.forEach(response => {
+        optionsHTML += `<button class="conversation-btn" onclick="handleResponse('${response}')">${response}</button>`;
+    });
+    
+    optionsHTML += '<button class="conversation-btn" onclick="endConversation()" style="margin-top:5px; background:#ff6b6b; color:white;">结束对话</button></div>';
+    
+    // 临时显示选项
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = optionsHTML;
+    tempDiv.className = 'waifu-conversation';
+    document.querySelector('.waifu-tips').appendChild(tempDiv);
+    
+    setTimeout(() => {
+        if (tempDiv.parentNode && conversationState === 'waiting_response') {
+            tempDiv.parentNode.removeChild(tempDiv);
+            showMessage("没有选择吗？那下次再聊吧~", 3000);
+            conversationState = 'idle';
         }
-    }, 100);
+    }, 10000);
 }
 
-// 长按结束
-function handleLongPressEnd(e) {
-    e.preventDefault();
-    clearLongPressTimer();
-    
-    const pressDuration = Date.now() - longPressStartTime;
-    
-    // 移除进度指示器
-    removeLongPressIndicator();
-    
-    if (pressDuration >= LONG_PRESS_THRESHOLD) {
-        // 触发长按事件
-        triggerLongPressAction(pressDuration);
-    } else {
-        // 短按处理（原有的点击事件）
-        triggerShortPressAction();
-    }
-    
-    longPressDuration = 0;
-    longPressStartTime = 0;
-}
-
-// 长按取消
-function handleLongPressCancel(e) {
-    e.preventDefault();
-    clearLongPressTimer();
-    removeLongPressIndicator();
-    longPressDuration = 0;
-    longPressStartTime = 0;
-}
-
-// 清理计时器
-function clearLongPressTimer() {
-    if (longPressTimer) {
-        clearInterval(longPressTimer);
-        longPressTimer = null;
-    }
-}
-
-// 创建长按进度指示器
-function createLongPressIndicator() {
-    const indicator = document.createElement('div');
-    indicator.className = 'long-press-indicator';
-    indicator.innerHTML = '<div class="long-press-progress"></div>';
-    document.getElementById('live2d').appendChild(indicator);
-}
-
-// 更新长按进度
-function updateLongPressProgress(progress) {
-    const progressBar = document.querySelector('.long-press-progress');
-    if (progressBar) {
-        progressBar.style.width = progress + '%';
-    }
-}
-
-// 移除长按进度指示器
-function removeLongPressIndicator() {
-    const indicator = document.querySelector('.long-press-indicator');
-    if (indicator) {
-        indicator.remove();
-    }
-}
-
-// 显示长按实时反馈
-function showLongPressFeedback(duration) {
-    const seconds = Math.floor(duration / 1000);
-    
-    // 只在特定时间点显示反馈，避免过于频繁
-    if ([3, 5, 8, 10].includes(seconds)) {
-        const feedbackMessages = [
-            `坚持了 ${seconds} 秒...`,
-            `${seconds}秒达成！`,
-            `长按持续：${seconds}秒`,
-            `还在按着... ${seconds}秒`
-        ];
+// 处理用户响应
+function handleResponse(responseType) {
+    if (conversationState === 'waiting_response' && currentTopic) {
+        const topicData = waifuTipsData.waifu.conversation_topics[currentTopic];
+        const responses = topicData.responses[responseType];
         
-        const message = feedbackMessages[Math.floor(Math.random() * feedbackMessages.length)];
-        showTemporaryMessage(message, 800);
-    }
-}
-
-// 显示临时消息（不干扰主要消息系统）
-function showTemporaryMessage(text, duration) {
-    const tempMsg = document.createElement('div');
-    tempMsg.style.cssText = `
-        position: absolute;
-        top: -30px;
-        left: 50%;
-        transform: translateX(-50%);
-        background: rgba(0, 0, 0, 0.7);
-        color: white;
-        padding: 4px 8px;
-        border-radius: 4px;
-        font-size: 12px;
-        white-space: nowrap;
-        z-index: 10001;
-        pointer-events: none;
-    `;
-    tempMsg.textContent = text;
-    
-    const live2dElement = document.getElementById('live2d');
-    if (live2dElement) {
-        live2dElement.appendChild(tempMsg);
-        
-        setTimeout(() => {
-            if (tempMsg.parentNode) {
-                tempMsg.remove();
-            }
-        }, duration);
-    }
-}
-
-// 触发长按动作
-function triggerLongPressAction(duration) {
-    const seconds = Math.floor(duration / 1000);
-    
-    // 检查是否有特定的长按动作
-    if (waifuTipsData && waifuTipsData.waifu.long_press_actions) {
-        const actions = waifuTipsData.waifu.long_press_actions;
-        const matchedAction = actions.find(action => seconds >= action.duration);
-        
-        if (matchedAction) {
-            let message = matchedAction.message.replace('{duration}', seconds);
-            showMessage(message, 4000, true);
+        if (responses) {
+            const response = responses[Math.floor(Math.random() * responses.length)];
+            showMessage(response, 4000, true);
             
-            if (matchedAction.effect) {
-                applySeasonEffect(matchedAction.effect);
-            }
-            return;
-        }
-    }
-    
-    // 检查长按配置
-    if (waifuTipsData && waifuTipsData.longpress) {
-        const longpressConfig = waifuTipsData.longpress.find(item => item.selector === '.waifu #live2d');
-        if (longpressConfig && longpressConfig.actions) {
-            const actions = longpressConfig.actions;
-            let matchedAction = null;
+            // 清理选项
+            const options = document.querySelector('.waifu-conversation');
+            if (options) options.remove();
             
-            for (const action of actions) {
-                if (duration >= action.minDuration * 1000) {
-                    if (!action.maxDuration || duration <= action.maxDuration * 1000) {
-                        matchedAction = action;
-                        break;
-                    }
+            conversationState = 'idle';
+            
+            // 30% 几率继续对话
+            setTimeout(() => {
+                if (Math.random() < 0.3) {
+                    setTimeout(startConversation, 2000);
                 }
-            }
-            
-            if (matchedAction && matchedAction.text) {
-                const text = matchedAction.text[Math.floor(Math.random() * matchedAction.text.length)];
-                showMessage(text, 4000, true);
-                return;
-            }
+            }, 4000);
         }
     }
+}
+
+// 结束对话
+function endConversation() {
+    const options = document.querySelector('.waifu-conversation');
+    if (options) options.remove();
     
-    // 默认长按消息
-    let message = getRandomLongPressMessage();
-    message = message.replace('{duration}', seconds);
-    showMessage(message, 4000, true);
+    showMessage("聊天很开心呢！下次再聊吧~", 3000);
+    conversationState = 'idle';
 }
 
-// 触发短按动作
-function triggerShortPressAction() {
-    // 使用短按长按消息
-    const message = getRandomShortPressMessage();
-    showMessage(message, 2000);
+// 开始问答游戏
+function startQuiz() {
+    if (!waifuTipsData || !waifuTipsData.waifu.quiz_questions) return;
+    
+    const questions = waifuTipsData.waifu.quiz_questions;
+    const randomQuestion = questions[Math.floor(Math.random() * questions.length)];
+    
+    let quizHTML = `<div style="margin-bottom:5px;">${randomQuestion.question}</div>`;
+    quizHTML += '<div class="quiz-options">';
+    
+    randomQuestion.options.forEach((option, index) => {
+        quizHTML += `<button class="quiz-option" onclick="checkAnswer(${index}, ${randomQuestion.answer})">${option}</button>`;
+    });
+    
+    quizHTML += '</div>';
+    quizHTML += `<div style="font-size:10px; color:#666; margin-top:5px;">${randomQuestion.hint}</div>`;
+    
+    showMessage(quizHTML, 15000, false);
 }
 
-// ========== 初始化函数 ==========
+// 检查答案
+function checkAnswer(selectedIndex, correctIndex) {
+    const options = document.querySelectorAll('.quiz-option');
+    
+    options.forEach((option, index) => {
+        if (index === correctIndex) {
+            option.classList.add('correct');
+        } else if (index === selectedIndex && selectedIndex !== correctIndex) {
+            option.classList.add('incorrect');
+        }
+        option.disabled = true;
+    });
+    
+    if (selectedIndex === correctIndex) {
+        setTimeout(() => {
+            showMessage("回答正确！你真了解我呢~ 🎉", 3000, true);
+        }, 1000);
+    } else {
+        setTimeout(() => {
+            showMessage("答错了呢~ 不过没关系！", 3000, true);
+        }, 1000);
+    }
+}
+
+// 讲述故事
+function tellStory() {
+    if (!waifuTipsData || !waifuTipsData.waifu.story_messages) return;
+    
+    const stories = waifuTipsData.waifu.story_messages;
+    const story = stories[Math.floor(Math.random() * stories.length)];
+    
+    showMessage(story, 6000, true);
+}
+
+// 初始化双击事件
+function initDoubleClick() {
+    let lastClick = 0;
+    $('#live2d').on('click', function() {
+        const now = new Date().getTime();
+        if (now - lastClick < 300) { // 300ms 内算作双击
+            // 从多种交互中随机选择
+            const interactions = [startConversation, startQuiz, tellStory];
+            const randomInteraction = interactions[Math.floor(Math.random() * interactions.length)];
+            randomInteraction();
+        }
+        lastClick = now;
+    });
+}
+
+// 根据心情调整回复
+function adjustMood(interactionType) {
+    const moodChanges = {
+        'positive': 0.1,
+        'negative': -0.1,
+        'neutral': 0
+    };
+    
+    // 简单的情绪系统（可以扩展）
+    if (userMood === 'neutral') {
+        userMood = Math.random() < 0.5 ? 'happy' : 'shy';
+    }
+}
 
 // initModel 函数
 function initModel(waifuPath, type) {
@@ -886,7 +866,7 @@ function initModel(waifuPath, type) {
         initConsoleDetection();
         initCopyDetection();
         initMouseoverTips();
-        initLongPressDetection();
+        initDoubleClick();
         
         setTimeout(() => {
             showWelcomeMessage();
@@ -906,7 +886,7 @@ function initModel(waifuPath, type) {
                 initConsoleDetection();
                 initCopyDetection();
                 initMouseoverTips();
-                initLongPressDetection();
+                initDoubleClick();
                 
                 setTimeout(() => {
                     showWelcomeMessage();
@@ -979,7 +959,10 @@ function loadTipsMessage(result) {
     });
     
     $('.waifu-tool .fui-chat').click(function (){
-        showHitokoto();
+        // 随机选择互动方式
+        const interactions = [showHitokoto, startConversation, startQuiz, tellStory];
+        const randomInteraction = interactions[Math.floor(Math.random() * interactions.length)];
+        randomInteraction();
     });
     
     $('.waifu-tool .fui-eye').click(function (){
@@ -1025,6 +1008,23 @@ function loadTipsMessage(result) {
         if (mouseoverItem && mouseoverItem.text) {
             const text = mouseoverItem.text[Math.floor(Math.random() * mouseoverItem.text.length)];
             showMessage(text, 2000);
+        }
+    });
+    
+    // 双击事件
+    $(document).on("dblclick", "#live2d", function (){
+        const dblclickItems = result.dblclick || [];
+        const dblclickItem = dblclickItems.find(item => item.selector === '.waifu #live2d');
+        if (dblclickItem && dblclickItem.text) {
+            const text = dblclickItem.text[Math.floor(Math.random() * dblclickItem.text.length)];
+            showMessage(text, 4000, true);
+            
+            // 双击后随机触发一个交互
+            setTimeout(() => {
+                const interactions = [startConversation, startQuiz, tellStory];
+                const randomInteraction = interactions[Math.floor(Math.random() * interactions.length)];
+                randomInteraction();
+            }, 1000);
         }
     });
 }
