@@ -408,33 +408,45 @@ function checkTimeBasedAchievements() {
     }
 }
 
-// 显示成就列表（从JSON读取）
+// 显示成就列表（从JSON读取）- 修复版本
 function showAchievementsList() {
-    if (!waifuTipsData || !waifuTipsData.waifu.achievement_messages) return;
+    if (!waifuTipsData || !waifuTipsData.waifu.achievement_messages) {
+        console.log('成就消息配置未找到');
+        showMessage("成就系统暂不可用", 4000);
+        return;
+    }
     
     const achievementConfig = waifuTipsData.waifu.achievement_messages;
     const unlocked = Object.values(achievements).filter(a => a.unlocked);
     const locked = Object.values(achievements).filter(a => !a.unlocked);
     
+    console.log('已解锁成就:', unlocked.length);
+    console.log('未解锁成就:', locked.length);
+    
     let message = `<div style="text-align: center; margin-bottom: 10px;"><strong>${achievementConfig.list_header}</strong></div>`;
     
+    // 显示已解锁成就
     if (unlocked.length > 0) {
-        message += `<div>${achievementConfig.unlocked_count.replace('{unlocked}', unlocked.length).replace('{total}', Object.keys(achievements).length)}：</div>`;
+        message += `<div style="margin-bottom: 8px;">${achievementConfig.unlocked_count.replace('{unlocked}', unlocked.length).replace('{total}', Object.keys(achievements).length)}：</div>`;
         unlocked.forEach(achievement => {
-            message += `<div>${achievement.icon} ${achievement.name}</div>`;
+            message += `<div style="margin: 2px 0;">${achievement.icon} ${achievement.name} - ${achievement.description}</div>`;
         });
+    } else {
+        message += `<div style="margin-bottom: 8px;">还没有解锁任何成就，继续努力吧~</div>`;
     }
     
+    // 显示未解锁成就（如果有已解锁的成就才显示）
     if (locked.length > 0 && unlocked.length > 0) {
-        message += `<div style="margin-top: 10px;">待解锁：</div>`;
+        message += `<div style="margin-top: 10px; margin-bottom: 5px;">待解锁成就：</div>`;
         locked.slice(0, 3).forEach(achievement => {
-            message += `<div>${achievementConfig.secret_achievement}</div>`;
+            message += `<div style="margin: 2px 0;">${achievementConfig.secret_achievement}</div>`;
         });
         if (locked.length > 3) {
-            message += `<div>${achievementConfig.locked_hint.replace('{count}', locked.length - 3)}</div>`;
+            message += `<div style="margin-top: 5px;">${achievementConfig.locked_hint.replace('{count}', locked.length - 3)}</div>`;
         }
     }
     
+    console.log('成就列表消息:', message);
     showMessage(message, 10000);
 }
 
