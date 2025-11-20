@@ -1384,7 +1384,15 @@ function loadTipsMessage(result) {
         window.open('https://www.fghrsh.net/post/123.html');
     });
     
-    // 先添加成就和统计按钮
+    $('.waifu-tool .fui-cross').click(function (){
+        const hiddenMsg = result.waifu.hidden_message[0];
+        showMessage(hiddenMsg, 1300);
+        setTimeout(() => {
+            $('.waifu').hide();
+        }, 1300);
+    });
+    
+    // 添加成就和统计按钮
     $('.waifu-tool').append(`
         <span class="fui-star achievement-btn" title="成就系统"></span>
         <span class="fui-stats stats-btn" title="我的统计"></span>
@@ -1397,20 +1405,6 @@ function loadTipsMessage(result) {
     
     $('.waifu-tool .fui-stats').click(function (){
         getUserStats();
-    });
-    
-    // 最后添加关闭按钮（确保它在最下面）
-    $('.waifu-tool').append(`
-        <span class="fui-cross" title="关闭看板娘"></span>
-    `);
-    
-    // 绑定关闭按钮事件（放在最后）
-    $('.waifu-tool .fui-cross').click(function (){
-        const hiddenMsg = result.waifu.hidden_message[0];
-        showMessage(hiddenMsg, 1300);
-        setTimeout(() => {
-            $('.waifu').hide();
-        }, 1300);
     });
     
     // 更新消息计数
