@@ -48,30 +48,12 @@ let waifuTipsData = null;
 
 // ========== 用户记忆系统 ==========
 
-// 用户记忆数据结构
-let userMemory = {
-    visitCount: 0,
-    firstVisitDate: null,
-    lastVisitDate: null,
-    totalStayTime: 0,
-    favoriteCostume: 0,
-    preferredName: '',
-    likedMessages: [],
-    costumeChanges: 0,
-    messagesReceived: 0,
-    clicksCount: 0,
-    currentSessionStart: null,
-    achievementsProgress: {}
-};
-
 // 初始化用户记忆
 function initUserMemory() {
     console.log('初始化用户记忆...');
     const stored = localStorage.getItem('waifuUserMemory');
-    const currentSession = sessionStorage.getItem('currentSession');
     
     console.log('stored:', stored);
-    console.log('currentSession:', currentSession);
     
     let isNewUser = false;
     
@@ -81,20 +63,24 @@ function initUserMemory() {
             console.log('解析的数据:', parsed);
             userMemory = { ...userMemory, ...parsed };
             
-            // 检查是否是真正的新用户（visitCount 为 0 或不存在）
+            // 修复：只有在真正的新用户（visitCount 为 0 或不存在）时才重置
             if (!userMemory.visitCount || userMemory.visitCount === 0) {
                 console.log('检测到新用户数据，重置用户记忆');
                 resetUserMemory();
                 isNewUser = true;
             } else {
-                // 只有在新的会话中才增加访问次数
-                if (!currentSession) {
+                // 修复：使用更可靠的会话检测方法
+                const currentTime = new Date().getTime();
+                const lastSessionTime = sessionStorage.getItem('lastSessionTime');
+                
+                // 如果上次会话时间超过30分钟，认为是新的访问
+                if (!lastSessionTime || (currentTime - parseInt(lastSessionTime)) > 30 * 60 * 1000) {
                     console.log('新会话，增加访问次数');
                     userMemory.visitCount++;
                     userMemory.lastVisitDate = new Date().toISOString();
-                    sessionStorage.setItem('currentSession', 'active');
+                    sessionStorage.setItem('lastSessionTime', currentTime.toString());
                 } else {
-                    console.log('已有会话，不增加访问次数');
+                    console.log('同一会话内，不增加访问次数');
                 }
             }
             
@@ -111,7 +97,7 @@ function initUserMemory() {
         console.log('新用户，初始化用户记忆');
         resetUserMemory();
         isNewUser = true;
-        sessionStorage.setItem('currentSession', 'active');
+        sessionStorage.setItem('lastSessionTime', new Date().getTime().toString());
     }
     
     userMemory.currentSessionStart = new Date().getTime();
@@ -125,12 +111,6 @@ function initUserMemory() {
     
     // 开始会话时间追踪
     startSessionTimer();
-}
-// 检查所有成就
-function checkAllAchievements() {
-    Object.keys(achievements).forEach(achievementId => {
-        checkAchievement(achievementId);
-    });
 }
 
 // 重置用户记忆（新用户）
@@ -146,10 +126,11 @@ function resetUserMemory() {
         costumeChanges: 0,
         messagesReceived: 0,
         clicksCount: 0,
+        currentSessionStart: new Date().getTime(),
         achievementsProgress: {}
     };
+    sessionStorage.setItem('lastSessionTime', new Date().getTime().toString());
 }
-
 // 保存用户记忆
 function saveUserMemory() {
     localStorage.setItem('waifuUserMemory', JSON.stringify(userMemory));
