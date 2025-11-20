@@ -66,39 +66,71 @@ let userMemory = {
 
 // 初始化用户记忆
 function initUserMemory() {
+    console.log('初始化用户记忆...');
     const stored = localStorage.getItem('waifuUserMemory');
     const currentSession = sessionStorage.getItem('currentSession');
     
-    if (stored) {
+    console.log('stored:', stored);
+    console.log('currentSession:', currentSession);
+    
+    let isNewUser = false;
+    
+    if (stored && stored !== 'null' && stored !== 'undefined') {
         try {
             const parsed = JSON.parse(stored);
+            console.log('解析的数据:', parsed);
             userMemory = { ...userMemory, ...parsed };
             
-            // 只有在新的会话中才增加访问次数
-            if (!currentSession) {
-                userMemory.visitCount++;
-                userMemory.lastVisitDate = new Date().toISOString();
-                sessionStorage.setItem('currentSession', 'active');
+            // 检查是否是真正的新用户（visitCount 为 0 或不存在）
+            if (!userMemory.visitCount || userMemory.visitCount === 0) {
+                console.log('检测到新用户数据，重置用户记忆');
+                resetUserMemory();
+                isNewUser = true;
+            } else {
+                // 只有在新的会话中才增加访问次数
+                if (!currentSession) {
+                    console.log('新会话，增加访问次数');
+                    userMemory.visitCount++;
+                    userMemory.lastVisitDate = new Date().toISOString();
+                    sessionStorage.setItem('currentSession', 'active');
+                } else {
+                    console.log('已有会话，不增加访问次数');
+                }
             }
             
             // 显示个性化欢迎消息
             showPersonalizedWelcome();
             
         } catch (e) {
-            console.error('用户记忆数据损坏，重新初始化');
+            console.error('用户记忆数据损坏，重新初始化', e);
             resetUserMemory();
+            isNewUser = true;
         }
     } else {
         // 新用户
+        console.log('新用户，初始化用户记忆');
         resetUserMemory();
+        isNewUser = true;
         sessionStorage.setItem('currentSession', 'active');
     }
     
     userMemory.currentSessionStart = new Date().getTime();
     saveUserMemory();
     
+    console.log('最终 userMemory:', userMemory);
+    
+    // 立即检查成就
+    console.log('立即检查成就...');
+    checkAllAchievements();
+    
     // 开始会话时间追踪
     startSessionTimer();
+}
+// 检查所有成就
+function checkAllAchievements() {
+    Object.keys(achievements).forEach(achievementId => {
+        checkAchievement(achievementId);
+    });
 }
 
 // 重置用户记忆（新用户）
@@ -191,28 +223,6 @@ function recordCostumeChange() {
     userMemory.costumeChanges = (userMemory.costumeChanges || 0) + 1;
     saveUserMemory();
     checkAchievement('costume_lover');
-}
-
-// 获取用户统计信息（从JSON读取）
-function getUserStats() {
-    if (!waifuTipsData || !waifuTipsData.waifu.memory_messages) return;
-    
-    const messages = waifuTipsData.waifu.memory_messages.stats_messages;
-    const messageTemplate = messages[Math.floor(Math.random() * messages.length)];
-    
-    // 计算相识天数
-    const firstVisit = new Date(userMemory.firstVisitDate);
-    const today = new Date();
-    const daysSinceFirstVisit = Math.floor((today - firstVisit) / (1000 * 60 * 60 * 24));
-    
-    const statsMessage = messageTemplate
-        .replace('{visits}', userMemory.visitCount)
-        .replace('{time}', Math.round(userMemory.totalStayTime / 60))
-        .replace('{costumes}', userMemory.costumeChanges)
-        .replace('{messages}', userMemory.messagesReceived)
-        .replace('{days}', daysSinceFirstVisit);
-    
-    showMessage(statsMessage, 8000);
 }
 
 // 页面关闭前保存数据
@@ -315,17 +325,16 @@ function loadAchievementProgress() {
 
 // 检查初始成就
 function checkInitialAchievements() {
-    // 只在特定条件下检查成就，避免每次刷新都触发
-    if (userMemory.visitCount === 1 && !achievements.first_visit.unlocked) {
-        checkAchievement('first_visit');
-    }
+    console.log('检查初始成就，visitCount:', userMemory.visitCount); // 调试信息
     
-    // 频繁访问成就只在达到条件时检查
-    if (userMemory.visitCount >= 10 && !achievements.frequent_visitor.unlocked) {
-        checkAchievement('frequent_visitor');
-    }
-    
-    // 时间成就在定时器中检查，不在这里检查
+    // 检查所有成就，不限于特定条件
+    Object.keys(achievements).forEach(achievementId => {
+        const achievement = achievements[achievementId];
+        if (achievement.condition(userMemory) && !achievement.unlocked) {
+            console.log('应该解锁成就:', achievement.name); // 调试信息
+            checkAchievement(achievementId);
+        }
+    });
 }
 
 // 检查成就条件
@@ -408,10 +417,9 @@ function checkTimeBasedAchievements() {
     }
 }
 
-// 显示成就列表（从JSON读取）- 修复版本
+// 显示成就列表 - 紧凑版本
 function showAchievementsList() {
     if (!waifuTipsData || !waifuTipsData.waifu.achievement_messages) {
-        console.log('成就消息配置未找到');
         showMessage("成就系统暂不可用", 4000);
         return;
     }
@@ -423,33 +431,30 @@ function showAchievementsList() {
     console.log('已解锁成就:', unlocked.length);
     console.log('未解锁成就:', locked.length);
     
-    let message = `<div style="text-align: center; margin-bottom: 10px;"><strong>${achievementConfig.list_header}</strong></div>`;
+    let message = '';
     
-    // 显示已解锁成就
+    // 显示已解锁成就（紧凑格式）
     if (unlocked.length > 0) {
-        message += `<div style="margin-bottom: 8px;">${achievementConfig.unlocked_count.replace('{unlocked}', unlocked.length).replace('{total}', Object.keys(achievements).length)}：</div>`;
+        message += `<div style="text-align: center; margin-bottom: 4px; font-size: 11px; font-weight: bold;">${achievementConfig.list_header}</div>`;
+        message += `<div style="margin-bottom: 3px; font-size: 10px;">已解锁 ${unlocked.length}/${Object.keys(achievements).length}</div>`;
+        
+        // 使用更紧凑的布局，只显示图标和名称
         unlocked.forEach(achievement => {
-            message += `<div style="margin: 2px 0;">${achievement.icon} ${achievement.name} - ${achievement.description}</div>`;
+            message += `<div style="display: inline-block; margin: 0 3px 2px 0; font-size: 9px;">${achievement.icon}${achievement.name}</div>`;
         });
     } else {
-        message += `<div style="margin-bottom: 8px;">还没有解锁任何成就，继续努力吧~</div>`;
+        message += `<div style="text-align: center; margin-bottom: 4px; font-size: 11px; font-weight: bold;">${achievementConfig.list_header}</div>`;
+        message += `<div style="font-size: 10px;">还没有解锁任何成就</div>`;
     }
     
-    // 显示未解锁成就（如果有已解锁的成就才显示）
+    // 如果有未解锁成就，显示简化的提示
     if (locked.length > 0 && unlocked.length > 0) {
-        message += `<div style="margin-top: 10px; margin-bottom: 5px;">待解锁成就：</div>`;
-        locked.slice(0, 3).forEach(achievement => {
-            message += `<div style="margin: 2px 0;">${achievementConfig.secret_achievement}</div>`;
-        });
-        if (locked.length > 3) {
-            message += `<div style="margin-top: 5px;">${achievementConfig.locked_hint.replace('{count}', locked.length - 3)}</div>`;
-        }
+        message += `<div style="margin-top: 3px; font-size: 9px; color: #666;">还有 ${locked.length} 个成就待解锁</div>`;
     }
     
     console.log('成就列表消息:', message);
-    showMessage(message, 10000);
+    showMessage(message, 7000);
 }
-
 // ========== 现有功能保持不变 ==========
 
 // 使用 load_rand_textures 消息 - 换装开始提示
@@ -906,7 +911,7 @@ function addSeasonStyles() {
 // 添加成就系统CSS
 function addAchievementStyles() {
     const style = document.createElement('style');
-    style.textContent += `
+    style.textContent = `
         @keyframes achievementSlideIn {
             from {
                 transform: translateX(100%);
@@ -931,6 +936,16 @@ function addAchievementStyles() {
         
         .achievement-notification {
             font-family: inherit;
+        }
+        
+        /* 添加成就图标的样式 */
+        .fui-star::before {
+            content: "\\e600";
+            font-family: 'Flat-UI-Icons' !important;
+            font-style: normal;
+            font-weight: normal;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
     `;
     document.head.appendChild(style);
@@ -1384,27 +1399,23 @@ function loadTipsMessage(result) {
         window.open('https://www.fghrsh.net/post/123.html');
     });
     
+    // 只添加成就按钮，移除统计按钮
+    $('.waifu-tool').append(`
+        <span class="fui-star achievement-btn" title="成就系统"></span>
+    `);
+    
+    // 绑定成就按钮事件
+    $('.waifu-tool .fui-star').click(function (){
+        showAchievementsList();
+    });
+    
+    // 绑定关闭按钮事件（确保这个按钮在HTML中已经存在）
     $('.waifu-tool .fui-cross').click(function (){
         const hiddenMsg = result.waifu.hidden_message[0];
         showMessage(hiddenMsg, 1300);
         setTimeout(() => {
             $('.waifu').hide();
         }, 1300);
-    });
-    
-    // 添加成就和统计按钮
-    $('.waifu-tool').append(`
-        <span class="fui-star achievement-btn" title="成就系统"></span>
-        <span class="fui-stats stats-btn" title="我的统计"></span>
-    `);
-    
-    // 绑定新按钮事件
-    $('.waifu-tool .fui-star').click(function (){
-        showAchievementsList();
-    });
-    
-    $('.waifu-tool .fui-stats').click(function (){
-        getUserStats();
     });
     
     // 更新消息计数
