@@ -46,204 +46,6 @@ const modelFiles = [
 // 全局变量存储 JSON 数据
 let waifuTipsData = null;
 
-// ========== 天气系统 ==========
-
-// 天气配置
-const weatherConfig = {
-    apiKey: 'your_api_key',
-    city: 'Beijing',
-    updateInterval: 30 * 60 * 1000
-};
-
-// 初始化天气系统
-function initWeatherSystem() {
-    updateWeather();
-    setInterval(updateWeather, weatherConfig.updateInterval);
-}
-
-// 获取天气信息
-function updateWeather() {
-    // 使用免费天气API
-    const apiUrl = `https://api.openweathermap.org/data/2.5/weather?q=${weatherConfig.city}&appid=${weatherConfig.apiKey}&units=metric&lang=zh_cn`;
-    
-    fetch(apiUrl)
-        .then(response => response.json())
-        .then(weatherData => {
-            if (weatherData && weatherData.weather && weatherData.weather[0]) {
-                processWeatherData(weatherData);
-            }
-        })
-        .catch(error => {
-            console.log('天气获取失败，使用模拟数据');
-            useMockWeatherData();
-        });
-}
-
-// 处理天气数据
-function processWeatherData(weatherData) {
-    const weatherMain = weatherData.weather[0].main;
-    const temp = Math.round(weatherData.main.temp);
-    const city = weatherData.name;
-    
-    // 存储天气信息
-    userMemory.currentWeather = {
-        type: weatherMain,
-        temperature: temp,
-        city: city,
-        lastUpdate: new Date().getTime()
-    };
-    
-    saveUserMemory();
-    
-    // 根据天气显示效果
-    showWeatherEffect(weatherMain, temp, city);
-}
-
-// 模拟天气数据（备用）
-function useMockWeatherData() {
-    const weatherTypes = ['Clear', 'Clouds', 'Rain', 'Snow'];
-    const randomWeather = weatherTypes[Math.floor(Math.random() * weatherTypes.length)];
-    const temp = Math.floor(Math.random() * 35) - 5;
-    
-    userMemory.currentWeather = {
-        type: randomWeather,
-        temperature: temp,
-        city: '北京',
-        lastUpdate: new Date().getTime(),
-        isMock: true
-    };
-    
-    showWeatherEffect(randomWeather, temp, '北京');
-}
-
-// 获取温度消息（从JSON读取）
-function getTemperatureMessage(temp) {
-    if (!waifuTipsData || !waifuTipsData.waifu.weather_messages) {
-        return `气温${temp}°C`;
-    }
-    
-    const tempRanges = waifuTipsData.waifu.weather_messages.temperature_ranges;
-    let rangeKey = 'cool';
-    
-    if (temp < 0) rangeKey = 'freezing';
-    else if (temp < 10) rangeKey = 'cold';
-    else if (temp < 20) rangeKey = 'cool';
-    else if (temp < 30) rangeKey = 'warm';
-    else rangeKey = 'hot';
-    
-    const messages = tempRanges[rangeKey];
-    const message = messages[Math.floor(Math.random() * messages.length)];
-    return message.replace('{temp}', temp);
-}
-
-// 显示天气效果（从JSON读取）
-function showWeatherEffect(weatherType, temperature, city) {
-    if (!waifuTipsData || !waifuTipsData.waifu.weather_messages) return;
-    
-    const weatherMessages = waifuTipsData.waifu.weather_messages.weather_types;
-    const cityGreetings = waifuTipsData.waifu.weather_messages.city_greeting;
-    
-    const weatherInfo = weatherMessages[weatherType] || weatherMessages['Clear'];
-    const weatherMessage = weatherInfo[Math.floor(Math.random() * weatherInfo.length)];
-    
-    const tempMessage = getTemperatureMessage(temperature);
-    
-    // 随机选择是否显示城市问候
-    let fullMessage = tempMessage + '，' + weatherMessage;
-    if (Math.random() > 0.7 && cityGreetings) {
-        const cityGreeting = cityGreetings[Math.floor(Math.random() * cityGreetings.length)];
-        fullMessage = cityGreeting.replace('{city}', city) + ' ' + fullMessage;
-    }
-    
-    // 只在天气变化或首次加载时显示
-    if (!userMemory.lastWeather || userMemory.lastWeather !== weatherType) {
-        showMessage(fullMessage, 5000);
-        userMemory.lastWeather = weatherType;
-        recordWeatherExperience(weatherType);
-    }
-    
-    // 应用天气特效
-    applyWeatherEffect(weatherType);
-}
-
-// 应用天气特效
-function applyWeatherEffect(weatherType) {
-    // 清除之前的天气特效
-    clearWeatherEffects();
-    
-    switch(weatherType) {
-        case 'Rain':
-        case 'Drizzle':
-            createRainEffect();
-            break;
-        case 'Snow':
-            createSnowEffect();
-            break;
-        case 'Thunderstorm':
-            createThunderEffect();
-            break;
-    }
-}
-
-// 创建下雨特效
-function createRainEffect() {
-    for (let i = 0; i < 40; i++) {
-        setTimeout(() => {
-            const raindrop = document.createElement('div');
-            raindrop.className = 'weather-effect raindrop';
-            raindrop.style.cssText = `
-                position: fixed;
-                width: 2px;
-                height: 20px;
-                background: linear-gradient(transparent, #74b9ff);
-                top: -20px;
-                left: ${Math.random() * 100}vw;
-                animation: rainFall ${Math.random() * 1 + 0.5}s linear infinite;
-                z-index: 9998;
-                pointer-events: none;
-            `;
-            document.body.appendChild(raindrop);
-        }, i * 100);
-    }
-}
-
-// 创建雷电特效
-function createThunderEffect() {
-    setInterval(() => {
-        if (Math.random() > 0.7) {
-            const flash = document.createElement('div');
-            flash.style.cssText = `
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100vw;
-                height: 100vh;
-                background: rgba(255,255,255,0.3);
-                z-index: 9997;
-                pointer-events: none;
-                animation: thunderFlash 0.3s ease-out;
-            `;
-            document.body.appendChild(flash);
-            setTimeout(() => flash.remove(), 300);
-        }
-    }, 3000);
-}
-
-// 清除天气特效
-function clearWeatherEffects() {
-    document.querySelectorAll('.weather-effect').forEach(el => el.remove());
-}
-
-// 记录天气经历
-function recordWeatherExperience(weatherType) {
-    userMemory.weatherExperiences = userMemory.weatherExperiences || [];
-    if (!userMemory.weatherExperiences.includes(weatherType)) {
-        userMemory.weatherExperiences.push(weatherType);
-        saveUserMemory();
-        checkAchievement('weather_watcher');
-    }
-}
-
 // ========== 用户记忆系统 ==========
 
 // 用户记忆数据结构
@@ -259,22 +61,25 @@ let userMemory = {
     messagesReceived: 0,
     clicksCount: 0,
     currentSessionStart: null,
-    lastWeather: null,
-    currentWeather: null,
     achievementsProgress: {}
 };
 
 // 初始化用户记忆
 function initUserMemory() {
     const stored = localStorage.getItem('waifuUserMemory');
+    const currentSession = sessionStorage.getItem('currentSession');
+    
     if (stored) {
         try {
             const parsed = JSON.parse(stored);
             userMemory = { ...userMemory, ...parsed };
             
-            // 更新访问信息
-            userMemory.visitCount++;
-            userMemory.lastVisitDate = new Date().toISOString();
+            // 只有在新的会话中才增加访问次数
+            if (!currentSession) {
+                userMemory.visitCount++;
+                userMemory.lastVisitDate = new Date().toISOString();
+                sessionStorage.setItem('currentSession', 'active');
+            }
             
             // 显示个性化欢迎消息
             showPersonalizedWelcome();
@@ -286,6 +91,7 @@ function initUserMemory() {
     } else {
         // 新用户
         resetUserMemory();
+        sessionStorage.setItem('currentSession', 'active');
     }
     
     userMemory.currentSessionStart = new Date().getTime();
@@ -428,7 +234,8 @@ const achievements = {
         description: '第一次访问网站',
         icon: '🎯',
         condition: (memory) => memory.visitCount >= 1,
-        unlocked: false
+        unlocked: false,
+        firstUnlock: false
     },
     frequent_visitor: {
         id: 'frequent_visitor',
@@ -436,7 +243,8 @@ const achievements = {
         description: '访问网站10次',
         icon: '🏆',
         condition: (memory) => memory.visitCount >= 10,
-        unlocked: false
+        unlocked: false,
+        firstUnlock: false
     },
     costume_lover: {
         id: 'costume_lover',
@@ -444,7 +252,8 @@ const achievements = {
         description: '换装20次',
         icon: '👗',
         condition: (memory) => memory.costumeChanges >= 20,
-        unlocked: false
+        unlocked: false,
+        firstUnlock: false
     },
     time_spender: {
         id: 'time_spender',
@@ -452,18 +261,8 @@ const achievements = {
         description: '累计停留1小时',
         icon: '⏰',
         condition: (memory) => memory.totalStayTime >= 3600,
-        unlocked: false
-    },
-    weather_watcher: {
-        id: 'weather_watcher',
-        name: '天气观察者',
-        description: '经历3种不同天气',
-        icon: '🌤️',
-        condition: (memory) => {
-            const weatherTypes = new Set(memory.weatherExperiences || []);
-            return weatherTypes.size >= 3;
-        },
-        unlocked: false
+        unlocked: false,
+        firstUnlock: false
     },
     message_collector: {
         id: 'message_collector',
@@ -471,7 +270,8 @@ const achievements = {
         description: '收集10条不同的消息',
         icon: '💬',
         condition: (memory) => memory.likedMessages.length >= 10,
-        unlocked: false
+        unlocked: false,
+        firstUnlock: false
     },
     night_owl: {
         id: 'night_owl',
@@ -482,7 +282,8 @@ const achievements = {
             const hour = new Date().getHours();
             return hour >= 23 || hour <= 5;
         },
-        unlocked: false
+        unlocked: false,
+        firstUnlock: false
     },
     holiday_visitor: {
         id: 'holiday_visitor',
@@ -490,7 +291,8 @@ const achievements = {
         description: '在5个不同节日访问',
         icon: '🎉',
         condition: (memory) => (memory.holidayVisits || []).length >= 5,
-        unlocked: false
+        unlocked: false,
+        firstUnlock: false
     }
 };
 
@@ -513,9 +315,17 @@ function loadAchievementProgress() {
 
 // 检查初始成就
 function checkInitialAchievements() {
-    checkAchievement('first_visit');
-    checkAchievement('frequent_visitor');
-    checkAchievement('time_spender');
+    // 只在特定条件下检查成就，避免每次刷新都触发
+    if (userMemory.visitCount === 1 && !achievements.first_visit.unlocked) {
+        checkAchievement('first_visit');
+    }
+    
+    // 频繁访问成就只在达到条件时检查
+    if (userMemory.visitCount >= 10 && !achievements.frequent_visitor.unlocked) {
+        checkAchievement('frequent_visitor');
+    }
+    
+    // 时间成就在定时器中检查，不在这里检查
 }
 
 // 检查成就条件
@@ -534,10 +344,18 @@ function unlockAchievement(achievementId) {
     if (!achievement || achievement.unlocked) return;
     
     achievement.unlocked = true;
+    achievement.firstUnlock = true;
     userMemory.achievementsProgress[achievementId] = true;
     saveUserMemory();
     
-    showAchievementNotification(achievement);
+    // 只在首次解锁时显示通知
+    if (achievement.firstUnlock) {
+        showAchievementNotification(achievement);
+        // 重置首次解锁标记，避免重复显示
+        setTimeout(() => {
+            achievement.firstUnlock = false;
+        }, 100);
+    }
 }
 
 // 显示成就通知（从JSON读取）
@@ -1073,30 +891,6 @@ function addSeasonStyles() {
     document.head.appendChild(style);
 }
 
-// 添加天气相关CSS
-function addWeatherStyles() {
-    const style = document.createElement('style');
-    style.textContent += `
-        @keyframes rainFall {
-            to {
-                transform: translateY(100vh);
-                opacity: 0;
-            }
-        }
-        
-        @keyframes thunderFlash {
-            0% { opacity: 0; }
-            50% { opacity: 0.3; }
-            100% { opacity: 0; }
-        }
-        
-        .weather-effect {
-            pointer-events: none;
-        }
-    `;
-    document.head.appendChild(style);
-}
-
 // 添加成就系统CSS
 function addAchievementStyles() {
     const style = document.createElement('style');
@@ -1415,13 +1209,7 @@ function initModel(waifuPath, type) {
     
     // 添加样式
     addSeasonStyles();
-    addWeatherStyles();
     addAchievementStyles();
-    
-    // 从配置读取天气城市
-    if (waifuTipsData && waifuTipsData.waifu.weather_messages) {
-        weatherConfig.city = waifuTipsData.waifu.weather_messages.api_city || 'Beijing';
-    }
     
     // 样式设置
     live2d_settings.waifuSize = live2d_settings.waifuSize.split('x');
@@ -1460,7 +1248,6 @@ function initModel(waifuPath, type) {
         // 初始化新系统
         initUserMemory();
         initAchievementSystem();
-        initWeatherSystem();
         
         setTimeout(() => {
             showWelcomeMessage();
@@ -1489,7 +1276,6 @@ function initModel(waifuPath, type) {
                 // 初始化新系统
                 initUserMemory();
                 initAchievementSystem();
-                initWeatherSystem();
                 
                 setTimeout(() => {
                     showWelcomeMessage();
