@@ -37,7 +37,7 @@ live2d_settings['screenshotCaptureName'] = 'live2d.png';
 
 // ========== 全局变量 ==========
 let waifuTipsData = null;
-let userMemory = null; // 添加全局变量声明
+let userMemory = null;
 
 // 使用不同的JSON文件
 let currentModelIndex = 0;
@@ -53,7 +53,6 @@ const modelFiles = [
 function initUserMemory() {
     console.log('初始化用户记忆...');
     
-    // 确保 userMemory 不为 null
     userMemory = userMemory || {};
     
     const stored = localStorage.getItem('waifuUserMemory');
@@ -68,17 +67,14 @@ function initUserMemory() {
             console.log('解析的数据:', parsed);
             userMemory = { ...userMemory, ...parsed };
             
-            // 修复：只有在真正的新用户（visitCount 为 0 或不存在）时才重置
             if (!userMemory.visitCount || userMemory.visitCount === 0) {
                 console.log('检测到新用户数据，重置用户记忆');
                 resetUserMemory();
                 isNewUser = true;
             } else {
-                // 修复：使用更可靠的会话检测方法
                 const currentTime = new Date().getTime();
                 const lastSessionTime = sessionStorage.getItem('lastSessionTime');
                 
-                // 如果上次会话时间超过30分钟，认为是新的访问
                 if (!lastSessionTime || (currentTime - parseInt(lastSessionTime)) > 30 * 60 * 1000) {
                     console.log('新会话，增加访问次数');
                     userMemory.visitCount++;
@@ -89,7 +85,6 @@ function initUserMemory() {
                 }
             }
             
-            // 显示个性化欢迎消息
             showPersonalizedWelcome();
             
         } catch (e) {
@@ -98,7 +93,6 @@ function initUserMemory() {
             isNewUser = true;
         }
     } else {
-        // 新用户
         console.log('新用户，初始化用户记忆');
         resetUserMemory();
         isNewUser = true;
@@ -110,11 +104,9 @@ function initUserMemory() {
     
     console.log('最终 userMemory:', userMemory);
     
-    // 立即检查成就
     console.log('立即检查成就...');
     checkAllAchievements();
     
-    // 开始会话时间追踪
     startSessionTimer();
 }
 
@@ -132,7 +124,13 @@ function resetUserMemory() {
         messagesReceived: 0,
         clicksCount: 0,
         currentSessionStart: new Date().getTime(),
-        achievementsProgress: {}
+        achievementsProgress: {},
+        
+        // 可实现的追踪字段
+        triggeredEffects: [],
+        successfulGestures: [],
+        screenshotsTaken: 0,
+        consecutiveVisits: 1
     };
     sessionStorage.setItem('lastSessionTime', new Date().getTime().toString());
 }
@@ -142,7 +140,7 @@ function saveUserMemory() {
     localStorage.setItem('waifuUserMemory', JSON.stringify(userMemory));
 }
 
-// 个性化欢迎消息（从JSON读取）
+// 个性化欢迎消息
 function showPersonalizedWelcome() {
     if (!waifuTipsData || !waifuTipsData.waifu.memory_messages) {
         showMessage("欢迎光临！", 4000);
@@ -166,12 +164,6 @@ function showPersonalizedWelcome() {
         welcomeMessage = message.replace('{count}', visitCount);
     }
     
-    // 如果有偏好名字，使用个性化格式
-    if (userMemory.preferredName && memoryConfig.personalized) {
-        const format = memoryConfig.personalized[Math.floor(Math.random() * memoryConfig.personalized.length)];
-        welcomeMessage = format.replace('{name}', userMemory.preferredName).replace('{message}', welcomeMessage);
-    }
-    
     showMessage(welcomeMessage, 6000, true);
 }
 
@@ -181,7 +173,6 @@ function startSessionTimer() {
         userMemory.totalStayTime += 10;
         saveUserMemory();
         
-        // 检查基于时间的成就
         checkTimeBasedAchievements();
     }, 10000);
 }
@@ -212,6 +203,27 @@ function recordCostumeChange() {
     checkAchievement('costume_lover');
 }
 
+// 记录截图次数
+function recordScreenshot() {
+    userMemory.screenshotsTaken = (userMemory.screenshotsTaken || 0) + 1;
+    saveUserMemory();
+    checkAchievement('screenshot_expert');
+}
+
+// 记录点击次数
+function recordClick() {
+    userMemory.clicksCount = (userMemory.clicksCount || 0) + 1;
+    saveUserMemory();
+    checkAchievement('click_master');
+}
+
+// 记录消息接收
+function recordMessageReceived() {
+    userMemory.messagesReceived = (userMemory.messagesReceived || 0) + 1;
+    saveUserMemory();
+    checkAchievement('message_collector');
+}
+
 // 页面关闭前保存数据
 window.addEventListener('beforeunload', () => {
     if (userMemory.currentSessionStart) {
@@ -223,56 +235,61 @@ window.addEventListener('beforeunload', () => {
 
 // ========== 成就系统 ==========
 
-// 成就定义
+// 二次元风格的成就系统 - 精简可实现版本
 const achievements = {
     first_visit: {
         id: 'first_visit',
-        name: '初次见面',
+        name: '命运的相遇✨',
         description: '第一次访问网站',
         icon: '🎯',
         condition: (memory) => memory.visitCount >= 1,
         unlocked: false,
         firstUnlock: false
     },
+    
     frequent_visitor: {
         id: 'frequent_visitor',
-        name: '常客',
+        name: '常客大人的光临🎀',
         description: '访问网站10次',
         icon: '🏆',
         condition: (memory) => memory.visitCount >= 10,
         unlocked: false,
         firstUnlock: false
     },
+    
     costume_lover: {
         id: 'costume_lover',
-        name: '换装达人',
+        name: '换装达人desu！👗',
         description: '换装20次',
         icon: '👗',
         condition: (memory) => memory.costumeChanges >= 20,
         unlocked: false,
         firstUnlock: false
     },
+    
     time_spender: {
         id: 'time_spender',
-        name: '长久相伴',
+        name: '长久相伴的约定⏰',
         description: '累计停留1小时',
         icon: '⏰',
         condition: (memory) => memory.totalStayTime >= 3600,
         unlocked: false,
         firstUnlock: false
     },
+    
     message_collector: {
         id: 'message_collector',
-        name: '对话收集家',
-        description: '收集10条不同的消息',
+        name: '话语的收藏家💬',
+        description: '收到50条不同的消息',
         icon: '💬',
-        condition: (memory) => memory.likedMessages.length >= 10,
+        condition: (memory) => memory.messagesReceived >= 50,
         unlocked: false,
         firstUnlock: false
     },
+    
     night_owl: {
         id: 'night_owl',
-        name: '夜猫子',
+        name: '深夜的共犯者🌙',
         description: '在深夜时段访问',
         icon: '🌙',
         condition: (memory) => {
@@ -282,12 +299,74 @@ const achievements = {
         unlocked: false,
         firstUnlock: false
     },
-    holiday_visitor: {
-        id: 'holiday_visitor',
-        name: '节日使者',
-        description: '在5个不同节日访问',
-        icon: '🎉',
-        condition: (memory) => (memory.holidayVisits || []).length >= 5,
+    
+    early_bird: {
+        id: 'early_bird',
+        name: '晨光中的问候🌅',
+        description: '在早晨时段（5-9点）访问',
+        icon: '🌅',
+        condition: (memory) => {
+            const hour = new Date().getHours();
+            return hour >= 5 && hour <= 9;
+        },
+        unlocked: false,
+        firstUnlock: false
+    },
+    
+    click_master: {
+        id: 'click_master',
+        name: '戳戳乐大师👆',
+        description: '点击看板娘50次',
+        icon: '👆',
+        condition: (memory) => memory.clicksCount >= 50,
+        unlocked: false,
+        firstUnlock: false
+    },
+    
+    screenshot_expert: {
+        id: 'screenshot_expert',
+        name: '瞬间的收藏家📸',
+        description: '拍摄10张截图',
+        icon: '📸',
+        condition: (memory) => memory.screenshotsTaken >= 10,
+        unlocked: false,
+        firstUnlock: false
+    },
+    
+    heart_gesture: {
+        id: 'heart_gesture',
+        name: '爱心的传递者💖',
+        description: '成功画出爱心手势',
+        icon: '💖',
+        condition: (memory) => (memory.successfulGestures || []).includes('heart'),
+        unlocked: false,
+        firstUnlock: false
+    },
+    
+    season_explorer: {
+        id: 'season_explorer',
+        name: '四季轮回的旅人🎄',
+        description: '触发3种不同的季节特效',
+        icon: '🎄',
+        condition: (memory) => {
+            const triggeredEffects = memory.triggeredEffects || [];
+            return triggeredEffects.length >= 3;
+        },
+        unlocked: false,
+        firstUnlock: false
+    },
+    
+    all_achievement_master: {
+        id: 'all_achievement_master',
+        name: '全成就制霸！🏆',
+        description: '解锁所有成就',
+        icon: '🏆',
+        condition: (memory) => {
+            const unlockedCount = Object.values(achievements).filter(a => 
+                a.id !== 'all_achievement_master' && memory.achievementsProgress[a.id]
+            ).length;
+            return unlockedCount >= Object.keys(achievements).length - 1;
+        },
         unlocked: false,
         firstUnlock: false
     }
@@ -303,7 +382,6 @@ function initAchievementSystem() {
 function loadAchievementProgress() {
     userMemory.achievementsProgress = userMemory.achievementsProgress || {};
     
-    // 初始化成就状态
     Object.keys(achievements).forEach(achievementId => {
         achievements[achievementId].unlocked = 
             userMemory.achievementsProgress[achievementId] || false;
@@ -319,13 +397,12 @@ function checkAllAchievements() {
 
 // 检查初始成就
 function checkInitialAchievements() {
-    console.log('检查初始成就，visitCount:', userMemory.visitCount); // 调试信息
+    console.log('检查初始成就，visitCount:', userMemory.visitCount);
     
-    // 检查所有成就，不限于特定条件
     Object.keys(achievements).forEach(achievementId => {
         const achievement = achievements[achievementId];
         if (achievement.condition(userMemory) && !achievement.unlocked) {
-            console.log('应该解锁成就:', achievement.name); // 调试信息
+            console.log('应该解锁成就:', achievement.name);
             checkAchievement(achievementId);
         }
     });
@@ -351,17 +428,15 @@ function unlockAchievement(achievementId) {
     userMemory.achievementsProgress[achievementId] = true;
     saveUserMemory();
     
-    // 只在首次解锁时显示通知
     if (achievement.firstUnlock) {
         showAchievementNotification(achievement);
-        // 重置首次解锁标记，避免重复显示
         setTimeout(() => {
             achievement.firstUnlock = false;
         }, 100);
     }
 }
 
-// 显示成就通知（从JSON读取）
+// 显示成就通知
 function showAchievementNotification(achievement) {
     if (!waifuTipsData || !waifuTipsData.waifu.achievement_messages) return;
     
@@ -404,14 +479,13 @@ function showAchievementNotification(achievement) {
 function checkTimeBasedAchievements() {
     checkAchievement('time_spender');
     
-    // 检查夜猫子成就
     const hour = new Date().getHours();
     if (hour >= 23 || hour <= 5) {
         checkAchievement('night_owl');
     }
 }
 
-// 显示成就列表 - 紧凑版本
+// 显示成就列表
 function showAchievementsList() {
     if (!waifuTipsData || !waifuTipsData.waifu.achievement_messages) {
         showMessage("成就系统暂不可用", 4000);
@@ -427,12 +501,10 @@ function showAchievementsList() {
     
     let message = '';
     
-    // 显示已解锁成就（紧凑格式）
     if (unlocked.length > 0) {
         message += `<div style="text-align: center; margin-bottom: 4px; font-size: 11px; font-weight: bold;">${achievementConfig.list_header}</div>`;
         message += `<div style="margin-bottom: 3px; font-size: 10px;">已解锁 ${unlocked.length}/${Object.keys(achievements).length}</div>`;
         
-        // 使用更紧凑的布局，只显示图标和名称
         unlocked.forEach(achievement => {
             message += `<div style="display: inline-block; margin: 0 3px 2px 0; font-size: 9px;">${achievement.icon}${achievement.name}</div>`;
         });
@@ -441,7 +513,6 @@ function showAchievementsList() {
         message += `<div style="font-size: 10px;">还没有解锁任何成就</div>`;
     }
     
-    // 如果有未解锁成就，显示简化的提示
     if (locked.length > 0 && unlocked.length > 0) {
         message += `<div style="margin-top: 3px; font-size: 9px; color: #666;">还有 ${locked.length} 个成就待解锁</div>`;
     }
@@ -515,10 +586,8 @@ function switchTextures() {
     
     console.log('切换到:', model.name, '文件:', model.file);
     
-    // 记录换装次数
     recordCostumeChange();
     
-    // 使用 load_rand_textures 作为切换提示
     const switchMessage = getRandomTextureMessage();
     showMessage(switchMessage, 1000);
     
@@ -526,7 +595,6 @@ function switchTextures() {
         var modelPath = 'https://dxwwwqc.github.io/dongxi-awa.github.io/live2d/model/38/' + model.file + '?t=' + new Date().getTime();
         loadlive2d('live2d', modelPath, 0);
         
-        // 使用 change_costume_messages 作为换装完成后的反馈
         const costumeMessage = getRandomCostumeMessage();
         showMessage(costumeMessage, 3000, true);
     }, 500);
@@ -569,16 +637,38 @@ function isDateInRange(month, day, start, end) {
     return currentDate >= startDate && currentDate <= endDate;
 }
 
+// 记录特效触发
+function recordEffectTrigger(effectType) {
+    if (!userMemory.triggeredEffects) {
+        userMemory.triggeredEffects = [];
+    }
+    if (!userMemory.triggeredEffects.includes(effectType)) {
+        userMemory.triggeredEffects.push(effectType);
+        saveUserMemory();
+    }
+    checkAchievement('season_explorer');
+}
+
+// 记录手势成功
+function recordSuccessfulGesture(gestureType) {
+    if (!userMemory.successfulGestures) {
+        userMemory.successfulGestures = [];
+    }
+    if (!userMemory.successfulGestures.includes(gestureType)) {
+        userMemory.successfulGestures.push(gestureType);
+        saveUserMemory();
+    }
+    checkAchievement('gesture_master');
+}
+
 // 显示节日消息和特效
 function showSeasonMessage(season, year) {
     const texts = season.text;
     let text = texts[Math.floor(Math.random() * texts.length)];
     text = text.replace(/{year}/g, year);
     
-    // 显示消息
     showMessage(text, 6000, true);
     
-    // 应用特效
     if (season.effect) {
         applySeasonEffect(season.effect);
     }
@@ -596,14 +686,12 @@ function showSeasonGreeting() {
     
     for (const season of waifuTipsData.seasons) {
         if (season.date.includes('-')) {
-            // 处理日期范围
             const [start, end] = season.date.split('-');
             if (isDateInRange(month, day, start, end)) {
                 showSeasonMessage(season, year);
                 return;
             }
         } else if (season.date === currentDate) {
-            // 处理具体日期
             showSeasonMessage(season, year);
             return;
         }
@@ -612,6 +700,8 @@ function showSeasonGreeting() {
 
 // 应用节日特效
 function applySeasonEffect(effect) {
+    recordEffectTrigger(effect);
+    
     switch(effect) {
         case 'confetti':
             createConfettiEffect();
@@ -933,7 +1023,6 @@ function addAchievementStyles() {
             font-family: inherit;
         }
         
-        /* 添加成就图标的样式 */
         .fui-star::before {
             content: "\\e600";
             font-family: 'Flat-UI-Icons' !important;
@@ -1041,7 +1130,7 @@ function initMouseoverTips() {
 
 // ========== 新增的交互功能 ==========
 
-// 1. 鼠标手势交互 - 只保留心形检测
+// 1. 鼠标手势交互
 function initMouseGestures() {
     let mousePath = [];
     let lastPoint = null;
@@ -1063,11 +1152,9 @@ function initMouseGestures() {
                 Math.pow(point.y - lastPoint.y, 2)
             );
             
-            // 增加最小移动距离，减少噪点
             if (distance > 8) {
                 mousePath.push(point);
                 
-                // 保持路径长度合理
                 if (mousePath.length > 80) {
                     mousePath.shift();
                 }
@@ -1096,37 +1183,18 @@ function analyzeMouseGesture(path) {
     
     const gestures = waifuTipsData.waifu.mouse_gestures;
     
-    // 只检测心形
     if (isHeartGesture(path)) {
         const text = gestures.heart[Math.floor(Math.random() * gestures.heart.length)];
         showMessage(text, 3000);
         createHeartsEffect();
+        recordSuccessfulGesture('heart');
         return;
-    }
-
-    // 检测方向手势
-    const start = path[0];
-    const end = path[path.length - 1];
-    const deltaX = end.x - start.x;
-    const deltaY = end.y - start.y;
-    
-    // 增加方向检测的阈值
-    if (Math.abs(deltaX) > 150 && Math.abs(deltaY) < 60) {
-        if (deltaX > 0) {
-            const text = gestures.right[Math.floor(Math.random() * gestures.right.length)];
-            showMessage(text, 2000);
-        } else {
-            const text = gestures.left[Math.floor(Math.random() * gestures.left.length)];
-            showMessage(text, 2000);
-        }
     }
 }
 
 function isHeartGesture(path) {
-    // 心形需要更复杂的路径
     if (path.length < 40) return false;
     
-    // 计算路径的总长度
     let totalLength = 0;
     for (let i = 1; i < path.length; i++) {
         totalLength += Math.sqrt(
@@ -1135,10 +1203,8 @@ function isHeartGesture(path) {
         );
     }
     
-    // 心形应该有较长的路径
     if (totalLength < 300) return false;
     
-    // 计算边界框
     const xs = path.map(p => p.x);
     const ys = path.map(p => p.y);
     const minX = Math.min(...xs);
@@ -1149,24 +1215,18 @@ function isHeartGesture(path) {
     const width = maxX - minX;
     const height = maxY - minY;
     
-    // 心形应该大致是方形的（宽高比接近1）
     if (Math.abs(width - height) > Math.min(width, height) * 0.5) return false;
     
-    // 心形应该有明显的凹陷特征
-    // 检查路径是否有两个峰值（心形的两个凸起）
     const midIndex = Math.floor(path.length / 2);
     const leftPeak = Math.min(...path.slice(0, midIndex).map(p => p.y));
     const rightPeak = Math.min(...path.slice(midIndex).map(p => p.y));
     
-    // 检查是否有底部凹陷（心形底部的V形）
     const bottomPoints = path.filter(p => p.y > minY + height * 0.7);
     if (bottomPoints.length < 5) return false;
     
-    // 计算凹陷程度
     const bottomCenterX = bottomPoints.reduce((sum, p) => sum + p.x, 0) / bottomPoints.length;
     const expectedCenterX = minX + width / 2;
     
-    // 心形底部应该大致在中心
     return Math.abs(bottomCenterX - expectedCenterX) < width * 0.3;
 }
 
@@ -1181,7 +1241,7 @@ function initSmartInteraction() {
         inactiveTimer = setTimeout(() => {
             userActive = false;
             showInactiveMessage();
-        }, 300000); // 5分钟无操作
+        }, 300000);
     }
     
     function showInactiveMessage() {
@@ -1192,7 +1252,6 @@ function initSmartInteraction() {
         showMessage(text, 4000);
     }
     
-    // 用户活动事件
     ['mousemove', 'click', 'keydown', 'scroll'].forEach(event => {
         document.addEventListener(event, resetInactiveTimer, { passive: true });
     });
@@ -1200,15 +1259,13 @@ function initSmartInteraction() {
     resetInactiveTimer();
 }
 
-// 3. 滚动感知交互 - 简化版本
+// 3. 滚动感知交互
 function initScrollInteraction() {
     let scrollTimer = null;
     
     window.addEventListener('scroll', function() {
-        // 防抖处理
         clearTimeout(scrollTimer);
         scrollTimer = setTimeout(function() {
-            // 检测是否滚动到底部
             const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
             if ((window.innerHeight + scrollTop) >= document.documentElement.scrollHeight - 100) {
                 showScrollBottomMessage();
@@ -1229,14 +1286,11 @@ function showScrollBottomMessage() {
 function initModel(waifuPath, type) {
     console.log('初始化 Live2D 模型...');
     
-    // 添加样式
     addSeasonStyles();
     addAchievementStyles();
     
-    // 先初始化用户记忆系统
     initUserMemory();
     
-    // 样式设置
     live2d_settings.waifuSize = live2d_settings.waifuSize.split('x');
     live2d_settings.waifuTipsSize = live2d_settings.waifuTipsSize.split('x');
     live2d_settings.waifuEdgeSide = live2d_settings.waifuEdgeSide.split(':');
@@ -1256,7 +1310,6 @@ function initModel(waifuPath, type) {
         $(".waifu").css("right", live2d_settings.waifuEdgeSide[1]+'px');
     }
     
-    // 加载提示配置
     if (typeof(waifuPath) == "object") {
         waifuTipsData = waifuPath;
         loadTipsMessage(waifuPath);
@@ -1265,12 +1318,10 @@ function initModel(waifuPath, type) {
         initCopyDetection();
         initMouseoverTips();
         
-        // 初始化新增的交互功能
         initMouseGestures();
         initSmartInteraction();
         initScrollInteraction();
         
-        // 初始化成就系统
         initAchievementSystem();
         
         setTimeout(() => {
@@ -1292,12 +1343,10 @@ function initModel(waifuPath, type) {
                 initCopyDetection();
                 initMouseoverTips();
                 
-                // 初始化新增的交互功能
                 initMouseGestures();
                 initSmartInteraction();
                 initScrollInteraction();
                 
-                // 初始化成就系统
                 initAchievementSystem();
                 
                 setTimeout(() => {
@@ -1310,7 +1359,6 @@ function initModel(waifuPath, type) {
         });
     }
     
-    // 隐藏不需要的工具栏按钮
     if (!live2d_settings.showToolMenu) $('.waifu-tool').hide();
     if (!live2d_settings.canCloseLive2d) $('.waifu-tool .fui-cross').hide();
     if (!live2d_settings.canSwitchModel) $('.waifu-tool .fui-eye').hide();
@@ -1320,7 +1368,6 @@ function initModel(waifuPath, type) {
     if (!live2d_settings.canTurnToHomePage) $('.waifu-tool .fui-home').hide();
     if (!live2d_settings.canTurnToAboutPage) $('.waifu-tool .fui-info-circle').hide();
 
-    // 加载默认模型
     var modelPath = 'https://dxwwwqc.github.io/dongxi-awa.github.io/live2d/model/38/index.json';
     loadlive2d('live2d', modelPath);
 }
@@ -1352,6 +1399,11 @@ function showMessage(text, timeout, flag) {
         
         $('.waifu-tips').stop();
         $('.waifu-tips').html(text).fadeTo(200, 1);
+        
+        if (!text.includes('成就解锁') && !text.includes('成就达成')) {
+            recordMessageReceived();
+        }
+        
         if (timeout === undefined) timeout = 5000;
         hideMessage(timeout);
     }
@@ -1385,6 +1437,7 @@ function loadTipsMessage(result) {
     $('.waifu-tool .fui-photo').click(function (){
         const screenshotMsg = result.waifu.screenshot_message[0];
         showMessage(screenshotMsg, 2000);
+        recordScreenshot();
         if (window.Live2D) {
             window.Live2D.captureName = 'live2d.png';
             window.Live2D.captureFrame = true;
@@ -1395,17 +1448,14 @@ function loadTipsMessage(result) {
         window.open('https://www.fghrsh.net/post/123.html');
     });
     
-    // 只添加成就按钮，移除统计按钮
     $('.waifu-tool').append(`
         <span class="fui-star achievement-btn" title="成就系统"></span>
     `);
     
-    // 绑定成就按钮事件
     $('.waifu-tool .fui-star').click(function (){
         showAchievementsList();
     });
     
-    // 绑定关闭按钮事件（确保这个按钮在HTML中已经存在）
     $('.waifu-tool .fui-cross').click(function (){
         const hiddenMsg = result.waifu.hidden_message[0];
         showMessage(hiddenMsg, 1300);
@@ -1414,14 +1464,13 @@ function loadTipsMessage(result) {
         }, 1300);
     });
     
-    // 更新消息计数 - 添加安全检查
     if (userMemory) {
         userMemory.messagesReceived = (userMemory.messagesReceived || 0) + 1;
         saveUserMemory();
     }
     
-    // 交互功能 - 从 JSON 读取台词
     $(document).on("click", "#live2d", function (){
+        recordClick();
         const clickItem = result.click.find(item => item.selector === '.waifu #live2d');
         if (clickItem && clickItem.text) {
             const text = clickItem.text[Math.floor(Math.random() * clickItem.text.length)];
