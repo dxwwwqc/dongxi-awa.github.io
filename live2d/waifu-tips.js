@@ -35,6 +35,10 @@ live2d_settings['homePageUrl'] = 'https://dxwwwqc.github.io/dongxi-awa.github.io
 live2d_settings['aboutPageUrl'] = 'https://www.fghrsh.net/post/123.html';   
 live2d_settings['screenshotCaptureName'] = 'live2d.png'; 
 
+// ========== 全局变量 ==========
+let waifuTipsData = null;
+let userMemory = null; // 添加全局变量声明
+
 // 使用不同的JSON文件
 let currentModelIndex = 0;
 const modelFiles = [
@@ -43,14 +47,15 @@ const modelFiles = [
     { file: "index2.json", name: "泳装风格", message: "泳装装扮，有些害羞呢~ 🎀" }
 ];
 
-// 全局变量存储 JSON 数据
-let waifuTipsData = null;
-
 // ========== 用户记忆系统 ==========
 
 // 初始化用户记忆
 function initUserMemory() {
     console.log('初始化用户记忆...');
+    
+    // 确保 userMemory 不为 null
+    userMemory = userMemory || {};
+    
     const stored = localStorage.getItem('waifuUserMemory');
     
     console.log('stored:', stored);
@@ -131,6 +136,7 @@ function resetUserMemory() {
     };
     sessionStorage.setItem('lastSessionTime', new Date().getTime().toString());
 }
+
 // 保存用户记忆
 function saveUserMemory() {
     localStorage.setItem('waifuUserMemory', JSON.stringify(userMemory));
@@ -304,6 +310,13 @@ function loadAchievementProgress() {
     });
 }
 
+// 检查所有成就
+function checkAllAchievements() {
+    Object.keys(achievements).forEach(achievementId => {
+        checkAchievement(achievementId);
+    });
+}
+
 // 检查初始成就
 function checkInitialAchievements() {
     console.log('检查初始成就，visitCount:', userMemory.visitCount); // 调试信息
@@ -436,6 +449,7 @@ function showAchievementsList() {
     console.log('成就列表消息:', message);
     showMessage(message, 7000);
 }
+
 // ========== 现有功能保持不变 ==========
 
 // 使用 load_rand_textures 消息 - 换装开始提示
@@ -1219,6 +1233,9 @@ function initModel(waifuPath, type) {
     addSeasonStyles();
     addAchievementStyles();
     
+    // 先初始化用户记忆系统
+    initUserMemory();
+    
     // 样式设置
     live2d_settings.waifuSize = live2d_settings.waifuSize.split('x');
     live2d_settings.waifuTipsSize = live2d_settings.waifuTipsSize.split('x');
@@ -1253,8 +1270,7 @@ function initModel(waifuPath, type) {
         initSmartInteraction();
         initScrollInteraction();
         
-        // 初始化新系统
-        initUserMemory();
+        // 初始化成就系统
         initAchievementSystem();
         
         setTimeout(() => {
@@ -1281,8 +1297,7 @@ function initModel(waifuPath, type) {
                 initSmartInteraction();
                 initScrollInteraction();
                 
-                // 初始化新系统
-                initUserMemory();
+                // 初始化成就系统
                 initAchievementSystem();
                 
                 setTimeout(() => {
@@ -1399,9 +1414,11 @@ function loadTipsMessage(result) {
         }, 1300);
     });
     
-    // 更新消息计数
-    userMemory.messagesReceived++;
-    saveUserMemory();
+    // 更新消息计数 - 添加安全检查
+    if (userMemory) {
+        userMemory.messagesReceived = (userMemory.messagesReceived || 0) + 1;
+        saveUserMemory();
+    }
     
     // 交互功能 - 从 JSON 读取台词
     $(document).on("click", "#live2d", function (){
