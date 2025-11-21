@@ -57,40 +57,45 @@ function initUserMemory() {
     userMemory = userMemory || {};
     
     const stored = localStorage.getItem('waifuUserMemory');
-    
-    console.log('stored:', stored);
+    console.log('从localStorage读取的数据:', stored);
     
     let isNewUser = false;
     
-    if (stored && stored !== 'null' && stored !== 'undefined') {
+    if (stored && stored !== 'null' && stored !== 'undefined' && stored !== '{}') {
         try {
             const parsed = JSON.parse(stored);
-            console.log('解析的数据:', parsed);
-            userMemory = { ...userMemory, ...parsed };
+            console.log('解析的用户数据:', parsed);
             
-            // 修复：只有在真正的新用户（visitCount 为 0 或不存在）时才重置
-            if (!userMemory.visitCount || userMemory.visitCount === 0) {
-                console.log('检测到新用户数据，重置用户记忆');
-                resetUserMemory();
-                isNewUser = true;
+            // 确保所有必要字段都存在
+            userMemory = {
+                visitCount: parsed.visitCount || 1,
+                firstVisitDate: parsed.firstVisitDate || new Date().toISOString(),
+                lastVisitDate: parsed.lastVisitDate || new Date().toISOString(),
+                totalStayTime: parsed.totalStayTime || 0,
+                favoriteCostume: parsed.favoriteCostume || 0,
+                preferredName: parsed.preferredName || '',
+                likedMessages: parsed.likedMessages || [],
+                costumeChanges: parsed.costumeChanges || 0,
+                messagesReceived: parsed.messagesReceived || 0,
+                clicksCount: parsed.clicksCount || 0,
+                currentSessionStart: new Date().getTime(),
+                achievementsProgress: parsed.achievementsProgress || {},
+                holidayVisits: parsed.holidayVisits || [] // 添加缺失的字段
+            };
+            
+            // 修复：更可靠的会话检测
+            const currentTime = new Date().getTime();
+            const lastSessionTime = sessionStorage.getItem('lastSessionTime');
+            const sessionTimeout = 30 * 60 * 1000; // 30分钟
+            
+            if (!lastSessionTime || (currentTime - parseInt(lastSessionTime)) > sessionTimeout) {
+                console.log('新会话，增加访问次数');
+                userMemory.visitCount = (userMemory.visitCount || 0) + 1;
+                userMemory.lastVisitDate = new Date().toISOString();
+                sessionStorage.setItem('lastSessionTime', currentTime.toString());
             } else {
-                // 修复：使用更可靠的会话检测方法
-                const currentTime = new Date().getTime();
-                const lastSessionTime = sessionStorage.getItem('lastSessionTime');
-                
-                // 如果上次会话时间超过30分钟，认为是新的访问
-                if (!lastSessionTime || (currentTime - parseInt(lastSessionTime)) > 30 * 60 * 1000) {
-                    console.log('新会话，增加访问次数');
-                    userMemory.visitCount++;
-                    userMemory.lastVisitDate = new Date().toISOString();
-                    sessionStorage.setItem('lastSessionTime', currentTime.toString());
-                } else {
-                    console.log('同一会话内，不增加访问次数');
-                }
+                console.log('同一会话内，不增加访问次数');
             }
-            
-            // 显示个性化欢迎消息
-            showPersonalizedWelcome();
             
         } catch (e) {
             console.error('用户记忆数据损坏，重新初始化', e);
@@ -110,9 +115,11 @@ function initUserMemory() {
     
     console.log('最终 userMemory:', userMemory);
     
-    // 立即检查成就
-    console.log('立即检查成就...');
-    checkAllAchievements();
+    // 延迟检查成就，确保数据完全初始化
+    setTimeout(() => {
+        console.log('开始检查成就...');
+        checkAllAchievements();
+    }, 500);
     
     // 开始会话时间追踪
     startSessionTimer();
@@ -132,11 +139,12 @@ function resetUserMemory() {
         messagesReceived: 0,
         clicksCount: 0,
         currentSessionStart: new Date().getTime(),
-        achievementsProgress: {}
+        achievementsProgress: {},
+        holidayVisits: [] // 确保这个字段存在
     };
     sessionStorage.setItem('lastSessionTime', new Date().getTime().toString());
+    console.log('用户记忆已重置为新用户');
 }
-
 // 保存用户记忆
 function saveUserMemory() {
     localStorage.setItem('waifuUserMemory', JSON.stringify(userMemory));
@@ -223,14 +231,14 @@ window.addEventListener('beforeunload', () => {
 
 // ========== 成就系统 ==========
 
-// 成就定义
+// 成就定义 - 修复条件判断
 const achievements = {
     first_visit: {
         id: 'first_visit',
         name: '初次见面',
         description: '第一次访问网站',
         icon: '🎯',
-        condition: (memory) => memory.visitCount >= 1,
+        condition: (memory) => (memory.visitCount || 0) >= 1,
         unlocked: false,
         firstUnlock: false
     },
@@ -239,7 +247,7 @@ const achievements = {
         name: '常客',
         description: '访问网站10次',
         icon: '🏆',
-        condition: (memory) => memory.visitCount >= 10,
+        condition: (memory) => (memory.visitCount || 0) >= 10,
         unlocked: false,
         firstUnlock: false
     },
@@ -248,7 +256,7 @@ const achievements = {
         name: '换装达人',
         description: '换装20次',
         icon: '👗',
-        condition: (memory) => memory.costumeChanges >= 20,
+        condition: (memory) => (memory.costumeChanges || 0) >= 20,
         unlocked: false,
         firstUnlock: false
     },
@@ -257,7 +265,7 @@ const achievements = {
         name: '长久相伴',
         description: '累计停留1小时',
         icon: '⏰',
-        condition: (memory) => memory.totalStayTime >= 3600,
+        condition: (memory) => (memory.totalStayTime || 0) >= 3600,
         unlocked: false,
         firstUnlock: false
     },
@@ -266,7 +274,7 @@ const achievements = {
         name: '对话收集家',
         description: '收集10条不同的消息',
         icon: '💬',
-        condition: (memory) => memory.likedMessages.length >= 10,
+        condition: (memory) => (memory.likedMessages || []).length >= 10,
         unlocked: false,
         firstUnlock: false
     },
@@ -292,7 +300,6 @@ const achievements = {
         firstUnlock: false
     }
 };
-
 // 初始化成就系统
 function initAchievementSystem() {
     loadAchievementProgress();
@@ -336,7 +343,11 @@ function checkAchievement(achievementId) {
     const achievement = achievements[achievementId];
     if (!achievement || achievement.unlocked) return;
     
-    if (achievement.condition(userMemory)) {
+    // 添加调试信息
+    const conditionMet = achievement.condition(userMemory);
+    console.log(`检查成就 ${achievementId}: 条件满足 = ${conditionMet}`);
+    
+    if (conditionMet) {
         unlockAchievement(achievementId);
     }
 }
@@ -348,8 +359,16 @@ function unlockAchievement(achievementId) {
     
     achievement.unlocked = true;
     achievement.firstUnlock = true;
+    
+    // 确保 achievementsProgress 存在
+    if (!userMemory.achievementsProgress) {
+        userMemory.achievementsProgress = {};
+    }
     userMemory.achievementsProgress[achievementId] = true;
+    
     saveUserMemory();
+    
+    console.log(`🎉 解锁成就: ${achievement.name}`);
     
     // 只在首次解锁时显示通知
     if (achievement.firstUnlock) {
@@ -360,7 +379,6 @@ function unlockAchievement(achievementId) {
         }, 100);
     }
 }
-
 // 显示成就通知（从JSON读取）
 function showAchievementNotification(achievement) {
     if (!waifuTipsData || !waifuTipsData.waifu.achievement_messages) return;
@@ -1405,7 +1423,7 @@ function loadTipsMessage(result) {
         showAchievementsList();
     });
     
-    // 绑定关闭按钮事件（确保这个按钮在HTML中已经存在）
+    // 绑定关闭按钮事件
     $('.waifu-tool .fui-cross').click(function (){
         const hiddenMsg = result.waifu.hidden_message[0];
         showMessage(hiddenMsg, 1300);
@@ -1420,20 +1438,73 @@ function loadTipsMessage(result) {
         saveUserMemory();
     }
     
-    // 交互功能 - 从 JSON 读取台词
-    $(document).on("click", "#live2d", function (){
+    // 修复 Live2D 点击交互 - 添加安全检查和错误处理
+    $(document).off("click", "#live2d"); // 先移除旧的绑定
+    
+    $(document).on("click", "#live2d", function (e){
+        e.preventDefault();
+        e.stopPropagation();
+        
+        // 安全检查
+        if (!result || !result.click) return;
+        
         const clickItem = result.click.find(item => item.selector === '.waifu #live2d');
-        if (clickItem && clickItem.text) {
+        if (clickItem && clickItem.text && clickItem.text.length > 0) {
             const text = clickItem.text[Math.floor(Math.random() * clickItem.text.length)];
             showMessage(text, 3000, true);
         }
     });
 
-    $(document).on("mouseover", "#live2d", function (){
+    // 修复鼠标悬停交互
+    $(document).on("mouseover", "#live2d", function (e){
+        e.stopPropagation();
+        
+        if (!result || !result.mouseover) return;
+        
         const mouseoverItem = result.mouseover.find(item => item.selector === '.waifu #live2d');
-        if (mouseoverItem && mouseoverItem.text) {
+        if (mouseoverItem && mouseoverItem.text && mouseoverItem.text.length > 0) {
             const text = mouseoverItem.text[Math.floor(Math.random() * mouseoverItem.text.length)];
             showMessage(text, 2000);
         }
+    });
+}
+
+// 添加测试函数到文件末尾
+function testFixedAchievements() {
+    console.log('测试修复后的成就系统...');
+    
+    // 重置为测试数据
+    const testData = {
+        visitCount: 1,
+        costumeChanges: 0,
+        totalStayTime: 0,
+        likedMessages: [],
+        holidayVisits: []
+    };
+    
+    Object.assign(userMemory, testData);
+    saveUserMemory();
+    
+    // 重置所有成就状态
+    Object.keys(achievements).forEach(id => {
+        achievements[id].unlocked = false;
+    });
+    userMemory.achievementsProgress = {};
+    saveUserMemory();
+    
+    console.log('重置完成，现在应该只能解锁"初次见面"成就');
+    checkAllAchievements();
+}
+
+// 调试函数：显示详细成就状态
+function debugAchievementStatus() {
+    console.log('=== 成就调试信息 ===');
+    console.log('用户记忆:', userMemory);
+    console.log('localStorage数据:', localStorage.getItem('waifuUserMemory'));
+    
+    Object.keys(achievements).forEach(id => {
+        const a = achievements[id];
+        const conditionMet = a.condition(userMemory);
+        console.log(`${a.icon} ${a.name}: 解锁=${a.unlocked}, 条件=${conditionMet}`);
     });
 }
