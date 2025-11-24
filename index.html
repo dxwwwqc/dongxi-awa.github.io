@@ -447,69 +447,6 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 
 
-<!-- 引入 mouse-firework 库（与主题一致，无需修改） -->
-<script src="https://cdn.jsdelivr.net/npm/mouse-firework@latest/dist/index.umd.js"></script>
-
-<!-- 初始化烟花效果（适配主题默认风格） -->
-<script>
-  document.addEventListener('DOMContentLoaded', function() {
-    firework({
-      excludeElements: ["a", "button"], // 主题默认排除元素，保持一致
-      particles: [
-        {
-          shape: "circle", // 主题默认形状
-          move: "emit", // 主题默认运动方式（发散）
-          easing: "easeOutExpo", // 主题默认缓动函数
-          colors: [
-            "var(--red-1)",
-            "var(--red-2)",
-            "var(--red-3)",
-            "var(--red-4)"
-          ], // 复用主题灵梦风格红色系 CSS 变量
-          number: 20, // 主题默认粒子数量（比自定义少，更简洁）
-          duration: [1200, 1800], // 主题默认动画时长
-          shapeOptions: {
-            radius: [8, 16] // 主题默认粒子尺寸（更小，贴合主题精致风格）
-          },
-          // 补充主题默认扩展配置，增强动画层次感
-          moveOptions: {
-            speed: [2, 4], // 粒子运动速度（主题隐含配置）
-            distance: [30, 60], // 粒子发散距离（主题隐含配置）
-            randomness: 0.3 // 运动随机性（主题隐含配置）
-          },
-          opacity: {
-            start: 0.9,
-            end: 0 // 透明度渐变（主题默认效果）
-          },
-          scale: {
-            start: 1,
-            end: 0.2 // 尺寸缩放（主题默认效果）
-          }
-        },
-        // 可选：添加第二组粒子（主题默认隐含配置，增强丰富度）
-        {
-          shape: "circle",
-          move: "emit",
-          easing: "easeOutCirc",
-          colors: ["var(--red-2)", "var(--pink-1)"],
-          number: 10,
-          duration: [800, 1200],
-          shapeOptions: {
-            radius: [4, 8]
-          },
-          moveOptions: {
-            speed: [3, 5],
-            distance: [20, 40]
-          },
-          opacity: {
-            start: 0.8,
-            end: 0
-          }
-        }
-      ]
-    });
-  });
-</script>
         </div>
         
         <transition name="fade">
