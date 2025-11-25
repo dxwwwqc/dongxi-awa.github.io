@@ -357,45 +357,44 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
-<!-- 引入 mouse-firework 库（与主题一致，无需修改） -->
+<!-- 引入 mouse-firework 库 -->
 <script src="https://cdn.jsdelivr.net/npm/mouse-firework@latest/dist/index.umd.js"></script>
 
-<!-- 初始化烟花效果（适配主题默认风格） -->
+<!-- 初始化烟花效果（清新蓝绿系） -->
 <script>
   document.addEventListener('DOMContentLoaded', function() {
     firework({
-      excludeElements: ["a", "button"], // 主题默认排除元素，保持一致
+      excludeElements: ["a", "button"], // 排除交互元素，避免误触
       particles: [
         {
-          shape: "circle", // 主题默认形状
-          move: "emit", // 主题默认运动方式（发散）
-          easing: "easeOutExpo", // 主题默认缓动函数
+          shape: "circle",
+          move: "emit",
+          easing: "easeOutExpo",
           colors: [
-            "var(--red-1)",
-            "var(--red-2)",
-            "var(--red-3)",
-            "var(--red-4)"
-          ], // 复用主题灵梦风格红色系 CSS 变量
-          number: 20, // 主题默认粒子数量（比自定义少，更简洁）
-          duration: [1200, 1800], // 主题默认动画时长
+            "rgba(64, 158, 255, 0.8)", // 淡蓝
+            "rgba(103, 194, 58, 0.8)",  // 浅绿
+            "rgba(144, 202, 249, 0.9)", // 浅天蓝
+            "rgba(187, 222, 138, 0.9)"  // 嫩草绿
+          ],
+          number: 25, // 粒子数量（适中，不密集）
+          duration: [1000, 1600], // 动画时长
           shapeOptions: {
-            radius: [8, 16] // 主题默认粒子尺寸（更小，贴合主题精致风格）
+            radius: [6, 14] // 粒子尺寸（纤细清新）
           },
-          // 补充主题默认扩展配置，增强动画层次感
           moveOptions: {
-            speed: [2, 4], // 粒子运动速度（主题隐含配置）
-            distance: [30, 60], // 粒子发散距离（主题隐含配置）
-            randomness: 0.3 // 运动随机性（主题隐含配置）
+            speed: [2.5, 4.5],
+            distance: [25, 55],
+            randomness: 0.4 // 运动更灵动
           },
           opacity: {
             start: 0.9,
-            end: 0 // 透明度渐变（主题默认效果）
+            end: 0.1 // 渐变更柔和
           },
           scale: {
             start: 1,
-            end: 0.2 // 尺寸缩放（主题默认效果）
+            end: 0.3
           }
-        },
+        }
       ]
     });
   });
