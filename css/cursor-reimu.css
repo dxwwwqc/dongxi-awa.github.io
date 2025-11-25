@@ -1,0 +1,34 @@
+/* 全局默认指针清姬正常状态） */
+body {
+  cursor: url("/cursor/Normal.ani"), /* Hexo 访问路径：public/cursor/... */
+          default; /* 备用指针（防止资源加载失败） */
+}
+
+/* 链接、图片、按钮悬停指针（清姬点击状态） */
+a,
+img,
+button,
+.icon,
+.nav-item,
+.comment-btn,
+.btn {
+  cursor: url("/cursor/Link.ani"),
+          pointer; /* 备用手型指针 */
+}
+
+/* 文本输入框指针（可选，清姬文本状态） */
+input,
+textarea,
+[contenteditable="true"] {
+  cursor: url("/cursor/Text.ani"),
+          text; /* 备用 I 型指针 */
+}
+
+/* 移动端隐藏自定义指针（可选，避免适配问题） */
+@media (max-width: 768px) {
+  body,
+  a,
+  input {
+    cursor: default !important;
+  }
+}
