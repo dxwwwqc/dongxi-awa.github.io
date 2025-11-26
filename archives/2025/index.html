@@ -44,6 +44,41 @@
 
 <link rel="stylesheet" href="/dongxi-awa.github.io/css/main.css" />
 
+    
+    <!-- 自定义光标样式 -->
+    <style>
+        /* 自动注入的光标样式 */
+        body {
+            cursor: url('/dongxi-awa.github.io/cursors/Normal.png'), auto !important;
+        }
+        a, button, .btn, [role="button"] {
+            cursor: url('/dongxi-awa.github.io/cursors/Link.png'), pointer !important;
+        }
+        input, textarea, [contenteditable="true"] {
+            cursor: url('/dongxi-awa.github.io/cursors/Text.png'), text !important;
+        }
+        code, pre {
+            cursor: url('/dongxi-awa.github.io/cursors/Text.png'), text !important;
+        }
+        [title]:hover {
+            cursor: url('/dongxi-awa.github.io/cursors/Help.png'), help !important;
+        }
+        [disabled], .disabled {
+            cursor: url('/dongxi-awa.github.io/cursors/Unavailable.png'), not-allowed !important;
+        }
+        .loading {
+            cursor: url('/dongxi-awa.github.io/cursors/Busy.png'), wait !important;
+        }
+        .alternate {
+            cursor: url('/dongxi-awa.github.io/cursors/Alternate.png'), context-menu !important;
+        }
+        .precision {
+            cursor: url('/dongxi-awa.github.io/cursors/Precision.png'), crosshair !important;
+        }
+        .move {
+            cursor: url('/dongxi-awa.github.io/cursors/Move.png'), move !important;
+        }
+    </style>
 <meta name="generator" content="Hexo 7.3.0"></head>
 <body>
     <div id="layout">
@@ -196,6 +231,36 @@
 <!-- 看板娘样式 -->
 <link rel="stylesheet" href="/dongxi-awa.github.io/live2d/waifu.css">
 
+<!-- Sakana Widget 石蒜模拟器 (只加载一次) -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sakana-widget@2.7.1/lib/sakana.min.css">
+
+<!-- 最终光标覆盖 - 在组件CSS之后加载，确保最高优先级 -->
+<style>
+    /* 强力覆盖组件的光标样式 */
+    .waifu-tool span,
+    [class*="fui-"],
+    .fui-home,
+    .fui-chat,
+    .fui-eye,
+    .fui-user,
+    .fui-photo,
+    .fui-info-circle,
+    .fui-cross {
+        cursor: url('/dongxi-awa.github.io/cursors/Link.png'), pointer !important;
+    }
+    
+    #sakana-widget,
+    #sakana-widget * {
+        cursor: url('/dongxi-awa.github.io/cursors/Move.png'), move !important;
+    }
+    
+    /* 确保 Live2D 画布使用默认光标 */
+    #live2d,
+    .live2d {
+        cursor: url('/dongxi-awa.github.io/cursors/Normal.png'), auto !important;
+    }
+</style>
+
 <!-- 看板娘容器 -->
 <div class="waifu" id="waifu-container" style="position: fixed; bottom: 0px; left: 20px; z-index: 998;">
     <div class="waifu-tips"></div>
@@ -211,9 +276,13 @@
     </div>
 </div>
 
+<!-- Sakana Widget 容器 (确保只存在一个) -->
+<div id="sakana-widget" style="position: fixed; bottom: 20px; right: 20px; z-index: 999; width: 120px; height: 180px;"></div>
+
 <!-- 正确的脚本加载顺序 -->
 <script src="/dongxi-awa.github.io/live2d/live2d.js"></script>
 <script src="/dongxi-awa.github.io/live2d/waifu-tips.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sakana-widget@2.7.1/lib/sakana.min.js"></script>
 
 <script type="text/javascript">
 // 完整的 Live2D 初始化
@@ -252,10 +321,113 @@ function initializeLive2D() {
     }
 }
 
-// 页面加载后初始化
+// 修复的 Sakana Widget 初始化 - 使用正确的初始化方法
+function initSakanaWidget() {
+    console.log('🔄 初始化 Sakana Widget...');
+    
+    // 检查库是否加载
+    if (typeof SakanaWidget === 'undefined') {
+        console.log('⏳ 等待 SakanaWidget 库加载...');
+        setTimeout(initSakanaWidget, 500);
+        return;
+    }
+    
+    const container = document.getElementById('sakana-widget');
+    if (!container) {
+        console.error('❌ Sakana Widget 容器未找到');
+        return;
+    }
+    
+    try {
+        // 清空容器内容（避免重复挂载）
+        container.innerHTML = '';
+        
+        // 修复：使用正确的初始化方法 - new SakanaWidget()
+        const widget = new SakanaWidget().mount('#sakana-widget');
+        
+        console.log('✅ Sakana Widget 初始化成功');
+        
+        // 添加拖拽功能
+        addSakanaDrag(container, widget);
+        
+    } catch (error) {
+        console.error('❌ Sakana Widget 初始化失败:', error);
+        
+        // 备用初始化方法
+        try {
+            console.log('🔄 尝试备用初始化方法...');
+            const widget = SakanaWidget.mount('#sakana-widget');
+            console.log('✅ 备用方法成功');
+            addSakanaDrag(container, widget);
+        } catch (error2) {
+            console.error('❌ 所有初始化方法都失败了:', error2);
+        }
+    }
+}
+
+// 拖拽功能
+function addSakanaDrag(container, widget) {
+    let isDragging = false;
+    let startX, startY, initialLeft, initialTop;
+
+    container.addEventListener('mousedown', function(e) {
+        isDragging = true;
+        startX = e.clientX;
+        startY = e.clientY;
+        
+        const rect = container.getBoundingClientRect();
+        initialLeft = rect.left;
+        initialTop = rect.top;
+        
+        container.style.transition = 'none';
+        container.style.cursor = 'grabbing';
+        e.preventDefault();
+        e.stopPropagation();
+    });
+
+    document.addEventListener('mousemove', function(e) {
+        if (!isDragging) return;
+        
+        const deltaX = e.clientX - startX;
+        const deltaY = e.clientY - startY;
+        
+        const newX = initialLeft + deltaX;
+        const newY = initialTop + deltaY;
+        
+        // 限制在窗口范围内
+        const maxX = window.innerWidth - container.offsetWidth;
+        const maxY = window.innerHeight - container.offsetHeight;
+        
+        const safeX = Math.max(0, Math.min(newX, maxX));
+        const safeY = Math.max(0, Math.min(newY, maxY));
+        
+        container.style.left = `${safeX}px`;
+        container.style.top = `${safeY}px`;
+    });
+
+    document.addEventListener('mouseup', function() {
+        if (isDragging) {
+            isDragging = false;
+            container.style.transition = 'all 0.3s ease';
+            container.style.cursor = 'url("/dongxi-awa.github.io/cursors/Move.png"), move';
+            
+            // 触发物理效果
+            if (widget && widget.applyForce) {
+                widget.applyForce(0.2, 0.05);
+            }
+        }
+    });
+}
+
+// 页面加载后初始化所有组件
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('DOM 加载完成，准备初始化 Live2D');
+    console.log('DOM 加载完成，准备初始化所有组件');
+    
+    // 初始化 Live2D
     setTimeout(initializeLive2D, 500);
+    
+    // 初始化 Sakana Widget（稍晚一些）
+    setTimeout(initSakanaWidget, 1000);
 });
 
 // 最终检查
@@ -271,68 +443,86 @@ window.addEventListener('load', function() {
                 loadlive2d('live2d', '/dongxi-awa.github.io/live2d/model/38/index.json');
             }
         }
+        
+        // 最终检查 Sakana Widget
+        setTimeout(function() {
+            const sakanaContainer = document.getElementById('sakana-widget');
+            if (sakanaContainer && sakanaContainer.children.length === 0) {
+                console.log('🔄 最终重试 Sakana Widget...');
+                initSakanaWidget();
+            }
+        }, 2000);
     }, 5000);
 });
 </script>
 
-<!-- Sakana Widget 石蒜模拟器 -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sakana-widget@2.7.1/lib/sakana.min.css">
-<div id="sakana-widget" style="position: fixed; bottom: 20px; right: 20px; z-index: 999; width: 120px; height: 180px; cursor: move;"></div>
-<script src="https://cdn.jsdelivr.net/npm/sakana-widget@2.7.1/lib/sakana.min.js"></script>
+<!-- 完美永久光标解决方案 -->
 <script>
-// Sakana Widget 初始化
-function initSakanaWidget() {
-    if (window.SakanaWidget) {
-        const widget = new SakanaWidget().mount('#sakana-widget');
-        const container = document.getElementById('sakana-widget');
-        
-        let isDragging = false;
-        let startX, startY;
-        let offsetX, offsetY;
-
-        container.addEventListener('mousedown', function(e) {
-            isDragging = true;
-            const rect = container.getBoundingClientRect();
-            startX = rect.left;
-            startY = rect.top;
-            offsetX = e.clientX - startX;
-            offsetY = e.clientY - startY;
-            container.style.transition = 'none';
+// 完美永久光标解决方案
+function perfectPermanentCursorSolution() {
+    console.log('🚀 启动完美永久光标解决方案');
+    
+    // 1. 拦截所有光标设置
+    const originalSetProperty = CSSStyleDeclaration.prototype.setProperty;
+    CSSStyleDeclaration.prototype.setProperty = function(property, value, priority) {
+        if (property === 'cursor' && value && !value.includes('cursors')) {
+            console.log('🚫 阻止光标重置并设置自定义光标');
+            this.cursor = 'url("/dongxi-awa.github.io/cursors/Link.png"), pointer';
+            return;
+        }
+        return originalSetProperty.apply(this, arguments);
+    };
+    
+    // 2. 专门处理顽固的 Sakana 元素
+    function fixStubbornSakanaElements() {
+        const stubbornElements = document.querySelectorAll('.sakana-widget-img, .sakana-widget-ctrl');
+        stubbornElements.forEach(element => {
+            if (!element.style.cursor.includes('cursors')) {
+                element.style.cursor = 'url("/dongxi-awa.github.io/cursors/Move.png"), move !important';
+                element.style.setProperty('cursor', 'url("/dongxi-awa.github.io/cursors/Move.png"), move', 'important');
+            }
         });
-
-        document.addEventListener('mousemove', function(e) {
-            if (!isDragging) return;
-            const newX = e.clientX - offsetX;
-            const newY = e.clientY - offsetY;
-            const maxX = window.innerWidth - container.offsetWidth;
-            const maxY = window.innerHeight - container.offsetHeight;
-            const safeX = Math.max(0, Math.min(newX, maxX));
-            const safeY = Math.max(0, Math.min(newY, maxY));
-            container.style.left = `${safeX}px`;
-            container.style.top = `${safeY}px`;
-            container.style.bottom = 'auto';
-            container.style.right = 'auto';
-        });
-
-        document.addEventListener('mouseup', function() {
-            if (isDragging) {
-                isDragging = false;
-                container.style.transition = '';
-                widget.applyForce(0.3, 0.1);
+    }
+    
+    // 3. 持续覆盖函数
+    function applyCustomCursors() {
+        // Live2D 按钮
+        const live2dButtons = document.querySelectorAll('.waifu-tool span, [class*="fui-"]');
+        live2dButtons.forEach(button => {
+            if (!button.style.cursor.includes('cursors')) {
+                button.style.cursor = 'url("/dongxi-awa.github.io/cursors/Link.png"), pointer';
             }
         });
         
-        console.log('Sakana Widget 初始化成功');
-    } else {
-        console.log('等待 Sakana Widget 加载...');
-        setTimeout(initSakanaWidget, 100);
+        // Sakana Widget
+        const sakana = document.getElementById('sakana-widget');
+        if (sakana) {
+            if (!sakana.style.cursor.includes('cursors')) {
+                sakana.style.cursor = 'url("/dongxi-awa.github.io/cursors/Move.png"), move !important';
+            }
+            
+            // 专门处理顽固元素
+            fixStubbornSakanaElements();
+        }
     }
+    
+    // 4. 高频监控
+    setInterval(applyCustomCursors, 500);
+    
+    // 5. DOM 变化监控
+    const observer = new MutationObserver(() => {
+        setTimeout(applyCustomCursors, 100);
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+    
+    // 6. 立即执行
+    applyCustomCursors();
+    
+    console.log('✅ 完美永久光标解决方案启动完成');
 }
 
-// 初始化 Sakana Widget
-document.addEventListener('DOMContentLoaded', function() {
-    setTimeout(initSakanaWidget, 1000);
-});
+// 在页面加载后启动
+setTimeout(perfectPermanentCursorSolution, 2000);
 </script>
 
 <!-- 引入 mouse-firework 库 -->

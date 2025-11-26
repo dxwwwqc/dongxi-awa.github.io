@@ -1,0 +1,64 @@
+/* 使用 PNG 光标文件 - 正确路径 */
+body {
+    cursor: url('/dongxi-awa.github.io/cursors/Normal.png'), auto;
+}
+
+a, button, .btn, [role="button"] {
+    cursor: url('/dongxi-awa.github.io/cursors/Link.png'), pointer;
+}
+
+input, textarea, [contenteditable="true"] {
+    cursor: url('/dongxi-awa.github.io/cursors/Text.png'), text;
+}
+
+code, pre {
+    cursor: url('/dongxi-awa.github.io/cursors/Text.png'), text;
+}
+
+[title]:hover {
+    cursor: url('/dongxi-awa.github.io/cursors/Help.png'), help;
+}
+
+[disabled], .disabled {
+    cursor: url('/dongxi-awa.github.io/cursors/Unavailable.png'), not-allowed;
+}
+
+.loading {
+    cursor: url('/dongxi-awa.github.io/cursors/Busy.png'), wait;
+}
+
+.alternate {
+    cursor: url('/dongxi-awa.github.io/cursors/Alternate.png'), context-menu;
+}
+
+.precision {
+    cursor: url('/dongxi-awa.github.io/cursors/Precision.png'), crosshair;
+}
+
+.move {
+    cursor: url('/dongxi-awa.github.io/cursors/Move.png'), move;
+}
+
+.handwriting {
+    cursor: url('/dongxi-awa.github.io/cursors/Handwriting.png'), text;
+}
+
+.working {
+    cursor: url('/dongxi-awa.github.io/cursors/Working.png'), progress;
+}
+
+.resize-horizontal {
+    cursor: url('/dongxi-awa.github.io/cursors/Horizontal.png'), ew-resize;
+}
+
+.resize-vertical {
+    cursor: url('/dongxi-awa.github.io/cursors/Vertical.png'), ns-resize;
+}
+
+.resize-diagonal1 {
+    cursor: url('/dongxi-awa.github.io/cursors/Diagonal1.png'), nesw-resize;
+}
+
+.resize-diagonal2 {
+    cursor: url('/dongxi-awa.github.io/cursors/Diagonal2.png'), nwse-resize;
+}
