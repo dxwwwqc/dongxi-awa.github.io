@@ -3,7 +3,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8" />
-    <title>Hello World | 冬栖の小窝</title>
+    <title>Pixiv 收藏 | 冬栖の小窝</title>
     <meta name="author" content="冬栖" />
     <meta name="description" content="" />
     <meta name="keywords" content="" />
@@ -37,10 +37,6 @@
 
 
 <script src="/dongxi-awa.github.io/js/lib/preview.js"></script>
-
-
-
-
 
 
 
@@ -205,40 +201,805 @@
         <div id="main" :class="loading ? 'into-enter-from': 'into-enter-active'">
             <div class="article">
     <div>
-        <h1>Hello World</h1>
+        <h1>Pixiv 收藏</h1>
     </div>
     <div class="info">
         <span class="date">
             <span class="icon">
                 <i class="fa-solid fa-calendar fa-fw"></i>
             </span>
-            2025/7/3
+            2024/1/1
         </span>
         
         
     </div>
     
     <div class="content" v-pre>
-        <p>Welcome to <a target="_blank" rel="noopener" href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a target="_blank" rel="noopener" href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a target="_blank" rel="noopener" href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a target="_blank" rel="noopener" href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p>
-<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">&quot;My New Post&quot;</span></span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/writing.html">Writing</a></p>
-<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/server.html">Server</a></p>
-<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/generating.html">Generating</a></p>
-<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>
-
+        <!-- 筛选器 -->
+<div class="pixiv-filters">
+  <div class="filter-group">
+    <label>排序方式：</label>
+    <select id="sortBy">
+      <option value="date-desc">收藏时间（新→旧）</option>
+      <option value="date-asc">收藏时间（旧→新）</option>
+      <option value="bookmarks-desc">收藏数（高→低）</option>
+      <option value="title-asc">标题（A→Z）</option>
+    </select>
+  </div>
+  
+  <div class="filter-group">
+    <label>筛选作者：</label>
+    <select id="authorFilter">
+      <option value="all">全部作者</option>
+    </select>
+  </div>
+  
+  <div class="filter-group">
+    <label>显示模式：</label>
+    <div class="view-toggle">
+      <button class="view-btn active" data-view="grid">网格视图</button>
+      <button class="view-btn" data-view="list">列表视图</button>
     </div>
+  </div>
+</div>
+
+<!-- 标签云 -->
+<div class="tag-cloud-container">
+  <h3>标签筛选</h3>
+  <div class="tag-cloud" id="tagCloud"></div>
+</div>
+
+<!-- 作品展示区 -->
+<div class="pixiv-main">
+  <h3>作品展示 <span id="worksCount">(0)</span></h3>
+  
+  <!-- 网格视图 -->
+  <div class="pixiv-grid" id="pixivGrid">
+    <!-- 作品将通过JavaScript动态加载 -->
+  </div>
+  
+  <!-- 列表视图（默认隐藏） -->
+  <div class="pixiv-list" id="pixivList" style="display: none;">
+    <table>
+      <thead>
+        <tr>
+          <th>作品</th>
+          <th>作者</th>
+          <th>收藏时间</th>
+          <th>标签</th>
+          <th>收藏数</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody id="listTableBody">
+        <!-- 表格行将通过JavaScript动态加载 -->
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<style>
+/* 全局样式 */
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: #f5f5f5;
+  margin: 0;
+  padding: 20px;
+}
+
+/* 筛选器 */
+.pixiv-filters {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+  margin-bottom: 30px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  align-items: center;
+}
+
+.filter-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.filter-group label {
+  font-weight: 500;
+  color: #555;
+  white-space: nowrap;
+}
+
+.filter-group select {
+  padding: 8px 15px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  background: white;
+  min-width: 150px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.view-toggle {
+  display: flex;
+  gap: 5px;
+}
+
+.view-btn {
+  padding: 8px 20px;
+  border: 1px solid #ddd;
+  background: white;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-size: 14px;
+}
+
+.view-btn:hover {
+  background: #f0f2f5;
+}
+
+.view-btn.active {
+  background: #667eea;
+  color: white;
+  border-color: #667eea;
+}
+
+/* 标签云 */
+.tag-cloud-container {
+  background: white;
+  padding: 25px;
+  border-radius: 10px;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+  margin-bottom: 30px;
+}
+
+.tag-cloud-container h3 {
+  margin: 0 0 15px 0;
+  color: #333;
+  font-size: 18px;
+}
+
+.tag-cloud {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.tag-item {
+  padding: 6px 12px;
+  background: #f0f2f5;
+  border-radius: 15px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.3s;
+  border: 1px solid transparent;
+  color: #555;
+}
+
+.tag-item:hover {
+  background: #667eea;
+  color: white;
+  transform: translateY(-2px);
+}
+
+.tag-item.active {
+  background: #667eea;
+  color: white;
+  border-color: #667eea;
+}
+
+/* 作品展示区 */
+.pixiv-main {
+  background: white;
+  padding: 30px;
+  border-radius: 10px;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+}
+
+.pixiv-main h3 {
+  margin: 0 0 25px 0;
+  color: #333;
+  border-bottom: 2px solid #f0f2f5;
+  padding-bottom: 10px;
+  font-size: 20px;
+}
+
+/* 网格视图 */
+.pixiv-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 25px;
+}
+
+.grid-item {
+  position: relative;
+  overflow: hidden;
+  border-radius: 10px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+  transition: transform 0.3s, box-shadow 0.3s;
+  background: white;
+  border: 1px solid #eee;
+}
+
+.grid-item:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+.grid-item a {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+
+.grid-image {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.5s;
+}
+
+.grid-item:hover .grid-image {
+  transform: scale(1.05);
+}
+
+.grid-info {
+  padding: 15px;
+}
+
+.grid-title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #333;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.grid-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  color: #666;
+}
+
+.grid-author {
+  color: #667eea;
+  font-weight: 500;
+}
+
+.grid-bookmarks {
+  color: #f5576c;
+  font-weight: 500;
+}
+
+/* 列表视图 */
+.pixiv-list table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+  font-size: 14px;
+}
+
+.pixiv-list th {
+  background: #f8f9fa;
+  padding: 15px;
+  text-align: left;
+  font-weight: 600;
+  color: #495057;
+  border-bottom: 2px solid #dee2e6;
+}
+
+.pixiv-list td {
+  padding: 15px;
+  border-bottom: 1px solid #dee2e6;
+  vertical-align: middle;
+}
+
+.list-item-image {
+  width: 80px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 5px;
+  vertical-align: middle;
+  margin-right: 15px;
+}
+
+.list-item-title {
+  font-weight: 500;
+  color: #333;
+  vertical-align: middle;
+}
+
+.list-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.list-tag {
+  background: #f0f2f5;
+  padding: 3px 8px;
+  border-radius: 10px;
+  font-size: 0.8rem;
+  color: #555;
+}
+
+.action-btn {
+  padding: 6px 12px;
+  background: #667eea;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: background 0.3s;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.action-btn:hover {
+  background: #5a6fd8;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  body {
+    padding: 10px;
+  }
+  
+  .pixiv-filters {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 15px;
+  }
+  
+  .filter-group {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .filter-group select {
+    width: 100%;
+  }
+  
+  .pixiv-grid {
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 15px;
+  }
+  
+  .pixiv-main {
+    padding: 20px;
+  }
+  
+  .pixiv-list table {
+    display: block;
+    overflow-x: auto;
+  }
+}
+
+/* 加载状态 */
+.loading {
+  text-align: center;
+  padding: 50px;
+  color: #666;
+  grid-column: 1 / -1;
+}
+
+.no-results {
+  text-align: center;
+  padding: 50px;
+  color: #666;
+  grid-column: 1 / -1;
+}
+
+.loading-spinner {
+  display: inline-block;
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #667eea;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 20px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+</style>
+
+<script>
+// Pixiv 数据（示例数据）
+const pixivData = [
+  {
+    id: "12345678",
+    title: "春日の桜",
+    image: "https://via.placeholder.com/1200x800/667eea/ffffff?text=樱花风景",
+    thumbnail: "https://via.placeholder.com/300x200/667eea/ffffff?text=樱花风景",
+    author: "桜沢千代",
+    author_id: "111111",
+    link: "https://www.pixiv.net/artworks/12345678",
+    date: "2024-03-15",
+    tags: ["樱花", "风景", "春天", "日本"],
+    width: 1200,
+    height: 800,
+    bookmarks: 1234
+  },
+  {
+    id: "87654321",
+    title: "星空の旅",
+    image: "https://via.placeholder.com/1000x1400/f093fb/ffffff?text=星空幻想",
+    thumbnail: "https://via.placeholder.com/250x350/f093fb/ffffff?text=星空幻想",
+    author: "星野夢",
+    author_id: "222222",
+    link: "https://www.pixiv.net/artworks/87654321",
+    date: "2024-02-28",
+    tags: ["星空", "幻想", "宇宙", "夜景"],
+    width: 1000,
+    height: 1400,
+    bookmarks: 856
+  },
+  {
+    id: "55555555",
+    title: "海辺の少女",
+    image: "https://via.placeholder.com/1500x1000/4facfe/ffffff?text=海边少女",
+    thumbnail: "https://via.placeholder.com/300x200/4facfe/ffffff?text=海边少女",
+    author: "海老原優",
+    author_id: "333333",
+    link: "https://www.pixiv.net/artworks/55555555",
+    date: "2024-03-10",
+    tags: ["人物", "海边", "夏天", "少女"],
+    width: 1500,
+    height: 1000,
+    bookmarks: 2345
+  },
+  {
+    id: "66666666",
+    title: "秋の紅葉",
+    image: "https://via.placeholder.com/1600x900/43e97b/ffffff?text=秋天红叶",
+    thumbnail: "https://via.placeholder.com/320x180/43e97b/ffffff?text=秋天红叶",
+    author: "楓山太郎",
+    author_id: "444444",
+    link: "https://www.pixiv.net/artworks/66666666",
+    date: "2023-11-05",
+    tags: ["红叶", "秋天", "风景", "日本"],
+    width: 1600,
+    height: 900,
+    bookmarks: 1890
+  },
+  {
+    id: "77777777",
+    title: "冬の魔法使い",
+    image: "https://via.placeholder.com/1200x1600/fa709a/ffffff?text=冬日魔法",
+    thumbnail: "https://via.placeholder.com/240x320/fa709a/ffffff?text=冬日魔法",
+    author: "雪村アリス",
+    author_id: "555555",
+    link: "https://www.pixiv.net/artworks/77777777",
+    date: "2023-12-20",
+    tags: ["魔法", "冬天", "幻想", "角色设计", "少女"],
+    width: 1200,
+    height: 1600,
+    bookmarks: 3120
+  },
+  {
+    id: "88888888",
+    title: "春日の桜 その2",
+    image: "https://via.placeholder.com/1300x850/667eea/ffffff?text=樱花风景2",
+    thumbnail: "https://via.placeholder.com/260x170/667eea/ffffff?text=樱花风景2",
+    author: "桜沢千代",
+    author_id: "111111",
+    link: "https://www.pixiv.net/artworks/88888888",
+    date: "2024-03-20",
+    tags: ["樱花", "风景", "春天"],
+    width: 1300,
+    height: 850,
+    bookmarks: 987
+  },
+  {
+    id: "99999999",
+    title: "都市夜景",
+    image: "https://via.placeholder.com/1400x900/9966ff/ffffff?text=都市夜景",
+    thumbnail: "https://via.placeholder.com/280x180/9966ff/ffffff?text=都市夜景",
+    author: "東京夜景",
+    author_id: "666666",
+    link: "https://www.pixiv.net/artworks/99999999",
+    date: "2024-01-15",
+    tags: ["夜景", "都市", "建筑", "现代"],
+    width: 1400,
+    height: 900,
+    bookmarks: 1567
+  },
+  {
+    id: "10101010",
+    title: "和風美人",
+    image: "https://via.placeholder.com/1100x1600/ff9f40/ffffff?text=和风美人",
+    thumbnail: "https://via.placeholder.com/220x320/ff9f40/ffffff?text=和风美人",
+    author: "和風絵師",
+    author_id: "777777",
+    link: "https://www.pixiv.net/artworks/10101010",
+    date: "2024-02-10",
+    tags: ["和风", "人物", "传统", "日本", "美人"],
+    width: 1100,
+    height: 1600,
+    bookmarks: 2789
+  }
+];
+
+// 全局变量
+let filteredData = [...pixivData];
+let currentView = 'grid';
+let currentAuthor = 'all';
+let currentTag = 'all';
+let sortBy = 'date-desc';
+
+// 页面初始化
+document.addEventListener('DOMContentLoaded', function() {
+  initPixivPage();
+});
+
+// 初始化页面
+function initPixivPage() {
+  console.log('正在初始化Pixiv收藏页面...');
+  try {
+    renderAuthorsFilter();
+    renderTagCloud();
+    renderWorks();
+    setupEventListeners();
+    console.log('页面初始化完成');
+  } catch (error) {
+    console.error('初始化错误:', error);
+  }
+}
+
+// 更新作品计数
+function updateWorksCount() {
+  const worksCountElement = document.getElementById('worksCount');
+  if (worksCountElement) {
+    worksCountElement.textContent = `(${filteredData.length})`;
+  }
+}
+
+// 渲染作者筛选器
+function renderAuthorsFilter() {
+  const select = document.getElementById('authorFilter');
+  if (!select) return;
+  
+  // 清空现有选项（除了第一个）
+  while (select.options.length > 1) {
+    select.remove(1);
+  }
+  
+  // 获取所有作者并去重排序
+  const authors = [...new Set(pixivData.map(item => item.author))].sort();
+  
+  // 添加作者选项
+  authors.forEach(author => {
+    const option = document.createElement('option');
+    option.value = author;
+    option.textContent = author;
+    select.appendChild(option);
+  });
+}
+
+// 渲染标签云
+function renderTagCloud() {
+  const tagCloud = document.getElementById('tagCloud');
+  if (!tagCloud) return;
+  
+  // 计算标签出现次数
+  const tagCounts = {};
+  pixivData.forEach(work => {
+    work.tags.forEach(tag => {
+      tagCounts[tag] = (tagCounts[tag] || 0) + 1;
+    });
+  });
+  
+  // 按次数排序，取前15个
+  const sortedTags = Object.entries(tagCounts)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 15);
+  
+  // 清空标签云
+  tagCloud.innerHTML = '';
+  
+  // 添加"全部"标签
+  const allTag = document.createElement('span');
+  allTag.className = `tag-item ${currentTag === 'all' ? 'active' : ''}`;
+  allTag.textContent = '全部';
+  allTag.onclick = () => filterByTag('all');
+  tagCloud.appendChild(allTag);
+  
+  // 添加热门标签
+  sortedTags.forEach(([tag, count]) => {
+    const tagItem = document.createElement('span');
+    tagItem.className = `tag-item ${currentTag === tag ? 'active' : ''}`;
+    tagItem.textContent = `${tag} (${count})`;
+    tagItem.onclick = () => filterByTag(tag);
+    tagCloud.appendChild(tagItem);
+  });
+}
+
+// 渲染作品
+function renderWorks() {
+  filterAndSortData();
+  if (currentView === 'grid') {
+    renderGridView();
+  } else {
+    renderListView();
+  }
+  updateWorksCount();
+}
+
+// 过滤和排序数据
+function filterAndSortData() {
+  filteredData = [...pixivData];
+  
+  // 按作者筛选
+  if (currentAuthor !== 'all') {
+    filteredData = filteredData.filter(item => item.author === currentAuthor);
+  }
+  
+  // 按标签筛选
+  if (currentTag !== 'all') {
+    filteredData = filteredData.filter(item => item.tags.includes(currentTag));
+  }
+  
+  // 排序
+  filteredData.sort((a, b) => {
+    const dateA = new Date(a.date);
+    const dateB = new Date(b.date);
     
-    
-    
-    
-    
+    switch (sortBy) {
+      case 'date-desc':
+        return dateB - dateA;
+      case 'date-asc':
+        return dateA - dateB;
+      case 'bookmarks-desc':
+        return (b.bookmarks || 0) - (a.bookmarks || 0);
+      case 'title-asc':
+        return a.title.localeCompare(b.title, 'ja-JP');
+      default:
+        return dateB - dateA;
+    }
+  });
+}
+
+// 渲染网格视图
+function renderGridView() {
+  const grid = document.getElementById('pixivGrid');
+  if (!grid) return;
+  
+  if (filteredData.length === 0) {
+    grid.innerHTML = '<div class="no-results">没有找到相关作品</div>';
+    return;
+  }
+  
+  let gridHTML = '';
+  
+  filteredData.forEach(item => {
+    gridHTML += `
+      <div class="grid-item">
+        <a href="${item.link}" target="_blank" rel="noopener noreferrer">
+          <img src="${item.thumbnail}" alt="${item.title}" class="grid-image" loading="lazy">
+          <div class="grid-info">
+            <div class="grid-title" title="${item.title}">${item.title}</div>
+            <div class="grid-meta">
+              <span class="grid-author" title="作者">${item.author}</span>
+              <span class="grid-bookmarks" title="收藏数">❤️ ${item.bookmarks.toLocaleString()}</span>
+            </div>
+          </div>
+        </a>
+      </div>
+    `;
+  });
+  
+  grid.innerHTML = gridHTML;
+}
+
+// 渲染列表视图
+function renderListView() {
+  const tbody = document.getElementById('listTableBody');
+  if (!tbody) return;
+  
+  if (filteredData.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="6" class="no-results">没有找到相关作品</td></tr>';
+    return;
+  }
+  
+  let tableHTML = '';
+  
+  filteredData.forEach(item => {
+    tableHTML += `
+      <tr>
+        <td>
+          <img src="${item.thumbnail}" alt="${item.title}" class="list-item-image">
+          <span class="list-item-title">${item.title}</span>
+        </td>
+        <td>${item.author}</td>
+        <td>${item.date}</td>
+        <td>
+          <div class="list-tags">
+            ${item.tags.map(tag => `<span class="list-tag">${tag}</span>`).join('')}
+          </div>
+        </td>
+        <td>${item.bookmarks.toLocaleString()}</td>
+        <td>
+          <a href="${item.link}" target="_blank" rel="noopener noreferrer">
+            <button class="action-btn">查看原图</button>
+          </a>
+        </td>
+      </tr>
+    `;
+  });
+  
+  tbody.innerHTML = tableHTML;
+}
+
+// 设置事件监听器
+function setupEventListeners() {
+  // 排序方式改变
+  const sortSelect = document.getElementById('sortBy');
+  if (sortSelect) {
+    sortSelect.addEventListener('change', (e) => {
+      sortBy = e.target.value;
+      renderWorks();
+    });
+  }
+  
+  // 作者筛选改变
+  const authorSelect = document.getElementById('authorFilter');
+  if (authorSelect) {
+    authorSelect.addEventListener('change', (e) => {
+      currentAuthor = e.target.value;
+      renderWorks();
+    });
+  }
+  
+  // 视图切换按钮
+  const viewButtons = document.querySelectorAll('.view-btn');
+  viewButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      // 移除所有按钮的active类
+      viewButtons.forEach(b => b.classList.remove('active'));
+      // 给当前按钮添加active类
+      btn.classList.add('active');
+      
+      currentView = btn.dataset.view;
+      
+      const gridView = document.getElementById('pixivGrid');
+      const listView = document.getElementById('pixivList');
+      
+      if (currentView === 'grid') {
+        gridView.style.display = 'grid';
+        listView.style.display = 'none';
+        renderGridView();
+      } else {
+        gridView.style.display = 'none';
+        listView.style.display = 'block';
+        renderListView();
+      }
+    });
+  });
+}
+
+// 按标签筛选
+function filterByTag(tag) {
+  currentTag = tag;
+  renderTagCloud();
+  renderWorks();
+}
+
+// 导出函数供全局使用
+window.filterByTag = filterByTag;
+</script>
+    </div>
     
     
 </div>
@@ -613,12 +1374,6 @@ setTimeout(perfectPermanentCursorSolution, 2000);
         
     </div>
     <script src="/dongxi-awa.github.io/js/main.js"></script>
-    
-    
-
-
-
-
     
 </body>
 </html>
