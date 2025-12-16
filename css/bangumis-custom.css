@@ -1,0 +1,64 @@
+/* source/css/bangumis-custom.css */
+
+/* 适配ParticleX主题的颜色方案 */
+.bangumi-item {
+    background: var(--card-bg, #fff);
+    border-radius: var(--card-radius, 12px);
+    box-shadow: var(--card-shadow, 0 2px 8px rgba(0,0,0,0.1));
+    transition: var(--transition, all 0.3s ease);
+    margin-bottom: var(--card-gap, 20px);
+}
+
+.bangumi-item:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--card-hover-shadow, 0 8px 20px rgba(0,0,0,0.15));
+}
+
+/* 适配主题字体 */
+.bangumi-title {
+    font-family: var(--font-family-heading, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif);
+    font-weight: var(--font-weight-heading, 600);
+    color: var(--text-color, #333);
+}
+
+.bangumi-title a {
+    color: var(--link-color, #0366d6);
+    text-decoration: none;
+}
+
+.bangumi-title a:hover {
+    color: var(--link-hover-color, #0056b3);
+    text-decoration: underline;
+}
+
+/* 适配主题按钮样式 */
+.bangumi-button {
+    background: var(--btn-bg, #f5f5f5);
+    border: 1px solid var(--btn-border, #ddd);
+    border-radius: var(--btn-radius, 4px);
+    color: var(--btn-color, #555);
+    padding: var(--btn-padding, 6px 12px);
+    font-family: var(--font-family, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif);
+    transition: var(--transition, all 0.2s ease);
+}
+
+.bangumi-button:hover {
+    background: var(--btn-hover-bg, #e9e9e9);
+    border-color: var(--btn-hover-border, #ccc);
+    color: var(--btn-hover-color, #333);
+}
+
+/* 暗色模式适配 */
+@media (prefers-color-scheme: dark) {
+    .bangumi-item {
+        background: var(--card-bg-dark, #2d2d2d);
+    }
+    
+    .bangumi-title a {
+        color: var(--link-color-dark, #58a6ff);
+    }
+    
+    .bangumi-info-items {
+        color: var(--text-secondary-dark, #8b949e);
+    }
+}
