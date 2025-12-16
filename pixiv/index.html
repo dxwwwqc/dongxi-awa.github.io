@@ -260,21 +260,7 @@
   
   <!-- 列表视图（默认隐藏） -->
   <div class="pixiv-list" id="pixivList" style="display: none;">
-    <table>
-      <thead>
-        <tr>
-          <th>作品</th>
-          <th>作者</th>
-          <th>收藏时间</th>
-          <th>标签</th>
-          <th>收藏数</th>
-          <th>操作</th>
-        </tr>
-      </thead>
-      <tbody id="listTableBody">
-        <!-- 表格行将通过JavaScript动态加载 -->
-      </tbody>
-    </table>
+    <!-- 表格将通过JavaScript动态加载 -->
   </div>
 </div>
 
@@ -441,6 +427,9 @@ body {
   object-fit: cover;
   display: block;
   transition: transform 0.5s;
+  background-color: #f0f2f5;
+  background-image: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background-size: cover;
 }
 
 .grid-item:hover .grid-image {
@@ -478,7 +467,7 @@ body {
   font-weight: 500;
 }
 
-/* 列表视图 */
+/* 列表视图表格样式 */
 .pixiv-list table {
   width: 100%;
   border-collapse: collapse;
@@ -501,50 +490,8 @@ body {
   vertical-align: middle;
 }
 
-.list-item-image {
-  width: 80px;
-  height: 60px;
-  object-fit: cover;
-  border-radius: 5px;
-  vertical-align: middle;
-  margin-right: 15px;
-}
-
-.list-item-title {
-  font-weight: 500;
-  color: #333;
-  vertical-align: middle;
-}
-
-.list-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 5px;
-}
-
-.list-tag {
-  background: #f0f2f5;
-  padding: 3px 8px;
-  border-radius: 10px;
-  font-size: 0.8rem;
-  color: #555;
-}
-
-.action-btn {
-  padding: 6px 12px;
-  background: #667eea;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 0.85rem;
-  transition: background 0.3s;
-  text-decoration: none;
-  display: inline-block;
-}
-
-.action-btn:hover {
-  background: #5a6fd8;
+.pixiv-list tr:hover {
+  background-color: #f8f9fa;
 }
 
 /* 响应式设计 */
@@ -580,6 +527,7 @@ body {
   .pixiv-list table {
     display: block;
     overflow-x: auto;
+    white-space: nowrap;
   }
 }
 
@@ -588,145 +536,151 @@ body {
   text-align: center;
   padding: 50px;
   color: #666;
-  grid-column: 1 / -1;
 }
 
 .no-results {
   text-align: center;
   padding: 50px;
   color: #666;
-  grid-column: 1 / -1;
+  font-size: 1.1rem;
 }
 
-.loading-spinner {
-  display: inline-block;
-  width: 40px;
-  height: 40px;
-  border: 4px solid #f3f3f3;
-  border-top: 4px solid #667eea;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin-bottom: 20px;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+/* 图片占位符 */
+.image-placeholder {
+  width: 100%;
+  height: 180px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: bold;
+  font-size: 1.2rem;
 }
 </style>
 
 <script>
-// Pixiv 数据（示例数据）
+// 图片数据 - 使用稳定可靠的Unsplash图片
 const pixivData = [
   {
-    id: "12345678",
-    title: "您的作品标题",
-    image: "https://i.pximg.net/img-master/img/2025/12/15/00/00/16/138613734_p0_master1200.jpg",  // 原图
-    thumbnail: "https://缩略图地址.jpg", // 缩略图
-    author: "我美蘭＠1日目 西1 め-24",
-    author_id: "2003931",
-    link: "https://www.pixiv.net/artworks/138613734",
-    date: "2024-01-01",
-    tags: ["标签1", "标签2"],
-    bookmarks: 1000
+    id: "1",
+    title: "春日の桜",
+    image: "https://images.unsplash.com/photo-1616763355548-1b606f439f86",
+    thumbnail: "https://images.unsplash.com/photo-1616763355548-1b606f439f86?w=300&h=200&fit=crop",
+    author: "桜沢千代",
+    author_id: "111111",
+    link: "https://www.pixiv.net/artworks/12345678",
+    date: "2024-03-15",
+    tags: ["樱花", "风景", "春天", "日本"],
+    bookmarks: 1234
   },
   {
-    id: "87654321",
+    id: "2",
     title: "星空の旅",
-    image: "https://via.placeholder.com/1000x1400/f093fb/ffffff?text=星空幻想",
-    thumbnail: "https://via.placeholder.com/250x350/f093fb/ffffff?text=星空幻想",
+    image: "https://images.unsplash.com/photo-1465101162946-4377e57745c3",
+    thumbnail: "https://images.unsplash.com/photo-1465101162946-4377e57745c3?w=300&h=200&fit=crop",
     author: "星野夢",
     author_id: "222222",
     link: "https://www.pixiv.net/artworks/87654321",
     date: "2024-02-28",
     tags: ["星空", "幻想", "宇宙", "夜景"],
-    width: 1000,
-    height: 1400,
     bookmarks: 856
   },
   {
-    id: "55555555",
+    id: "3",
     title: "海辺の少女",
-    image: "https://via.placeholder.com/1500x1000/4facfe/ffffff?text=海边少女",
-    thumbnail: "https://via.placeholder.com/300x200/4facfe/ffffff?text=海边少女",
+    image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d",
+    thumbnail: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=200&fit=crop",
     author: "海老原優",
     author_id: "333333",
     link: "https://www.pixiv.net/artworks/55555555",
     date: "2024-03-10",
     tags: ["人物", "海边", "夏天", "少女"],
-    width: 1500,
-    height: 1000,
     bookmarks: 2345
   },
   {
-    id: "66666666",
+    id: "4",
     title: "秋の紅葉",
-    image: "https://via.placeholder.com/1600x900/43e97b/ffffff?text=秋天红叶",
-    thumbnail: "https://via.placeholder.com/320x180/43e97b/ffffff?text=秋天红叶",
+    image: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4",
+    thumbnail: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=300&h=200&fit=crop",
     author: "楓山太郎",
     author_id: "444444",
     link: "https://www.pixiv.net/artworks/66666666",
     date: "2023-11-05",
     tags: ["红叶", "秋天", "风景", "日本"],
-    width: 1600,
-    height: 900,
     bookmarks: 1890
   },
   {
-    id: "77777777",
-    title: "冬の魔法使い",
-    image: "https://via.placeholder.com/1200x1600/fa709a/ffffff?text=冬日魔法",
-    thumbnail: "https://via.placeholder.com/240x320/fa709a/ffffff?text=冬日魔法",
-    author: "雪村アリス",
+    id: "5",
+    title: "都市夜景",
+    image: "https://images.unsplash.com/photo-1477959858617-67f85cf4f1df",
+    thumbnail: "https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=300&h=200&fit=crop",
+    author: "都市夜景家",
     author_id: "555555",
     link: "https://www.pixiv.net/artworks/77777777",
-    date: "2023-12-20",
-    tags: ["魔法", "冬天", "幻想", "角色设计", "少女"],
-    width: 1200,
-    height: 1600,
+    date: "2024-01-20",
+    tags: ["都市", "夜景", "城市", "灯光"],
+    bookmarks: 1456
+  },
+  {
+    id: "6",
+    title: "冬日魔法",
+    image: "https://images.unsplash.com/photo-1483921020237-2ff51e8e4b22",
+    thumbnail: "https://images.unsplash.com/photo-1483921020237-2ff51e8e4b22?w=300&h=200&fit=crop",
+    author: "雪国絵師",
+    author_id: "666666",
+    link: "https://www.pixiv.net/artworks/88888888",
+    date: "2023-12-25",
+    tags: ["冬天", "雪景", "魔法", "幻想"],
+    bookmarks: 2100
+  },
+  {
+    id: "7",
+    title: "和風美人",
+    image: "https://images.unsplash.com/photo-1517203564695-1e8f75a6ff88",
+    thumbnail: "https://images.unsplash.com/photo-1517203564695-1e8f75a6ff88?w=300&h=200&fit=crop",
+    author: "和風絵師",
+    author_id: "777777",
+    link: "https://www.pixiv.net/artworks/99999999",
+    date: "2024-02-14",
+    tags: ["和服", "人物", "传统", "美人"],
     bookmarks: 3120
   },
   {
-    id: "88888888",
-    title: "春日の桜 その2",
-    image: "https://via.placeholder.com/1300x850/667eea/ffffff?text=樱花风景2",
-    thumbnail: "https://via.placeholder.com/260x170/667eea/ffffff?text=樱花风景2",
-    author: "桜沢千代",
-    author_id: "111111",
-    link: "https://www.pixiv.net/artworks/88888888",
-    date: "2024-03-20",
-    tags: ["樱花", "风景", "春天"],
-    width: 1300,
-    height: 850,
-    bookmarks: 987
-  },
-  {
-    id: "99999999",
-    title: "都市夜景",
-    image: "https://via.placeholder.com/1400x900/9966ff/ffffff?text=都市夜景",
-    thumbnail: "https://via.placeholder.com/280x180/9966ff/ffffff?text=都市夜景",
-    author: "東京夜景",
-    author_id: "666666",
-    link: "https://www.pixiv.net/artworks/99999999",
-    date: "2024-01-15",
-    tags: ["夜景", "都市", "建筑", "现代"],
-    width: 1400,
-    height: 900,
-    bookmarks: 1567
-  },
-  {
-    id: "10101010",
-    title: "和風美人",
-    image: "https://via.placeholder.com/1100x1600/ff9f40/ffffff?text=和风美人",
-    thumbnail: "https://via.placeholder.com/220x320/ff9f40/ffffff?text=和风美人",
-    author: "和風絵師",
-    author_id: "777777",
+    id: "8",
+    title: "幻想生物",
+    image: "https://images.unsplash.com/photo-1546182990-dffeafbe841d",
+    thumbnail: "https://images.unsplash.com/photo-1546182990-dffeafbe841d?w=300&h=200&fit=crop",
+    author: "幻想絵師",
+    author_id: "888888",
     link: "https://www.pixiv.net/artworks/10101010",
-    date: "2024-02-10",
-    tags: ["和风", "人物", "传统", "日本", "美人"],
-    width: 1100,
-    height: 1600,
-    bookmarks: 2789
+    date: "2024-03-01",
+    tags: ["幻想", "生物", "龙", "神话"],
+    bookmarks: 1789
+  },
+  {
+    id: "9",
+    title: "夏日海滩",
+    image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e",
+    thumbnail: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=300&h=200&fit=crop",
+    author: "夏海絵師",
+    author_id: "999999",
+    link: "https://www.pixiv.net/artworks/11111111",
+    date: "2023-08-15",
+    tags: ["夏天", "海滩", "海洋", "度假"],
+    bookmarks: 2678
+  },
+  {
+    id: "10",
+    title: "动漫风格少女",
+    image: "https://images.unsplash.com/photo-1544005313-94ddf0286df2",
+    thumbnail: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=300&h=200&fit=crop",
+    author: "动漫絵師",
+    author_id: "101010",
+    link: "https://www.pixiv.net/artworks/12121212",
+    date: "2024-02-05",
+    tags: ["动漫", "少女", "二次元", "插画"],
+    bookmarks: 3987
   }
 ];
 
@@ -739,12 +693,12 @@ let sortBy = 'date-desc';
 
 // 页面初始化
 document.addEventListener('DOMContentLoaded', function() {
+  console.log('DOM已加载，开始初始化Pixiv收藏页面...');
   initPixivPage();
 });
 
 // 初始化页面
 function initPixivPage() {
-  console.log('正在初始化Pixiv收藏页面...');
   try {
     renderAuthorsFilter();
     renderTagCloud();
@@ -753,6 +707,15 @@ function initPixivPage() {
     console.log('页面初始化完成');
   } catch (error) {
     console.error('初始化错误:', error);
+    showErrorMessage('页面初始化失败，请刷新重试');
+  }
+}
+
+// 显示错误消息
+function showErrorMessage(message) {
+  const grid = document.getElementById('pixivGrid');
+  if (grid) {
+    grid.innerHTML = `<div class="no-results">${message}</div>`;
   }
 }
 
@@ -769,12 +732,12 @@ function renderAuthorsFilter() {
   const select = document.getElementById('authorFilter');
   if (!select) return;
   
-  // 清空现有选项（除了第一个）
+  // 清空除"全部作者"外的选项
   while (select.options.length > 1) {
     select.remove(1);
   }
   
-  // 获取所有作者并去重排序
+  // 获取所有作者
   const authors = [...new Set(pixivData.map(item => item.author))].sort();
   
   // 添加作者选项
@@ -799,12 +762,11 @@ function renderTagCloud() {
     });
   });
   
-  // 按次数排序，取前15个
+  // 按出现次数排序，取前15个
   const sortedTags = Object.entries(tagCounts)
     .sort((a, b) => b[1] - a[1])
     .slice(0, 15);
   
-  // 清空标签云
   tagCloud.innerHTML = '';
   
   // 添加"全部"标签
@@ -814,7 +776,7 @@ function renderTagCloud() {
   allTag.onclick = () => filterByTag('all');
   tagCloud.appendChild(allTag);
   
-  // 添加热门标签
+  // 添加其他标签
   sortedTags.forEach(([tag, count]) => {
     const tagItem = document.createElement('span');
     tagItem.className = `tag-item ${currentTag === tag ? 'active' : ''}`;
@@ -826,6 +788,7 @@ function renderTagCloud() {
 
 // 渲染作品
 function renderWorks() {
+  console.log('开始渲染作品...');
   filterAndSortData();
   if (currentView === 'grid') {
     renderGridView();
@@ -885,7 +848,12 @@ function renderGridView() {
     gridHTML += `
       <div class="grid-item">
         <a href="${item.link}" target="_blank" rel="noopener noreferrer">
-          <img src="${item.thumbnail}" alt="${item.title}" class="grid-image" loading="lazy">
+          <img src="${item.thumbnail}" 
+               alt="${item.title}" 
+               class="grid-image" 
+               loading="lazy"
+               onload="console.log('✓ 图片加载成功: ${item.title}')"
+               onerror="handleImageError(this, '${item.title}')">
           <div class="grid-info">
             <div class="grid-title" title="${item.title}">${item.title}</div>
             <div class="grid-meta">
@@ -899,45 +867,75 @@ function renderGridView() {
   });
   
   grid.innerHTML = gridHTML;
+  console.log('网格视图渲染完成，共' + filteredData.length + '个作品');
+}
+
+// 图片错误处理函数
+function handleImageError(img, title) {
+  console.log(`图片加载失败: ${title}`);
+  // 生成一个简单的彩色占位图
+  const colors = ['667eea', 'f5576c', '20c997', 'fbb710', '6f42c1', 'e83e8c'];
+  const color = colors[Math.floor(Math.random() * colors.length)];
+  const text = encodeURIComponent(title.length > 10 ? title.substring(0, 8) + '...' : title);
+  img.src = `https://via.placeholder.com/300x200/${color}/ffffff?text=${text}`;
+  img.onerror = null; // 防止无限循环
+  img.style.background = `linear-gradient(135deg, #${color} 0%, #${color}88 100%)`;
 }
 
 // 渲染列表视图
 function renderListView() {
-  const tbody = document.getElementById('listTableBody');
-  if (!tbody) return;
+  const listDiv = document.getElementById('pixivList');
+  if (!listDiv) return;
   
   if (filteredData.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="6" class="no-results">没有找到相关作品</td></tr>';
+    listDiv.innerHTML = '<div class="no-results">没有找到相关作品</div>';
     return;
   }
   
-  let tableHTML = '';
+  let tableHTML = `
+    <table>
+      <thead>
+        <tr>
+          <th>作品</th>
+          <th>作者</th>
+          <th>收藏时间</th>
+          <th>标签</th>
+          <th>收藏数</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody>
+  `;
   
   filteredData.forEach(item => {
     tableHTML += `
       <tr>
         <td>
-          <img src="${item.thumbnail}" alt="${item.title}" class="list-item-image">
-          <span class="list-item-title">${item.title}</span>
+          <img src="${item.thumbnail}" 
+               alt="${item.title}" 
+               style="width: 80px; height: 60px; object-fit: cover; border-radius: 5px; margin-right: 10px; vertical-align: middle;"
+               onerror="handleImageError(this, '${item.title}')">
+          <span style="vertical-align: middle; font-weight: 500;">${item.title}</span>
         </td>
         <td>${item.author}</td>
         <td>${item.date}</td>
         <td>
-          <div class="list-tags">
-            ${item.tags.map(tag => `<span class="list-tag">${tag}</span>`).join('')}
+          <div style="display: flex; flex-wrap: wrap; gap: 5px;">
+            ${item.tags.map(tag => `<span style="background: #f0f2f5; padding: 3px 8px; border-radius: 10px; font-size: 0.8rem;">${tag}</span>`).join('')}
           </div>
         </td>
         <td>${item.bookmarks.toLocaleString()}</td>
         <td>
           <a href="${item.link}" target="_blank" rel="noopener noreferrer">
-            <button class="action-btn">查看原图</button>
+            <button style="padding: 6px 12px; background: #667eea; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 0.85rem;">查看原图</button>
           </a>
         </td>
       </tr>
     `;
   });
   
-  tbody.innerHTML = tableHTML;
+  tableHTML += '</tbody></table>';
+  listDiv.innerHTML = tableHTML;
 }
 
 // 设置事件监听器
@@ -964,9 +962,7 @@ function setupEventListeners() {
   const viewButtons = document.querySelectorAll('.view-btn');
   viewButtons.forEach(btn => {
     btn.addEventListener('click', () => {
-      // 移除所有按钮的active类
       viewButtons.forEach(b => b.classList.remove('active'));
-      // 给当前按钮添加active类
       btn.classList.add('active');
       
       currentView = btn.dataset.view;
@@ -985,6 +981,22 @@ function setupEventListeners() {
       }
     });
   });
+  
+  // 窗口大小改变时重新渲染
+  window.addEventListener('resize', debounce(renderWorks, 250));
+}
+
+// 防抖函数
+function debounce(func, wait) {
+  let timeout;
+  return function executedFunction(...args) {
+    const later = () => {
+      clearTimeout(timeout);
+      func(...args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
 }
 
 // 按标签筛选
@@ -996,6 +1008,41 @@ function filterByTag(tag) {
 
 // 导出函数供全局使用
 window.filterByTag = filterByTag;
+window.handleImageError = handleImageError;
+
+// 调试函数
+window.checkImages = function() {
+  const images = document.querySelectorAll('.grid-image');
+  console.log(`=== 图片检查 ===`);
+  console.log(`找到 ${images.length} 张图片`);
+  images.forEach((img, index) => {
+    console.log(`图片 ${index + 1}:`, {
+      标题: img.alt,
+      URL: img.src,
+      加载状态: img.complete ? '已加载' : '加载中',
+      实际尺寸: img.naturalWidth + 'x' + img.naturalHeight
+    });
+  });
+};
+
+// 页面加载后自动检查
+setTimeout(() => {
+  console.log('=== 页面状态检查 ===');
+  console.log('作品总数:', pixivData.length);
+  console.log('筛选后数量:', filteredData.length);
+  console.log('当前视图:', currentView);
+  console.log('筛选条件:', {
+    作者: currentAuthor,
+    标签: currentTag,
+    排序: sortBy
+  });
+}, 1500);
+
+// 初始化完成提示
+setTimeout(() => {
+  console.log('🎉 Pixiv收藏页面已准备就绪！');
+  console.log('💡 提示：可以使用 window.checkImages() 检查图片状态');
+}, 2000);
 </script>
     </div>
     
