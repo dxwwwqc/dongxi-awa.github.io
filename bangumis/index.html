@@ -112,19 +112,14 @@
             <span>&ensp;Archives</span>
         </a>
         
-        <a href="/dongxi-awa.github.io/categories">
-            <i class="fa-solid fa-bookmark fa-fw"></i>
-            <span>&ensp;Categories</span>
+        <a href="/dongxi-awa.github.io/bangumis">
+            <i class="fa-solid fa-bangumis fa-fw"></i>
+            <span>&ensp;Bangumis</span>
         </a>
         
         <a href="/dongxi-awa.github.io/music/music.html">
             <i class="fa-solid fa-music fa-fw"></i>
             <span>&ensp;Music</span>
-        </a>
-        
-        <a href="/dongxi-awa.github.io/bangumis">
-            <i class="fa-solid fa-bangumis fa-fw"></i>
-            <span>&ensp;Pixiv</span>
         </a>
         
     </nav>
@@ -163,12 +158,12 @@
                     </div>
                 </a>
                 
-                <a href="/dongxi-awa.github.io/categories">
+                <a href="/dongxi-awa.github.io/bangumis">
                     <div class="item">
                         <div style="min-width: 20px; max-width: 50px; width: 10%">
-                            <i class="fa-solid fa-bookmark fa-fw"></i>
+                            <i class="fa-solid fa-bangumis fa-fw"></i>
                         </div>
-                        <div style="min-width: 100px; max-width: 150%; width: 20%">Categories</div>
+                        <div style="min-width: 100px; max-width: 150%; width: 20%">Bangumis</div>
                     </div>
                 </a>
                 
@@ -178,15 +173,6 @@
                             <i class="fa-solid fa-music fa-fw"></i>
                         </div>
                         <div style="min-width: 100px; max-width: 150%; width: 20%">Music</div>
-                    </div>
-                </a>
-                
-                <a href="/dongxi-awa.github.io/bangumis">
-                    <div class="item">
-                        <div style="min-width: 20px; max-width: 50px; width: 10%">
-                            <i class="fa-solid fa-bangumis fa-fw"></i>
-                        </div>
-                        <div style="min-width: 100px; max-width: 150%; width: 20%">Pixiv</div>
                     </div>
                 </a>
                 
@@ -208,7 +194,7 @@
             <span class="icon">
                 <i class="fa-solid fa-calendar fa-fw"></i>
             </span>
-            2025/12/16
+            2025/12/17
         </span>
         
         
@@ -220,415 +206,90 @@
     <p>杂鱼~杂鱼~</p>
 </blockquote>
 
-
 <style>
     .bangumi-tabs{margin-bottom:15px;margin-top:15px}.bangumi-tab{padding:5px}a.bangumi-tab{text-decoration:none}.bangumi-active{background:#657b83;color:#fff}.bangumi-item{position:relative;clear:both;padding:10px 0;border-bottom:1px solid #ddd;min-height:180px}@media screen and (max-width:600px){.bangumi-item{width:100%}}.bangumi-picture{position:absolute;left:0;top:10px;width:110px}.bangumi-picture img{margin:10px 0}.bangumi-info{padding-left:120px;margin-top:10px}.bangumi-meta{font-size:12px;padding-right:10px;height:45px}.bangumi-comments{font-size:12px;margin-top:10px}.bangumi-comments>p{word-break:break-all;text-overflow:ellipsis;overflow:hidden;white-space:normal;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3}.bangumi-pagination{margin-top:15px;text-align:center;margin-bottom:10px}.bangumi-button{padding:5px}.bangumi-button:hover{background:#657b83;color:#fff}.bangumi-hide{display:none}.bangumi-show{display:block}.bangumi-title{font-size:18px}.bangumi-title a{line-height:1;text-decoration:none}.bangumi-info-items{font-size:12px;color:#555;padding-top:10px;line-height:1;float:left;width:100%}.bangumi-info-item{display:inline-block;width:13%;border-right:1px solid #555;text-align:center;height:34px}.bangumi-info-label{display:block;line-height:12px}.bangumi-info-item em{display:block;padding-top:6px;line-height:17px;font-style:normal;font-weight:700}.bangumi-info-total{padding-top:11px;display:block;line-height:12px;font-weight:700}.bangumi-info-item-score{border-right:1px solid #0000;width:50px}.bangumi-info-label-em{color:transparent;opacity:0;visibility:hidden;line-height:6px!important;padding:0!important}@media (max-width:650px){.bangumi-coin,.bangumi-type{display:none}.bangumi-info-item{width:16%}}@media (max-width:590px){.bangumi-danmaku,.bangumi-wish{display:none}.bangumi-info-item{width:19%}}@media (max-width:520px){.bangumi-doing,.bangumi-play{display:none}.bangumi-info-item{width:24%}}@media (max-width:480px){.bangumi-collect,.bangumi-follow{display:none}.bangumi-info-item{width:30%}}@media (max-width:400px){.bangumi-area{display:none}.bangumi-info-item{width:45%}}
-    
-    /* ====== Hexo-Bangumis 美化样式 ====== */
-    
-    /* 主容器 */
-    .bangumi-container {
-        max-width: 1200px;
-        margin: 40px auto;
-        padding: 0 20px;
-    }
-    
-    /* 标签页样式 - 现代化设计 */
-    .bangumi-tabs {
-        display: flex;
-        justify-content: center;
-        gap: 15px;
-        margin: 40px 0;
-        padding: 0 20px;
-        flex-wrap: wrap;
-    }
-    
-    .bangumi-tab {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white !important;
-        border: none;
-        border-radius: 25px;
-        padding: 12px 28px;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        font-weight: 600;
-        font-size: 16px;
-        text-decoration: none !important;
-        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-        position: relative;
-        overflow: hidden;
-        z-index: 1;
-    }
-    
-    .bangumi-tab::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
-        transition: all 0.4s ease;
-        z-index: -1;
-    }
-    
-    .bangumi-tab:hover::before {
-        left: 0;
-    }
-    
-    .bangumi-tab:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
-    }
-    
-    .bangumi-tab.bangumi-active {
-        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-        box-shadow: 0 6px 20px rgba(245, 87, 108, 0.4);
-    }
-    
-    .bangumi-tab.bangumi-active::before {
-        background: linear-gradient(135deg, #f5576c 0%, #f093fb 100%);
-    }
-    
-    /* 项目卡片样式 */
-    #bangumi-item1, #bangumi-item2, #bangumi-item3 {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-        gap: 25px;
-        margin-top: 30px;
-        padding: 20px;
-    }
-    
-    .bangumi-item {
-        background: linear-gradient(145deg, #ffffff, #f5f5f5);
-        border-radius: 16px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        padding: 25px;
-        border: 1px solid rgba(255, 255, 255, 0.5);
-        position: relative;
-        overflow: hidden;
-    }
-    
-    .bangumi-item::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 4px;
-        background: linear-gradient(90deg, #667eea, #764ba2, #f093fb, #f5576c);
-        background-size: 300% 100%;
-        animation: gradientMove 3s ease infinite;
-    }
-    
-    @keyframes gradientMove {
-        0% { background-position: 0% 50%; }
-        50% { background-position: 100% 50%; }
-        100% { background-position: 0% 50%; }
-    }
-    
-    .bangumi-item:hover {
-        transform: translateY(-8px) scale(1.02);
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
-    }
-    
-    /* 图片区域 */
-    .bangumi-picture {
-        text-align: center;
-        margin-bottom: 20px;
-        transition: transform 0.3s ease;
-    }
-    
-    .bangumi-picture img {
-        width: 140px !important;
-        height: 200px;
-        object-fit: cover;
-        border-radius: 12px;
-        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-        transition: all 0.4s ease;
-        border: 3px solid white;
-    }
-    
-    .bangumi-picture img:hover {
-        transform: scale(1.08) rotate(2deg);
-        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
-    }
-    
-    /* 标题样式 */
-    .bangumi-title {
-        text-align: center;
-        margin-bottom: 20px;
-    }
-    
-    .bangumi-title a {
-        font-size: 1.4rem;
-        font-weight: 700;
-        color: #333 !important;
-        text-decoration: none;
-        background: linear-gradient(120deg, #667eea 0%, #764ba2 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-        transition: all 0.3s ease;
-        display: inline-block;
-        padding: 5px 0;
-    }
-    
-    .bangumi-title a:hover {
-        transform: translateY(-2px);
-        text-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
-    }
-    
-    /* 信息统计 */
-    .bangumi-info-items {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 15px;
-        background: linear-gradient(135deg, #f8f9ff 0%, #f0f2ff 100%);
-        border-radius: 12px;
-        padding: 20px;
-        margin: 20px 0;
-        border: 1px solid rgba(102, 126, 234, 0.1);
-    }
-    
-    .bangumi-info-item {
-        text-align: center;
-        padding: 10px;
-        border-right: none !important;
-        border-bottom: 2px solid rgba(102, 126, 234, 0.2);
-        transition: all 0.3s ease;
-    }
-    
-    .bangumi-info-item:hover {
-        transform: translateY(-3px);
-        border-bottom-color: #667eea;
-        background: rgba(255, 255, 255, 0.8);
-    }
-    
-    .bangumi-info-label {
-        display: block;
-        font-size: 0.85rem;
-        color: #666;
-        margin-bottom: 5px;
-        font-weight: 500;
-    }
-    
-    .bangumi-info-item em {
-        display: block;
-        font-size: 1.2rem;
-        font-weight: 700;
-        color: #333;
-        font-style: normal;
-    }
-    
-    .bangumi-info-item-score em {
-        color: #ff6b6b;
-        font-size: 1.4rem;
-    }
-    
-    /* 简介区域 */
-    .bangumi-comments {
-        background: linear-gradient(135deg, #fff8f8 0%, #fff 100%);
-        border-radius: 12px;
-        padding: 20px;
-        margin-top: 20px;
-        border-left: 4px solid #ff6b6b;
-        position: relative;
-        overflow: hidden;
-    }
-    
-    .bangumi-comments::before {
-        content: '📝';
-        position: absolute;
-        top: 15px;
-        right: 15px;
-        font-size: 24px;
-        opacity: 0.1;
-    }
-    
-    .bangumi-comments p {
-        color: #555;
-        line-height: 1.7;
-        font-size: 0.95rem;
-        margin: 0;
-        text-align: justify;
-    }
-    
-    /* 分页按钮 */
-    .bangumi-pagination {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        gap: 15px;
-        margin: 40px 0;
-        padding: 20px;
-    }
-    
-    .bangumi-button {
-        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-        color: white;
-        border: none;
-        border-radius: 50px;
-        padding: 12px 25px;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        font-weight: 600;
-        font-size: 15px;
-        box-shadow: 0 5px 15px rgba(79, 172, 254, 0.4);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-    }
-    
-    .bangumi-button::before {
-        content: '⬅️';
-    }
-    
-    .bangumi-button:nth-child(3)::before {
-        content: '➡️';
-    }
-    
-    .bangumi-button:nth-child(1)::before {
-        content: '⏮️';
-    }
-    
-    .bangumi-button:nth-child(4)::before {
-        content: '⏭️';
-    }
-    
-    .bangumi-button:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 10px 25px rgba(79, 172, 254, 0.6);
-        background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
-    }
-    
-    .bangumi-pagenum {
-        font-size: 1.1rem;
-        font-weight: 600;
-        color: #333;
-        background: rgba(79, 172, 254, 0.1);
-        padding: 10px 20px;
-        border-radius: 50px;
-        min-width: 100px;
-        text-align: center;
-    }
-    
-    /* 响应式设计 */
-    @media (max-width: 768px) {
-        #bangumi-item1, #bangumi-item2, #bangumi-item3 {
-            grid-template-columns: 1fr;
-            padding: 10px;
-        }
-        
-        .bangumi-tabs {
-            flex-direction: column;
-            align-items: center;
-        }
-        
-        .bangumi-tab {
-            width: 90%;
-            margin-bottom: 10px;
-        }
-        
-        .bangumi-info-items {
-            grid-template-columns: repeat(2, 1fr);
-        }
-        
-        .bangumi-pagination {
-            flex-wrap: wrap;
-        }
-    }
-    
-    @media (max-width: 480px) {
-        .bangumi-info-items {
-            grid-template-columns: 1fr;
-        }
-        
-        .bangumi-picture img {
-            width: 120px !important;
-            height: 180px;
-        }
-    }
-    
-    /* 暗色模式支持 */
-    @media (prefers-color-scheme: dark) {
-        .bangumi-item {
-            background: linear-gradient(145deg, #2d3748, #1a202c);
-            border-color: #4a5568;
-        }
-        
-        .bangumi-title a {
-            background: linear-gradient(120deg, #a78bfa 0%, #7c3aed 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        
-        .bangumi-info-items {
-            background: linear-gradient(135deg, #2d3748 0%, #4a5568 100%);
-            border-color: #718096;
-        }
-        
-        .bangumi-comments {
-            background: linear-gradient(135deg, #2d3748 0%, #4a5568 100%);
-            border-left-color: #a78bfa;
-        }
-        
-        .bangumi-comments p {
-            color: #cbd5e0;
-        }
-        
-        .bangumi-info-label {
-            color: #a0aec0;
-        }
-        
-        .bangumi-info-item em {
-            color: #e2e8f0;
-        }
-    }
 </style>
-
-<div class="bangumi-container">
-    <div class="bangumi-tabs">
-        <a class="bangumi-tab" id="bangumi-tab1" href="javascript:;" rel="external" target="_self" onclick="return false">
-            Wish
-            (<span style="color: #ff6b6b; font-weight: bold;">0</span>)
-        </a>
-        <a class="bangumi-tab" id="bangumi-tab2" href="javascript:;" rel="external" target="_self" onclick="return false">
-            Watching
-            (<span style="color: #4dabf7; font-weight: bold;">0</span>)
-        </a>
-        <a class="bangumi-tab" id="bangumi-tab3" href="javascript:;" rel="external" target="_self" onclick="return false">
-            Watched
-            (<span style="color: #51cf66; font-weight: bold;">1</span>)
-        </a>
+<div class="bangumi-tabs">
+    <a class="bangumi-tab" id="bangumi-tab1" href="javascript:;" rel="external" target="_self" onclick="return false">
+    Wish
+    (0)</a>
+    <a class="bangumi-tab" id="bangumi-tab2" href="javascript:;" rel="external" target="_self" onclick="return false">
+        Watching
+        (0)</a>
+    <a class="bangumi-tab" id="bangumi-tab3" href="javascript:;" rel="external" target="_self" onclick="return false">
+        Watched
+        (2)</a>
+</div>
+<div>
+    <div id="bangumi-item1">
+        
+        <div class="bangumi-pagination">
+    <a class="bangumi-button bangumi-firstpage" href="javascript:;" target="_self" onclick="return false"> Top</a>
+    <a class="bangumi-button bangumi-previouspage" href="javascript:;" target="_self" onclick="return false">Prev</a>
+    <span class="bangumi-pagenum">2 / 3</span>
+    <a class="bangumi-button bangumi-nextpage" href="javascript:;" target="_self" onclick="return false">Next</a>
+    <a class="bangumi-button bangumi-lastpage" href="javascript:;" target="_self" onclick="return false">End</a>
+</div>
     </div>
-    
-    <div>
-        <div id="bangumi-item1">
-            
-            <div class="bangumi-pagination">
+    <div id="bangumi-item2">
+        
+        <div class="bangumi-pagination">
     <a class="bangumi-button bangumi-firstpage" href="javascript:;" target="_self" onclick="return false"> Top</a>
     <a class="bangumi-button bangumi-previouspage" href="javascript:;" target="_self" onclick="return false">Prev</a>
     <span class="bangumi-pagenum">2 / 3</span>
     <a class="bangumi-button bangumi-nextpage" href="javascript:;" target="_self" onclick="return false">Next</a>
     <a class="bangumi-button bangumi-lastpage" href="javascript:;" target="_self" onclick="return false">End</a>
 </div>
+    </div>
+    <div id="bangumi-item3">
+        
+        <div class="bangumi-item">
+    <div class="bangumi-picture">
+        
+        <img src="/dongxi-awa.github.io/images/bangumis/loading.gif" 
+             data-src="/dongxi-awa.github.io/images/bangumis/8b/00/277554_z999u.jpg" 
+             referrerPolicy="no-referrer" 
+             width="110" 
+             style="width:110px;margin:20px auto;" />
+        
+    </div>
+    <div class="bangumi-info">
+        <div class="bangumi-title">
+            <a target="_blank" href="https://bangumi.tv/subject/277554">无职转生～到了异世界就拿出真本事～</a>
         </div>
-        <div id="bangumi-item2">
-            
-            <div class="bangumi-pagination">
-    <a class="bangumi-button bangumi-firstpage" href="javascript:;" target="_self" onclick="return false"> Top</a>
-    <a class="bangumi-button bangumi-previouspage" href="javascript:;" target="_self" onclick="return false">Prev</a>
-    <span class="bangumi-pagenum">2 / 3</span>
-    <a class="bangumi-button bangumi-nextpage" href="javascript:;" target="_self" onclick="return false">Next</a>
-    <a class="bangumi-button bangumi-lastpage" href="javascript:;" target="_self" onclick="return false">End</a>
+        <div class="bangumi-meta">
+            <span class="bangumi-info-items" style="color:#555">
+                <span class="bangumi-info-item" style="color:#555">
+                
+                <span class="bangumi-info-total">共11话</span><em
+                    class="bangumi-info-label-em">0</em>
+                </span>
+                
+                <span class="bangumi-info-item bangumi-type">
+                    <span class="bangumi-info-label">类型</span> <em>动画</em>
+                </span>
+                <span class="bangumi-info-item bangumi-wish">
+                    <span class="bangumi-info-label">想看</span> <em>3423</em>
+                </span>
+                <span class="bangumi-info-item bangumi-doing">
+                    <span class="bangumi-info-label">在看</span> <em>2643</em>
+                </span>
+                <span class="bangumi-info-item bangumi-collect">
+                    <span class="bangumi-info-label">已看</span> <em>37897</em>
+                </span>
+                <span class="bangumi-info-item bangumi-info-item-score">
+                    <span class="bangumi-info-label">评分</span> <em>7.9</em>
+                </span>
+            </span>
+        </div>
+        <div class="bangumi-comments" ><p>简介：“我要在这个异世界拿出真本事！”
+34岁童贞且无职的家里蹲男子，在父母的葬礼当天被赶出家门后，在路上被一辆卡车所撞死。意识清醒后，他发现自己居然作为一个刚出生的婴儿转生到了剑与魔法的异世界！像废物一样活过了前世的男子，发誓要作为少年·鲁迪乌斯在异世界以认真的态度好好活下去！
+等待着鲁迪乌斯的是，与娇小魔术师、有着精灵长耳又很男孩子气的美少女、凶暴的傲娇大小姐以及其他性格各异的人们之间的邂逅，当然也还有残酷的冒险与战斗。
+新的人生就要开始了！“人生重来型”幻想冒险谭，在此开幕！</p> </div>
+    </div>
 </div>
-        </div>
-        <div id="bangumi-item3">
-            
-            <div class="bangumi-item">
+        
+        <div class="bangumi-item">
     <div class="bangumi-picture">
         
         <img src="/dongxi-awa.github.io/images/bangumis/loading.gif" 
@@ -671,18 +332,16 @@
 世界观继承了“追忆”，恋爱和空战的又一个故事。继追忆之后，犬村老师又将给我们带来怎样的感人故事。</p> </div>
     </div>
 </div>
-            
-            <div class="bangumi-pagination">
+        
+        <div class="bangumi-pagination">
     <a class="bangumi-button bangumi-firstpage" href="javascript:;" target="_self" onclick="return false"> Top</a>
     <a class="bangumi-button bangumi-previouspage" href="javascript:;" target="_self" onclick="return false">Prev</a>
     <span class="bangumi-pagenum">2 / 3</span>
     <a class="bangumi-button bangumi-nextpage" href="javascript:;" target="_self" onclick="return false">Next</a>
     <a class="bangumi-button bangumi-lastpage" href="javascript:;" target="_self" onclick="return false">End</a>
 </div>
-        </div>
     </div>
 </div>
-
 <script>
     "use strict";/* eslint-disable no-plusplus */(function(){// eslint-disable-next-line func-style
 function a(){this.classList.add("bangumi-active");for(var a=this.siblings(),b=0;b<a.length;b++)a[b].classList.remove("bangumi-active");// 显示对应板块
@@ -692,58 +351,8 @@ var c=this.id.replace("tab","item"),d=document.getElementById(c);d.classList.rem
     /* eslint-disable no-plusplus, func-style */(function(){var a=Math.ceil;function b(b,c){return`${b+1} / ${a(0==c.length/10?1:a(c.length/10))}`}function c(){const a=this.parentNode.siblings();g(a,0),this.parentNode.getElementsByClassName("bangumi-pagenum")[0].innerText=b(0,a)}function d(){const a=this.parentNode.siblings();let c=this.parentNode.getElementsByClassName("bangumi-pagenum")[0].innerText;c=c.substr(0,c.indexOf("/")-1),c=parseInt(c,10)-1,0<c&&c--,g(a,c),this.parentNode.getElementsByClassName("bangumi-pagenum")[0].innerText=b(c,a)}function e(){const c=this.parentNode.siblings();let d=this.parentNode.getElementsByClassName("bangumi-pagenum")[0].innerText;d=d.substr(0,d.indexOf("/")-1),d=parseInt(d,10)-1,d<a(c.length/10)-1&&d++,g(c,d),this.parentNode.getElementsByClassName("bangumi-pagenum")[0].innerText=b(d,c)}function f(){const c=this.parentNode.siblings();g(c,a(c.length/10)-1),this.parentNode.getElementsByClassName("bangumi-pagenum")[0].innerText=b(-1==a(c.length/10)-1?0:a(c.length/10)-1,c)}function g(a,b){for(let c=0;c<a.length;c++)if(Math.floor(c/10)===b){a[c].classList.remove("bangumi-hide");const[b]=a[c].getElementsByTagName("img");b.src=b.getAttribute("data-src")}else a[c].classList.add("bangumi-hide")}const h=document.getElementsByClassName("bangumi-firstpage"),j=document.getElementsByClassName("bangumi-previouspage"),k=document.getElementsByClassName("bangumi-nextpage"),l=document.getElementsByClassName("bangumi-lastpage"),m=document.getElementsByClassName("bangumi-pagenum");for(let b=0;b<h.length;b++){h[b].onclick=c,j[b].onclick=d,k[b].onclick=e,l[b].onclick=f;// set page num
 const g=m[b].parentNode.siblings().length;m[b].innerText=`1 / ${0===a(g/10)?1:a(g/10)}`,h[b].click()}})();
 
-    
-    // 添加鼠标悬停效果
-    document.addEventListener('DOMContentLoaded', function() {
-        // 为每个bangumi项目添加悬停效果
-        const items = document.querySelectorAll('.bangumi-item');
-        items.forEach(item => {
-            item.addEventListener('mouseenter', function() {
-                this.style.zIndex = '10';
-            });
-            item.addEventListener('mouseleave', function() {
-                this.style.zIndex = '1';
-            });
-        });
-        
-        // 添加点击动画
-        const tabs = document.querySelectorAll('.bangumi-tab');
-        tabs.forEach(tab => {
-            tab.addEventListener('click', function() {
-                tabs.forEach(t => t.classList.remove('bangumi-active'));
-                this.classList.add('bangumi-active');
-                
-                // 添加点击波纹效果
-                const ripple = document.createElement('span');
-                const rect = this.getBoundingClientRect();
-                ripple.style.cssText = `
-                    position: absolute;
-                    border-radius: 50%;
-                    background: rgba(255, 255, 255, 0.7);
-                    transform: scale(0);
-                    animation: ripple 0.6s linear;
-                    width: 100px;
-                    height: 100px;
-                    top: ${event.clientY - rect.top - 50}px;
-                    left: ${event.clientX - rect.left - 50}px;
-                    pointer-events: none;
-                `;
-                this.appendChild(ripple);
-                
-                setTimeout(() => ripple.remove(), 600);
-            });
-        });
-    });
 </script>
 
-<style>
-    @keyframes ripple {
-        to {
-            transform: scale(4);
-            opacity: 0;
-        }
-    }
-</style>
     </div>
     
     
