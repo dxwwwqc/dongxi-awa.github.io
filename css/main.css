@@ -461,7 +461,7 @@
     flex-direction: column-reverse;
 }
 * {
-    margin: 0;
+    margin: 2;
     padding: 0;
     position: relative;
     scrollbar-color: #8ab5ff #e6efff;
